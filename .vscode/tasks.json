@@ -1,0 +1,45 @@
+{
+    "version": "2.0.0",
+    "manual": "https://code.visualstudio.com/docs/editor/tasks",
+    "tasks": [{
+        "label": "CMake_win32",
+        "type": "shell",
+        "options": {"cwd": "${workspaceFolder}/build/win32"},
+        "command": "cmake",
+        "args": ["../..", "-G", "Visual Studio 16 2019", "-A Win32"],
+        "group": "build",
+    }, {
+        "label": "Compile_win32",
+        "type": "shell",
+        "options": {"cwd": "${workspaceFolder}/build/win32"},
+        "command": "cmake --build .",
+        "group": "build",
+        "dependsOn": ["CMake_win32"],
+        "problemMatcher": "$msCompile"
+    }, {
+        "label": "CMake_mingw",
+        "type": "shell",
+        "options": {"cwd": "${workspaceFolder}/build/mingw"},
+        "command": ["cmake"],
+        "args": ["-DWIN32=0", "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_TOOLCHAIN_FILE:STRING=CMake/arm-gcc-toolchain.cmake", "../..", "-G", "MinGW Makefiles"],
+        "group": "build",
+    }, {
+        "label":    "Compile_mingw",
+        "type":     "process",
+        "options": {"cwd": "${workspaceFolder}/build/mingw"},
+        "command":  "mingw32-make",
+        "group": "build",
+        "dependsOn": ["CMake_mingw"],
+    }, {
+        "label":    "mkdir",
+        "type":     "shell",
+        "command":  "mkdir",
+        "args":     ["-p", "${workspaceFolder}/build,${workspaceFolder}/build/linux,${workspaceFolder}/build/win32,${workspaceFolder}/build/mingw"],
+        "group": "build"
+    }, {
+        "label":    "Clean",
+        "type":     "shell",
+        "command":  "${workspaceFolder}/clean.bat",
+        "group": "build"
+    }]
+}
