@@ -15,9 +15,6 @@ if (WIN32)
   find_include_dir(LIB_FILES_PATHS "${LIB_FILES}") # 查找所有库文件所在目录
   link_directories(${LIB_FILES_PATHS})
   set(LINK_LIB_FILES 
-      DBC
-      paho-mqtt3c
-      pthreadVC2
       legacy_stdio_definitions
   )
 

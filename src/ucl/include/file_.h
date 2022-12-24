@@ -1,14 +1,19 @@
 #ifndef _USER_FILE_H
 #define _USER_FILE_H
 
+#include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern const char* getFileContent_(const char* path);
-extern uint8_t     isFileExist_(const char* szFilePath);
+const char* fileContent_(const char* path);
+bool        fileExist_(const char* filePath);
+int         mkdir_m_(const char* dir);
+int         fileSize_(const char* filePath);
+int         fileSize_fp_(FILE* fp);
 
 #ifdef __cplusplus
 }

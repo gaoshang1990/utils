@@ -5,7 +5,7 @@
         "name": "C++ Launch (Windows)",
         "type": "cppvsdbg",
         "request": "launch",
-        "program": "${workspaceFolder}/build/win32/Debug/cj698.exe",
+        "program": "${workspaceFolder}/build/win32/Debug/ucl.exe",
         // "symbolSearchPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx86/x86",
         "stopAtEntry": false,
         "cwd": "${workspaceFolder}/build/win32/Debug",
