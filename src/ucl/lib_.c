@@ -1,10 +1,7 @@
-#include <ctype.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "public_.h"
 
 
 /* BCD×ªHEX: 0x10 -> 10(0x0a) */
@@ -29,7 +26,7 @@ uint8_t hex2bcd_(uint8_t hex)
 }
 
 /* ·´Ïòmemcpy */
-int memcpyR_(uint8_t* dst, uint8_t* src, uint16_t len)
+int memcpy_r_(uint8_t* dst, uint8_t* src, uint16_t len)
 {
     if (dst == NULL || src == NULL) {
         return -1;
@@ -49,7 +46,7 @@ int32_t buf2int32_(uint8_t* pBuf, uint8_t mode)
     }
     int32_t ret = 0;
     if (mode) {
-        memcpyR_((uint8_t*)&ret, pBuf, sizeof(int32_t));
+        memcpy_r_((uint8_t*)&ret, pBuf, sizeof(int32_t));
     }
     else {
         memcpy((void*)&ret, pBuf, sizeof(int32_t));
@@ -67,7 +64,7 @@ int16_t buf2int16_(uint8_t* pBuf, uint8_t mode)
     }
     int16_t ret = 0;
     if (mode) {
-        memcpyR_((uint8_t*)&ret, pBuf, sizeof(int16_t));
+        memcpy_r_((uint8_t*)&ret, pBuf, sizeof(int16_t));
     }
     else {
         memcpy((void*)&ret, pBuf, sizeof(int16_t));
@@ -85,7 +82,7 @@ double buf2double_(uint8_t* pBuf, uint8_t mode)
     }
     double ret = 0;
     if (mode) {
-        memcpyR_((uint8_t*)&ret, pBuf, sizeof(double));
+        memcpy_r_((uint8_t*)&ret, pBuf, sizeof(double));
     }
     else {
         memcpy((void*)&ret, pBuf, sizeof(double));
@@ -130,13 +127,14 @@ int str2hex_(uint8_t* buf, const char* str, int bufSize)
         return -1;
     }
 
-    uint16_t j = 0;
+    uint16_t j      = 0;
     uint16_t bufLen = 0;
     char     tmp[2] = {0};
 
     uint16_t i;
     for (i = 0; i < strlen(str); i++) {
-        if ((str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'f') || (str[i] >= 'A' && str[i] <= 'F')) {
+        if ((str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'f') ||
+            (str[i] >= 'A' && str[i] <= 'F')) {
             tmp[j++] = str[i];
             if (j >= 2) {
                 buf[bufLen++] = atox_(tmp, 2);
@@ -167,4 +165,3 @@ int hex2str_(char* str, uint8_t* buf, uint16_t bufLen)
 
     return 0;
 }
-

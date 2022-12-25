@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #ifndef _WIN32
 #  include <dirent.h>
 #  include <sys/stat.h>
