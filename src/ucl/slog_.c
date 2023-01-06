@@ -226,10 +226,6 @@ int slogInit_(const char* log_dir, const char* file_name, SlogLevel level)
 
 void slogWrite_(SlogLevel level, bool braw, const char* szFunc, int line, const char* fmt, ...)
 {
-    va_list     args;
-    char*       process_info              = NULL;
-    char*       thread_info               = NULL;
-    char        timestr[MAX_TIME_STR]     = {0};
     static char log_content[MAX_LOG_LINE] = {0};
     static char log_line[MAX_LOG_LINE]    = {0};
 
@@ -239,48 +235,16 @@ void slogWrite_(SlogLevel level, bool braw, const char* szFunc, int line, const 
 
     s_slog_lock(g_logger.mtx);
 
+    va_list args;
     va_start(args, fmt);
     vsnprintf(log_content, sizeof(log_content) - 1, fmt, args);
     va_end(args);
 
-#ifdef SLOG_PRINT_ENABLE     /* console print enable */
-#    ifdef SLOG_COLOR_ENABLE /* console print with color */
-    switch (level) {
-    case S_TRACE:
-        printf(CSI_START SLOG_COLOR_TRACE "%s" CSI_END, log_content);
-        break;
-    case S_DEBUG:
-        printf(CSI_START SLOG_COLOR_DEBUG "%s" CSI_END, log_content);
-        break;
-    case S_INFO:
-        printf(CSI_START SLOG_COLOR_INFO "%s" CSI_END, log_content);
-        break;
-    case S_WARN:
-        printf(CSI_START SLOG_COLOR_WARN "%s" CSI_END, log_content);
-        break;
-    case S_ERROR:
-        printf(CSI_START SLOG_COLOR_ERROR "%s" CSI_END, log_content);
-        break;
-    default:
-        printf("%s", log_content);
-    }
-#    else
-    printf("%s", log_content);
-#    endif /* SLOG_COLOR_ENABLE */
-#endif     /* SLOG_PRINT_ENABLE */
-
-    if (g_logger.inited == false) {
-        if (!braw) {
-            printf("\n");
-        }
-        s_slog_unlock(g_logger.mtx);
-        return;
-    }
-
     if (!braw) {
+        char timestr[MAX_TIME_STR] = {0};
         s_get_curr_time(sizeof(timestr), timestr); /* time */
-        process_info = s_slog_get_process_info();  /* pid */
-        thread_info  = s_slog_get_thread_info();   /* tid */
+        char* process_info = s_slog_get_process_info(); /* pid */
+        char* thread_info  = s_slog_get_thread_info();  /* tid */
 
         /* log format for different level please modify below */
         switch (level) {
@@ -319,6 +283,37 @@ void slogWrite_(SlogLevel level, bool braw, const char* szFunc, int line, const 
     }
     else {
         snprintf(log_line, sizeof(log_line) - 1, "%s", log_content); /* output raw data */
+    }
+
+#ifdef SLOG_PRINT_ENABLE     /* console print enable */
+#    ifdef SLOG_COLOR_ENABLE /* console print with color */
+    switch (level) {
+    case S_TRACE:
+        printf(CSI_START SLOG_COLOR_TRACE "%s" CSI_END, log_line);
+        break;
+    case S_DEBUG:
+        printf(CSI_START SLOG_COLOR_DEBUG "%s" CSI_END, log_line);
+        break;
+    case S_INFO:
+        printf(CSI_START SLOG_COLOR_INFO "%s" CSI_END, log_line);
+        break;
+    case S_WARN:
+        printf(CSI_START SLOG_COLOR_WARN "%s" CSI_END, log_line);
+        break;
+    case S_ERROR:
+        printf(CSI_START SLOG_COLOR_ERROR "%s" CSI_END, log_line);
+        break;
+    default:
+        printf("%s", log_line);
+    }
+#    else
+    printf("%s", log_line);
+#    endif /* SLOG_COLOR_ENABLE */
+#endif     /* SLOG_PRINT_ENABLE */
+
+    if (g_logger.inited == false) {
+        s_slog_unlock(g_logger.mtx);
+        return;
     }
 
     /* log_file_rotate_check */

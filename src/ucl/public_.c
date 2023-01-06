@@ -1,6 +1,6 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #ifndef _WIN32
 #  include <dirent.h>
 #  include <sys/stat.h>
@@ -77,11 +77,11 @@ int printAppInfo_(const char* szName, const char* szVersion)
     makeInfoStr(strAppDate, maxLen + 2);
 
     SLOG_INFO_RAW("\n");
-    SLOG_INFO("%s\n", strStars);
-    SLOG_INFO("%s\n", strAppInfo);
-    SLOG_INFO("%s\n", strAppVer);
-    SLOG_INFO("%s\n", strAppDate);
-    SLOG_INFO("%s\n", strStars);
+    SLOG_INFO("%s", strStars);
+    SLOG_INFO("%s", strAppInfo);
+    SLOG_INFO("%s", strAppVer);
+    SLOG_INFO("%s", strAppDate);
+    SLOG_INFO("%s", strStars);
     SLOG_INFO_RAW("\n");
 
     return 0;

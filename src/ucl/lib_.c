@@ -26,17 +26,31 @@ uint8_t hex2bcd_(uint8_t hex)
 }
 
 /* 反向memcpy */
-int memcpy_r_(uint8_t* dst, uint8_t* src, uint16_t len)
+int memcpy_r_(uint8_t* dst, uint8_t* src, int len)
 {
     if (dst == NULL || src == NULL) {
         return -1;
     }
-    uint16_t i = 0;
+    int i = 0;
     for (i = 0; i < len; i++) {
         dst[i] = src[len - i - 1];
     }
     return 0;
 }
+
+
+/* 指定长度的内存数据反转 */
+int memrev_(uint8_t* buff, int len)
+{
+    for (int i = 0; i < len / 2; i++) {
+        uint8_t tmp       = buff[i];
+        buff[i]           = buff[len - i - 1];
+        buff[len - i - 1] = tmp;
+    }
+
+    return 0;
+}
+
 
 /* mode: 0-小端 1-大端 */
 int32_t buf2int32_(uint8_t* pBuf, uint8_t mode)

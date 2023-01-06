@@ -9,7 +9,8 @@ extern "C" {
 
 uint8_t bcd2hex_(uint8_t bcd);
 uint8_t hex2bcd_(uint8_t hex);
-int     memcpy_r_(uint8_t* dst, uint8_t* src, uint16_t len);
+int     memcpy_r_(uint8_t* dst, uint8_t* src, int len);
+int     memrev_(uint8_t* buff, int len);
 int32_t buf2int32_(uint8_t* pBuf, uint8_t mode);
 int16_t buf2int16_(uint8_t* pBuf, uint8_t mode);
 double  buf2double_(uint8_t* pBuf, uint8_t mode);
