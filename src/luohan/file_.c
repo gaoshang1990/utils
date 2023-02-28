@@ -98,7 +98,8 @@ int mkdir_m_(const char* dir)
                     return -1;
                 }
 #else
-                if (mkdir(dirTmp, 0744) != 0) {
+                if (mkdir(dirTmp, 0755) != 0) { /* FIXME:这里有问题 */
+                    printf("mkdir %s failed!\n", dirTmp);
                     return -1;
                 }
 #endif

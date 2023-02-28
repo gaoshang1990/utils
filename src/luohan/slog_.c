@@ -19,6 +19,7 @@
 #ifdef _WIN32
 #    define snprintf              _snprintf
 #    define LOCAL_TIME(pSec, pTm) localtime_s(pTm, pSec)
+#    define SLOG_COLOR_ENABLE     /* enalbe print color. support on linux/unix platform */
 #else
 #    define LOCAL_TIME(pSec, pTm) localtime_r(pSec, pTm)
 #    define SLOG_COLOR_ENABLE     /* enalbe print color. support on linux/unix platform */
@@ -206,7 +207,8 @@ int slogInit_(const char* log_dir, const char* file_name, SlogLevel level)
         return TRUE;
     }
     if (mkdir_m_(log_dir) < 0) {
-        return FALSE;
+        printf("mkdir failed!\n");
+        // return FALSE; /* FIXME */
     }
     g_logger.mtx = s_slog_init_mutex();
 
