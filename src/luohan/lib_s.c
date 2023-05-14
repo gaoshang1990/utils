@@ -7,6 +7,9 @@
 /* BCD转HEX: 0x10 -> 10(0x0a) */
 uint8_t bcd2hex_(uint8_t bcd)
 {
+    if (((bcd & 0x0f) > 9) || (((bcd >> 4) & 0x0f) > 9)) {
+        return 0;
+    }
     return ((bcd >> 4) * 10 + (bcd & 0x0f));
 }
 
@@ -53,56 +56,77 @@ int memrev_(uint8_t* buff, int len)
 
 
 /* mode: 0-小端 1-大端 */
-int32_t buf2int32_(uint8_t* pBuf, uint8_t mode)
+int16_t buf2int16_(uint8_t* buf, uint16_t* offset, uint8_t mode)
 {
-    if (pBuf == NULL) {
-        printf("pBuf is NULL!\n");
+    if (buf == NULL) {
+        printf("buf is NULL!\n");
+        return -1;
     }
-    int32_t ret = 0;
-    if (mode) {
-        memcpy_r_((uint8_t*)&ret, pBuf, sizeof(int32_t));
+    if (offset) {
+        buf += *offset;
     }
-    else {
-        memcpy((void*)&ret, pBuf, sizeof(int32_t));
-    }
+    int16_t ret = mode ? (buf[0] << 8) | buf[1] : (buf[1] << 8) | buf[0];
 
+    if (offset) {
+        *offset += sizeof(int16_t);
+    }
     return ret;
 }
 
 
 /* mode: 0-小端 1-大端 */
-int16_t buf2int16_(uint8_t* pBuf, uint8_t mode)
+int32_t buf2int32_(uint8_t* buf, uint16_t* offset, uint8_t mode)
 {
-    if (pBuf == NULL) {
-        printf("pBuf is NULL!\n");
+    if (buf == NULL) {
+        printf("buf is NULL!\n");
+        return -1;
     }
-    int16_t ret = 0;
-    if (mode) {
-        memcpy_r_((uint8_t*)&ret, pBuf, sizeof(int16_t));
+    if (offset) {
+        buf += *offset;
     }
-    else {
-        memcpy((void*)&ret, pBuf, sizeof(int16_t));
-    }
+    int32_t ret = mode ? (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3] :
+                         (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0];
 
+    if (offset) {
+        offset += 4;
+    }
     return ret;
 }
 
 
 /* mode: 0-小端 1-大端 */
-double buf2double_(uint8_t* pBuf, uint8_t mode)
+int64_t buf2int64_(uint8_t* buf, uint16_t* offset, uint8_t mode)
 {
-    if (pBuf == NULL) {
-        printf("pBuf is NULL!\n");
+    if (buf == NULL) {
+        printf("buf is NULL!\n");
+        return -1;
     }
-    double ret = 0;
-    if (mode) {
-        memcpy_r_((uint8_t*)&ret, pBuf, sizeof(double));
+    if (offset) {
+        buf += *offset;
     }
-    else {
-        memcpy((void*)&ret, pBuf, sizeof(double));
-    }
+    int64_t ret =
+        mode ? ((int64_t)buf[0] << 56) | ((int64_t)buf[1] << 48) | ((int64_t)buf[2] << 40) | ((int64_t)buf[3] << 32) |
+                   ((int64_t)buf[4] << 24) | ((int64_t)buf[5] << 16) | ((int64_t)buf[6] << 8) | (int64_t)buf[7] :
+               ((int64_t)buf[7] << 56) | ((int64_t)buf[6] << 48) | ((int64_t)buf[5] << 40) | ((int64_t)buf[4] << 32) |
+                   ((int64_t)buf[3] << 24) | ((int64_t)buf[2] << 16) | ((int64_t)buf[1] << 8) | (int64_t)buf[0];
 
+    if (offset) {
+        *offset += sizeof(int64_t);
+    }
     return ret;
+}
+
+
+float buf2float_(uint8_t* buf, uint16_t* offset, uint8_t mode)
+{
+    return (float)buf2int32_(buf, offset, mode);
+}
+
+
+/* mode: 0-小端 1-大端 */
+double buf2double_(uint8_t* buf, uint16_t* offset, uint8_t mode)
+{
+    return (double)buf2int64_(buf, offset, mode);
 }
 
 
@@ -134,7 +158,7 @@ int atox_(const char* str, uint8_t len)
 }
 
 
-int str2hex_(uint8_t* buf, const char* str, int bufSize)
+int str2hex_(uint8_t* buf, int bufSize, const char* str)
 {
     if (buf == NULL || str == NULL) {
         printf("buf or str is NULL!\n");
@@ -147,8 +171,7 @@ int str2hex_(uint8_t* buf, const char* str, int bufSize)
 
     uint16_t i;
     for (i = 0; i < strlen(str); i++) {
-        if ((str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'f') ||
-            (str[i] >= 'A' && str[i] <= 'F')) {
+        if ((str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'f') || (str[i] >= 'A' && str[i] <= 'F')) {
             tmp[j++] = str[i];
             if (j >= 2) {
                 buf[bufLen++] = atox_(tmp, 2);
