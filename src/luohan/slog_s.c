@@ -38,12 +38,6 @@
 #define MAX_FILE_PATH        (260)
 #define MAX_LOG_LINE         (10 * 1024)
 
-#ifndef TRUE
-#  define TRUE (1)
-#endif
-#ifndef FALSE
-#  define FALSE (0)
-#endif
 
 #ifdef SLOG_COLOR_ENABLE
 /**
@@ -105,7 +99,7 @@ typedef struct _T_LoggerCfg {
     int       maxRotateCnt; /* max rotate file count */
 } Slogger;
 
-static Slogger g_logger = {{0}, {0}, NULL, NULL, S_TRACE, FALSE, SLOG_FILE_MAX_SIZE, SLOG_FILE_MAX_ROTATE};
+static Slogger g_logger = {{0}, {0}, NULL, NULL, S_TRACE, false, SLOG_FILE_MAX_SIZE, SLOG_FILE_MAX_ROTATE};
 
 
 static SlogMutex s_slog_init_mutex(int initialValue)
@@ -261,8 +255,8 @@ int slogInit_(const char* log_dir, const char* file_name, SlogLevel level)
 
     g_logger.logLevel = level;
     g_logger.mtx      = s_slog_init_mutex(1);
-    if (TRUE == g_logger.inited) {
-        return TRUE;
+    if (true == g_logger.inited) {
+        return true;
     }
 
     if (log_dir == NULL || file_name == NULL) {
@@ -270,7 +264,7 @@ int slogInit_(const char* log_dir, const char* file_name, SlogLevel level)
     }
     if (s_mkdir_m_(log_dir) < 0) {
         printf("mkdir failed!\n");
-        // return FALSE; /* FIXME */
+        // return false; /* FIXME */
     }
 
     snprintf(g_logger.fileDir, sizeof(g_logger.fileDir) - 1, "%s", log_dir);
@@ -279,11 +273,11 @@ int slogInit_(const char* log_dir, const char* file_name, SlogLevel level)
     g_logger.fp = fopen(log_filepath, "a+");
     if (NULL == g_logger.fp) {
         printf("open log file failed!\n");
-        return FALSE;
+        return false;
     }
-    g_logger.inited = TRUE;
+    g_logger.inited = true;
 
-    return TRUE;
+    return true;
 }
 
 

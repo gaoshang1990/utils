@@ -30,23 +30,23 @@ extern "C" {
 
 
 #ifndef sswap
-#  define sswap(x, y)                                                                                                  \
-    do {                                                                                                               \
-      if ((x) != (y)) {                                                                                                \
-        (x) ^= (y);                                                                                                    \
-        (y) ^= (x);                                                                                                    \
-        (x) ^= (y);                                                                                                    \
-      }                                                                                                                \
-    } while (0)
+#  define sswap(x, y)       \
+      do {                  \
+          if ((x) != (y)) { \
+              (x) ^= (y);   \
+              (y) ^= (x);   \
+              (x) ^= (y);   \
+          }                 \
+      } while (0)
 #endif
 
-#define ffree(p)                                                                                                       \
-  do {                                                                                                                 \
-    if (p) {                                                                                                           \
-      free((void*)p);                                                                                                  \
-      p = NULL;                                                                                                        \
-    }                                                                                                                  \
-  } while (0)
+#define ffree(p)            \
+    do {                    \
+        if (p) {            \
+            free((void*)p); \
+            p = NULL;       \
+        }                   \
+    } while (0)
 
 
 int                printBuf_(const char* str, uint8_t* pBuf, uint16_t bufLen);
