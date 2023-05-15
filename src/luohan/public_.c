@@ -7,17 +7,21 @@
 #  include <unistd.h>
 #endif
 
-#include "slog_.h"
+#include "slog_s.h"
 #include "public_.h"
 
 
-int printBuf_(uint8_t* pBuf, uint16_t bufLen)
+int printBuf_(const char* str, uint8_t* pBuf, uint16_t bufLen)
 {
     if (pBuf == NULL || bufLen == 0) {
         return -1;
     }
-    int i;
-    for (i = 0; i < bufLen; i++) {
+
+    if (str != NULL || strlen(str) > 0) {
+        SLOG_INFO("%s", str);
+    }
+
+    for (int i = 0; i < bufLen; i++) {
         SLOG_INFO_RAW("%02x ", pBuf[i]);
     }
     SLOG_INFO_RAW("\n");
@@ -57,7 +61,7 @@ int printAppInfo_(const char* szName, const char* szVersion)
 
     uint8_t maxLen = 0;
 
-    sprintf(strAppInfo, "* This is \"%s\" APP", szName);
+    sprintf(strAppInfo, "* This is \"%s\" App", szName);
     sprintf(strAppVer,  "* Version: %s", szVersion);
     sprintf(strAppDate, "* Build time: %s, %s", __DATE__, __TIME__);
 

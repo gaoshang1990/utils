@@ -42,9 +42,6 @@ extern bool   pastDay_(void);
 extern bool   pastWeek_(void);
 extern bool   pastMonth_(void);
 extern bool   pastYear_(void);
-extern Timer* timerInit_(const char* szStartTime, uint32_t intervalMs);
-extern bool   timerRing_(Timer* timer);
-extern int    timerDestroy_(Timer* timer);
 
 
 #ifdef __cplusplus

@@ -9,7 +9,7 @@
 #endif
 
 #include "time_.h"
-#include "math_.h"
+// #include "math_.h"
 
 
 const uint8_t g_monthTab[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -289,57 +289,5 @@ bool pastYear_(void)
     return s_timerFlag & TMR_YEAR_FLAG;
 }
 
-
-struct Timer_t {
-    uint64_t lastMs;
-    uint32_t intervalMs;
-};
-
-
-/**
- * \brief   初始化定时器
- * \param   szStartTime     定时器开始时间，格式为"YY-NN-DD HH:MM:SS"
- * \param   intervalMs      定时器间隔时间，单位毫秒
- */
-Timer* timerInit_(const char* szStartTime, uint32_t intervalMs)
-{
-    if (szStartTime == NULL) {
-        return NULL;
-    }
-    time_t startSec = timestr2second_(szStartTime);
-    Timer* pTimer   = (Timer*)malloc(sizeof(Timer));
-
-    memset(pTimer, 0, sizeof(Timer));
-    pTimer->lastMs     = (uint64_t)startSec * 1000;
-    pTimer->intervalMs = intervalMs;
-
-    return 0;
-}
-
-
-bool timerRing_(Timer* timer)
-{
-    if (timer == NULL) {
-        return false;
-    }
-    if (aabs(s_nowMs - timer->lastMs) >= timer->intervalMs) {
-        timer->lastMs = s_nowMs;
-        return true;
-    }
-
-    return false;
-}
-
-
-int timerDestroy_(Timer* timer)
-{
-    if (timer == NULL) {
-        return -1;
-    }
-    free(timer);
-    timer = NULL;
-
-    return 0;
-}
 
 

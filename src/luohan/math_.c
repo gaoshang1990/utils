@@ -7,7 +7,7 @@
 #include "public_.h"
 
 
-/* ·µ»Ø [min,max) Ëæ»úÊı */
+/* è¿”å› [min,max) éšæœºæ•° */
 int randNum_(int min, int max)
 {
     srand((unsigned)time(NULL) + rand());
@@ -38,13 +38,12 @@ static void** mallocArray2(uint16_t rows, uint16_t cols, uint8_t typeSize)
 }
 
 
-/* ¶¯Ì¬´´½¨¶şÎ¬Êı×é,ArrayTypr:0-char 1-int 2-float */
+/* åŠ¨æ€åˆ›å»ºäºŒç»´æ•°ç»„,ArrayTypr:0-char 1-int 2-float */
 void** createArray2_(uint16_t rows, uint16_t cols, ArrayType_e type)
 {
     void** arr = NULL;
 
-    switch(type)
-    {
+    switch (type) {
     case TYPE_CHAR:
         arr = mallocArray2(rows, cols, sizeof(char));
         break;
@@ -62,7 +61,7 @@ void** createArray2_(uint16_t rows, uint16_t cols, ArrayType_e type)
 }
 
 
-/* ÊÍ·Å¶¯Ì¬¶şÎ¬Êı×é */
+/* é‡Šæ”¾åŠ¨æ€äºŒç»´æ•°ç»„ */
 int freeArray2_(void** arr, uint16_t rows)
 {
     uint16_t i;
@@ -76,32 +75,31 @@ int freeArray2_(void** arr, uint16_t rows)
 }
 
 
-/* ×Ö·û´®Êı×ÖµÄ±¶ÂÊ×ª»» */
+/* å­—ç¬¦ä¸²æ•°å­—çš„å€ç‡è½¬æ¢ */
 int numstrScalerDeal_(char* szNum, int scaler)
 {
+    if (scaler == 0) { /* æ— éœ€å¤„ç† */
+        return 0;
+    }
     uint8_t i;
     uint8_t len = (uint8_t)strlen(szNum);
     char    szTmp[32];
 
-    if (scaler == 0) { /* ÎŞĞè´¦Àí */
-        return 0;
-    }
-
-    uint8_t pos = 1;
+    uint8_t pos;
     for (pos = 0; pos < len; pos++) {
         if (szNum[pos] == '.') {
             break;
         }
     }
-    szNum[pos] = '.';
+    szNum[pos] = '.'; /* å¦‚æœæ²¡æœ‰å°æ•°ç‚¹ åˆ™åœ¨æœ€ååŠ ä¸€ä¸ª */
 
-    if (scaler < 0) { /* Ğ¡Êıµã×óÒÆ */
+    if (scaler < 0) { /* å°æ•°ç‚¹å·¦ç§» */
         scaler *= -1;
         i = pos;
-        if (szNum[0] == '-' || szNum[0] == '+') { /* ´ø·ûºÅµÄÊı×ÖÇ°ÃæÓ¦¶à²¹³¥Ò»¸ö0 */
+        if (szNum[0] == '-' || szNum[0] == '+') { /* å¸¦ç¬¦å·çš„æ•°å­—å‰é¢åº”å¤šè¡¥å¿ä¸€ä¸ª0 */
             i--;
         }
-        for (; scaler + 1 > i; i++, pos++) { /* Êı×ÖÇ°²¹0 */
+        for (; scaler + 1 > i; i++, pos++) { /* æ•°å­—å‰è¡¥0 */
             strcpy(szTmp, szNum);
             if (szNum[0] == '-') {
                 sprintf(szNum, "-0%s", szTmp + 1);
@@ -118,7 +116,7 @@ int numstrScalerDeal_(char* szNum, int scaler)
             pos--;
         }
     }
-    else { /* Ğ¡ÊıµãÓÒÒÆ */
+    else { /* å°æ•°ç‚¹å³ç§» */
         for (i = 0; i < scaler; i++) {
             if (szNum[pos + 1] == '\0') {
                 szNum[pos + 1] = '0';
@@ -129,7 +127,7 @@ int numstrScalerDeal_(char* szNum, int scaler)
         }
     }
 
-    /* ´¦ÀíÄ©Î²¶àÓàµÄÁã */
+    /* å¤„ç†æœ«å°¾å¤šä½™çš„é›¶ */
     len = (uint8_t)strlen(szNum) - 1;
     while (szNum[len] == '0') {
         szNum[len--] = '\0';
@@ -145,19 +143,19 @@ int numstrScalerDeal_(char* szNum, int scaler)
 }
 
 
-/* Ï£¶ûÅÅĞò */
+/* å¸Œå°”æ’åº */
 int shellSort_(int* arr, int len)
 {
-    int i, j, k, tmp, gap; /* gapÎª²½³¤ */
+    int i, j, k, tmp, gap; /* gapä¸ºæ­¥é•¿ */
 
-    for (gap = len / 2; gap > 0; gap /= 2) { /* ²½³¤³õÊ¼»¯ÎªÊı×é³¤¶ÈµÄÒ»°ë£¬Ã¿´Î±éÀúºó²½³¤¼õ°ë */
-        for (i = 0; i < gap; ++i) { /* ±äÁ¿iÎªÃ¿´Î·Ö×éµÄµÚÒ»¸öÔªËØÏÂ±ê */
+    for (gap = len / 2; gap > 0; gap /= 2) { /* æ­¥é•¿åˆå§‹åŒ–ä¸ºæ•°ç»„é•¿åº¦çš„ä¸€åŠï¼Œæ¯æ¬¡éå†åæ­¥é•¿å‡åŠ */
+        for (i = 0; i < gap; ++i) {          /* å˜é‡iä¸ºæ¯æ¬¡åˆ†ç»„çš„ç¬¬ä¸€ä¸ªå…ƒç´ ä¸‹æ ‡ */
             for (j = i + gap; j < len; j += gap) {
-                /* ¶Ô²½³¤ÎªgapµÄÔªËØ½øĞĞÖ±²åÅÅĞò£¬µ±gapÎª1Ê±£¬¾ÍÊÇÖ±²åÅÅĞò */
+                /* å¯¹æ­¥é•¿ä¸ºgapçš„å…ƒç´ è¿›è¡Œç›´æ’æ’åºï¼Œå½“gapä¸º1æ—¶ï¼Œå°±æ˜¯ç›´æ’æ’åº */
                 tmp = arr[j];
-                k   = j - gap; /* k³õÊ¼»¯ÎªjµÄÇ°Ò»¸öÔªËØ£¨ÓëjÏà²îgap³¤¶È£© */
+                k   = j - gap; /* kåˆå§‹åŒ–ä¸ºjçš„å‰ä¸€ä¸ªå…ƒç´ ï¼ˆä¸jç›¸å·®gapé•¿åº¦ï¼‰ */
                 while (k >= 0 && arr[k] > tmp) {
-                    arr[k + gap] = arr[k]; /* ½«ÔÚa[i]Ç°ÇÒ±ÈtmpµÄÖµ´óµÄÔªËØÏòºóÒÆ¶¯Ò»Î» */
+                    arr[k + gap] = arr[k]; /* å°†åœ¨a[i]å‰ä¸”æ¯”tmpçš„å€¼å¤§çš„å…ƒç´ å‘åç§»åŠ¨ä¸€ä½ */
                     k -= gap;
                 }
                 arr[k + gap] = tmp;

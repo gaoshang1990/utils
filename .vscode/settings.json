@@ -4,7 +4,7 @@
     "editor.formatOnType": true,
     "editor.suggest.snippetsPreventQuickSuggestions": false,
     "editor.acceptSuggestionOnEnter": "off",
-    "C_Cpp.clang_format_sortIncludes": true,
+    "C_Cpp.clang_format_sortIncludes": false,
     "files.associations": {
         "public.h": "c",
         "slog.h": "c",
@@ -78,6 +78,8 @@
         "config_app.h": "c",
         "meter_all.h": "c",
         "hal_thread.h": "c",
-        "file_.h": "c"
+        "file_.h": "c",
+        "public_.h": "c",
+        "unistd.h": "c"
     },
 }
