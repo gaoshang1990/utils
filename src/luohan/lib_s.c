@@ -120,8 +120,9 @@ int64_t buf2int64_(uint8_t* buf, uint16_t* offset, uint8_t mode)
 float buf2float_(uint8_t* buf, uint16_t* offset, uint8_t mode)
 {
     int32_t ret = buf2int32_(buf, offset, mode);
+    float*  p   = (float*)&ret;
 
-    return (float)*(float*)&ret;
+    return *p;
 }
 
 
@@ -129,8 +130,9 @@ float buf2float_(uint8_t* buf, uint16_t* offset, uint8_t mode)
 double buf2double_(uint8_t* buf, uint16_t* offset, uint8_t mode)
 {
     int64_t ret = buf2int64_(buf, offset, mode);
+    double* p   = (double*)&ret;
 
-    return (double)*(double*)&ret;
+    return *p;
 }
 
 

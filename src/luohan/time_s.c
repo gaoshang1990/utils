@@ -2,24 +2,23 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef _WIN32
-#    include <windows.h>
+#  include <windows.h>
 #else
-#    include <sys/time.h>
-#    include <unistd.h>
+#  include <sys/time.h>
+#  include <unistd.h>
 #endif
 
-#include "time_.h"
-// #include "math_.h"
+#include "time_s.h"
 
 
 const uint8_t g_monthTab[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 
 /* 秒转换为时间结构体 */
-struct tm second2tmStruct_(time_t sec)
+struct tm second2struct_(time_t sec)
 {
     struct tm tms;
-    memcpy(&tms, localtime(&sec), sizeof(struct tm ));
+    LOCAL_TIME(&sec, &tms);
 
     return tms;
 }
@@ -27,7 +26,7 @@ struct tm second2tmStruct_(time_t sec)
 
 time_t timestr2second_(const char* str)
 {
-    if(str == NULL) {
+    if (str == NULL) {
         return 0;
     }
 
@@ -49,7 +48,7 @@ time_t timestr2second_(const char* str)
         return 0;
     }
     cur_tm.tm_year -= 1900;
-    cur_tm.tm_mon  -= 1;
+    cur_tm.tm_mon -= 1;
 
     return mktime(&cur_tm);
 }
@@ -57,22 +56,20 @@ time_t timestr2second_(const char* str)
 
 int second2timestr_(char* timeStr, time_t sec)
 {
-    if(timeStr == NULL) {
+    if (timeStr == NULL) {
         return -1;
     }
-    struct tm cur_tm;
-
     memset(timeStr, 0, TIME_STR_LEN + 1);
-    LOCAL_TIME(&sec, &cur_tm);
 
+    struct tm now_tm = second2struct_(sec);
     sprintf(timeStr,
             "%04d-%02d-%02d %02d:%02d:%02d",
-            cur_tm.tm_year + 1900,
-            cur_tm.tm_mon + 1,
-            cur_tm.tm_mday,
-            cur_tm.tm_hour,
-            cur_tm.tm_min,
-            cur_tm.tm_sec);
+            now_tm.tm_year + 1900,
+            now_tm.tm_mon + 1,
+            now_tm.tm_mday,
+            now_tm.tm_hour,
+            now_tm.tm_min,
+            now_tm.tm_sec);
 
     return 0;
 }
@@ -88,14 +85,13 @@ int delayMs_(int ms)
     return 0;
 }
 
-/** 
+/**
  * \brief   基姆拉尔森计算星期公式
  * \retval  0-6：星期日~六
  */
 int getWeekDay_(int year, int month, int day)
 {
-    if (month == 1 || month == 2)
-    {
+    if (month == 1 || month == 2) {
         month += 12;
         year--;
     }
@@ -103,7 +99,7 @@ int getWeekDay_(int year, int month, int day)
     return (day + 2 * month + 3 * (month + 1) / 5 + year + year / 4 - year / 100 + year / 400) % 7;
 }
 
-/** 
+/**
  * \brief   判定一个时间的合法性，注意该检测包含非法日期检测
  * \retval  0-正确；-1-错误
  */
@@ -147,8 +143,8 @@ uint64_t timeMs_(void)
     uint64_t ret = 0;
 
 #ifdef _WIN32
-    FILETIME ft;
-    uint64_t now;
+    FILETIME              ft;
+    uint64_t              now;
     static const uint64_t DIFF_TO_UNIXTIME = 11644473600000LL;
 
     GetSystemTimeAsFileTime(&ft);
@@ -187,13 +183,13 @@ uint64_t cpuMs_(void)
 }
 
 
-#define TMR_SEC_FLAG  0x01 /* 过秒标志 */
-#define TMR_MIN_FLAG  0x02 /* 过分标志 */
-#define TMR_HOUR_FLAG 0x04 /* 过时标志 */
-#define TMR_DAY_FLAG  0x08 /* 过日标志 */
-#define TMR_MON_FLAG  0x10 /* 过月标志 */
-#define TMR_WEEK_FLAG 0x20 /* 过星期标志 */
-#define TMR_YEAR_FLAG 0x40 /* 过年标志 */
+#define TMR_SEC_FLAG  0x01    /* 过秒标志 */
+#define TMR_MIN_FLAG  0x02    /* 过分标志 */
+#define TMR_HOUR_FLAG 0x04    /* 过时标志 */
+#define TMR_DAY_FLAG  0x08    /* 过日标志 */
+#define TMR_MON_FLAG  0x10    /* 过月标志 */
+#define TMR_WEEK_FLAG 0x20    /* 过星期标志 */
+#define TMR_YEAR_FLAG 0x40    /* 过年标志 */
 
 static uint8_t   s_timerFlag; /* 时间标识: bit0-过秒 1-过分 2-过时 3-过日 4-过月 5-过星期 6-过年 */
 static struct tm s_lastTm;
@@ -213,7 +209,7 @@ int timerRunning_(void)
         s_lastTm = s_nowTm;
     }
 
-    s_timerFlag = 0; /* 清时间标识 */
+    s_timerFlag = 0;                         /* 清时间标识 */
 
     if (s_nowTm.tm_sec != s_lastTm.tm_sec) { /* 过秒 */
         s_lastTm.tm_sec = s_nowTm.tm_sec;
@@ -288,6 +284,3 @@ bool pastYear_(void)
 {
     return s_timerFlag & TMR_YEAR_FLAG;
 }
-
-
-

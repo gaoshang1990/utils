@@ -80,6 +80,7 @@
         "hal_thread.h": "c",
         "file_.h": "c",
         "public_.h": "c",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "time_.h": "c"
     },
 }
