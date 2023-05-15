@@ -2,16 +2,16 @@
 #include <string.h>
 #include <sys/stat.h>
 #ifdef _WIN32
-#    include <io.h>
+// #    include <io.h>
 #else
-#    include <unistd.h>
+#  include <unistd.h>
 #endif
 
-#include "file_.h"
+#include "file_s.h"
 
 
 /* 读取文件，返回字符串，由调用者释放 */
-const char* fileContent_(const char* path)
+const char* file_content_(const char* path)
 {
     uint32_t fileSize = 0;
     char*    content  = NULL;
@@ -36,7 +36,7 @@ const char* fileContent_(const char* path)
 }
 
 
-bool fileExist_(const char* filePath)
+bool file_exist_(const char* filePath)
 {
 #ifdef _WIN32
     return (_access(filePath, 0) == 0);
@@ -46,7 +46,7 @@ bool fileExist_(const char* filePath)
 }
 
 
-int fileSize_(const char* filePath)
+int file_size_(const char* filePath)
 {
     struct stat statbuf;
     if (stat(filePath, &statbuf) < 0) {
@@ -68,7 +68,7 @@ int fileSize_fd_(int fd)
 }
 
 
-int fileSize_fp_(FILE* fp)
+int file_size_fp_(FILE* fp)
 {
     if (fp == NULL) {
         return -1;
@@ -92,7 +92,7 @@ int mkdir_m_(const char* dir)
     for (int i = 0; i < len; i++) {
         if (dirTmp[i] == '\\' || dirTmp[i] == '/' || dirTmp[i] == '\0') {
             dirTmp[i] = '\0';
-            if (fileExist_(dirTmp) == false) {
+            if (file_exist_(dirTmp) == false) {
 #ifdef _WIN32
                 if (_mkdir(dirTmp) != 0) {
                     return -1;

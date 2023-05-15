@@ -3,8 +3,28 @@
 #include <string.h>
 #include <time.h>
 
-#include "math_.h"
-#include "public_.h"
+#include "math_s.h"
+
+#ifndef ffree
+#  define ffree(p)            \
+      do {                    \
+          if (p) {            \
+              free((void*)p); \
+              p = NULL;       \
+          }                   \
+      } while (0)
+#endif
+
+#ifndef sswap
+#  define sswap(x, y)       \
+      do {                  \
+          if ((x) != (y)) { \
+              (x) ^= (y);   \
+              (y) ^= (x);   \
+              (x) ^= (y);   \
+          }                 \
+      } while (0)
+#endif
 
 
 /* 返回 [min,max) 随机数 */
@@ -146,14 +166,14 @@ int numstrScalerDeal_(char* szNum, int scaler)
 /* 希尔排序 */
 int shellSort_(int* arr, int len)
 {
-    int i, j, k, tmp, gap; /* gap为步长 */
+    int i, j, k, tmp, gap;                   /* gap为步长 */
 
     for (gap = len / 2; gap > 0; gap /= 2) { /* 步长初始化为数组长度的一半，每次遍历后步长减半 */
         for (i = 0; i < gap; ++i) {          /* 变量i为每次分组的第一个元素下标 */
             for (j = i + gap; j < len; j += gap) {
                 /* 对步长为gap的元素进行直插排序，当gap为1时，就是直插排序 */
                 tmp = arr[j];
-                k   = j - gap; /* k初始化为j的前一个元素（与j相差gap长度） */
+                k   = j - gap;             /* k初始化为j的前一个元素（与j相差gap长度） */
                 while (k >= 0 && arr[k] > tmp) {
                     arr[k + gap] = arr[k]; /* 将在a[i]前且比tmp的值大的元素向后移动一位 */
                     k -= gap;

@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "string_.h"
+#include "string_s.h"
 
 
 /* 字符串全部转为小写字母 */

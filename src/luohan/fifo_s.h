@@ -13,12 +13,12 @@ typedef struct _Fifo_t_ Fifo_t;
 
 
 extern Fifo_t* fifo_init_(int QSize);
-extern bool    fifo_full_(Fifo_t* pFifo);
-extern bool    fifo_empty_(Fifo_t* pFifo);
-extern int     fifo_write_(Fifo_t* pFifo, void* data);
-extern int     fifo_read_(void* pDst, int dstLen, Fifo_t* pFifo);
-extern int     fifo_clear_(Fifo_t* pFifo);
-extern int     fifo_destroy_(Fifo_t* pFifo);
+extern bool    fifo_full_(Fifo_t* fifo);
+extern bool    fifo_empty_(Fifo_t* fifo);
+extern int     fifo_write_(Fifo_t* fifo, void* data);
+extern int     fifo_read_(void* dst, int dstLen, Fifo_t* fifo);
+extern int     fifo_clear_(Fifo_t* fifo);
+extern int     fifo_destroy_(Fifo_t* fifo);
 
 
 #ifdef __cplusplus
