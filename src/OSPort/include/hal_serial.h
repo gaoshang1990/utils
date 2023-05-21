@@ -57,8 +57,7 @@ SerialPort_create(const char* interfaceName, int baudRate, uint8_t dataBits, cha
 void
 SerialPort_destroy(SerialPort self);
 
-bool
-SerialPort_modify(SerialPort self,int baudRate, uint8_t dataBits, uint8_t parity, uint8_t stopBits);
+bool SerialPort_modify(SerialPort self, int baudRate, uint8_t dataBits, char parity, uint8_t stopBits);
 /**
  * \brief Open the serial interface
  *

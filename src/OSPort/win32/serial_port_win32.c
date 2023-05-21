@@ -51,29 +51,25 @@ SerialPort_destroy(SerialPort self)
 	}
 }
 
-bool
-SerialPort_modify(SerialPort self,int baudRate, uint8_t dataBits, uint8_t parity, uint8_t stopBits)
+bool SerialPort_modify(SerialPort self, int baudRate, uint8_t dataBits, char parity, uint8_t stopBits)
 {
-	//uint8_t u_parity;
+    if (self != NULL) {
+        SerialPort_close(self);
+        self->baudRate = baudRate;
+        self->dataBits = dataBits;
+        self->stopBits = stopBits;
 
-	if (self != NULL)
-	{
-		SerialPort_close(self);
-		self->baudRate = baudRate;
-		self->dataBits = dataBits;
-		self->stopBits = stopBits;
-		if(parity == 1)
-			self->parity = 'E';
-		else if(parity == 2)
-			self->parity = 'O';
-		else
-			self->parity = 'N';
+        parity = toupper(parity);
+        if (parity != 'E' || parity != 'O' || parity != 'N') {
+            parity = 'N';
+        }
+        self->parity = parity;
 
-		//printf("Init COM[%s]: %d,%c\r\n",self->interfaceName,self->baudRate,self->parity);
-		return SerialPort_open(self);
-	}
+        // printf("Init COM[%s]: %d,%c\r\n",self->interfaceName,self->baudRate,self->parity);
+        return SerialPort_open(self);
+    }
 
-	return false;
+    return false;
 }
 
 bool
