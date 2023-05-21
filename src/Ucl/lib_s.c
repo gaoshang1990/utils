@@ -88,7 +88,7 @@ int32_t buf2int32_(uint8_t* buf, uint16_t* offset, uint8_t mode)
                          (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0];
 
     if (offset) {
-        offset += 4;
+        *offset += sizeof(int32_t);
     }
     return ret;
 }

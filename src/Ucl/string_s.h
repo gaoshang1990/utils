@@ -8,8 +8,8 @@
 extern "C" {
 #endif
 
-extern int str2lower_(char* pStr);
-extern int str2upper_(char* pStr);
+extern int str2lower_(char* str, int len);
+extern int str2upper_(char* str, int len);
 
 #ifdef __cplusplus
 }
