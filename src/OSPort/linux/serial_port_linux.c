@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <termios.h>
 #include <fcntl.h>
 #include <unistd.h>

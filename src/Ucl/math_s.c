@@ -5,8 +5,8 @@
 
 #include "math_s.h"
 
-#ifndef ffree
-#  define ffree(p)            \
+#ifndef ffree_
+#  define ffree_(p)            \
       do {                    \
           if (p) {            \
               free((void*)p); \
@@ -15,8 +15,8 @@
       } while (0)
 #endif
 
-#ifndef sswap
-#  define sswap(x, y)       \
+#ifndef sswap_
+#  define sswap_(x, y)       \
       do {                  \
           if ((x) != (y)) { \
               (x) ^= (y);   \
@@ -87,9 +87,9 @@ int freeArray2_(void** arr, uint16_t rows)
     uint16_t i;
 
     for (i = 0; i < rows; i++) {
-        ffree(arr[i]);
+        ffree_(arr[i]);
     }
-    ffree(arr);
+    ffree_(arr);
 
     return 0;
 }
@@ -132,7 +132,7 @@ int numstrScalerDeal_(char* szNum, int scaler)
             }
         }
         for (i = 0; i < scaler; i++) {
-            sswap(szNum[pos], szNum[pos - 1]);
+            sswap_(szNum[pos], szNum[pos - 1]);
             pos--;
         }
     }
@@ -142,7 +142,7 @@ int numstrScalerDeal_(char* szNum, int scaler)
                 szNum[pos + 1] = '0';
                 szNum[pos + 2] = '\0';
             }
-            sswap(szNum[pos], szNum[pos + 1]);
+            sswap_(szNum[pos], szNum[pos + 1]);
             pos++;
         }
     }

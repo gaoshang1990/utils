@@ -28,8 +28,8 @@ extern "C" {
 #endif
 
 
-#ifndef sswap
-#  define sswap(x, y)       \
+#ifndef sswap_
+#  define sswap_(x, y)       \
       do {                  \
           if ((x) != (y)) { \
               (x) ^= (y);   \
@@ -39,7 +39,7 @@ extern "C" {
       } while (0)
 #endif
 
-#define ffree(p)            \
+#define ffree_(p)            \
     do {                    \
         if (p) {            \
             free((void*)p); \

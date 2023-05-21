@@ -4,6 +4,18 @@
 #include <string.h>
 
 
+#ifndef sswap_
+#  define sswap_(x, y)       \
+      do {                  \
+          if ((x) != (y)) { \
+              (x) ^= (y);   \
+              (y) ^= (x);   \
+              (x) ^= (y);   \
+          }                 \
+      } while (0)
+#endif
+
+
 /* BCD转HEX: 0x10 -> 10(0x0a) */
 uint8_t bcd2hex_(uint8_t bcd)
 {
@@ -43,12 +55,10 @@ int memcpy_r_(uint8_t* dst, uint8_t* src, int len)
 
 
 /* 指定长度的内存数据反转 */
-int memrev_(uint8_t* buff, int len)
+int memrev_(uint8_t* buf, int len)
 {
     for (int i = 0; i < len / 2; i++) {
-        uint8_t tmp       = buff[i];
-        buff[i]           = buff[len - i - 1];
-        buff[len - i - 1] = tmp;
+        sswap_(buf[i], buf[len - i - 1]);
     }
 
     return 0;

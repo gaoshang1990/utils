@@ -16,7 +16,7 @@ enum {
 uint8_t bcd2hex_(uint8_t bcd);
 uint8_t hex2bcd_(uint8_t hex);
 int     memcpy_r_(uint8_t* dst, uint8_t* src, int len);
-int     memrev_(uint8_t* buff, int len);
+int     memrev_(uint8_t* buf, int len);
 int16_t buf2int16_(uint8_t* buf, uint16_t* offset, uint8_t mode);
 int32_t buf2int32_(uint8_t* buf, uint16_t* offset, uint8_t mode);
 int64_t buf2int64_(uint8_t* buf, uint16_t* offset, uint8_t mode);
