@@ -60,7 +60,7 @@ bool SerialPort_modify(SerialPort self, int baudRate, uint8_t dataBits, char par
         self->stopBits = stopBits;
 
         parity = toupper(parity);
-        if (parity != 'E' || parity != 'O' || parity != 'N') {
+        if (parity != 'E' && parity != 'O' && parity != 'N') {
             parity = 'N';
         }
         self->parity = parity;
