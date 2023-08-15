@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#include "mlog_s.h"
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -48,7 +51,7 @@ extern "C" {
     } while (0)
 
 
-int                printBuf_(const char* str, uint8_t* pBuf, uint16_t bufLen);
+int                printBuf_(MLogLevel_t logLevel, const char* str, uint8_t* pBuf, uint16_t bufLen);
 extern int         printAppInfo_(const char* szName, const char* szVersion);
 extern const char* getLogFilePath_(const char* strAppName);
 extern const char* getConfigFilePath_(const char* strAppName, const char* strFileName);

@@ -26,9 +26,8 @@ struct tm second2struct_(time_t sec)
 
 time_t timestr2second_(const char* str)
 {
-    if (str == NULL) {
+    if (str == NULL)
         return 0;
-    }
 
     if (strlen(str) != TIME_STR_LEN) {
         printf("timestr[%s] error!\n", str); /* "2000-01-01 00:00:00" */
@@ -54,15 +53,15 @@ time_t timestr2second_(const char* str)
 }
 
 
-int second2timestr_(char* timeStr, time_t sec)
+int second2timestr_(char* timestr, time_t sec)
 {
-    if (timeStr == NULL) {
+    if (timestr == NULL)
         return -1;
-    }
-    memset(timeStr, 0, TIME_STR_LEN + 1);
+
+    memset(timestr, 0, TIME_STR_LEN + 1);
 
     struct tm now_tm = second2struct_(sec);
-    sprintf(timeStr,
+    sprintf(timestr,
             "%04d-%02d-%02d %02d:%02d:%02d",
             now_tm.tm_year + 1900,
             now_tm.tm_mon + 1,
@@ -127,7 +126,9 @@ int checkTime_(struct tm* pdate)
     /* ==0xffff ²»ÅÐ¶Ï */
     if ((pdate->tm_wday != 0xffff) &&
         (((pdate->tm_wday > 0) ? (pdate->tm_wday - 1) : 6) != getWeekDay_(year, month, day)))
+    {
         return 0;
+    }
 
     c[1] = 28 + IS_LEAP_YEAR(year);
     if (day <= c[month - 1])

@@ -13,6 +13,9 @@ extern "C" {
 #  define aabs(x) ((x) > 0 ? (x) : (-(x)))
 #endif
 
+#define ABS_DIFF(x, y) ((x) >= (y) ? ((x) - (y)) : ((y) - (x)))
+
+
 /* bit数组 */
 #define BIT_MASK(b) (1 << ((b) % 8))
 #define BIT_SET(a, b) ((a)[(b) / 8] |= BIT_MASK(b))    /* 设置位数组a第b位为1 */

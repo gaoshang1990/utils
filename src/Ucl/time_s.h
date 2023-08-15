@@ -24,7 +24,7 @@ typedef struct Timer_t Timer;
 extern const uint8_t g_monthTab[];
 
 extern time_t    timestr2second_(const char* str);
-extern int       second2timestr_(char* timeStr, time_t sec);
+extern int       second2timestr_(char* timestr, time_t sec);
 extern struct tm second2struct_(time_t sec);
 extern int       getWeekDay_(int year, int month, int day);
 extern int       checkTime_(struct tm* pdate);

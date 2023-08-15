@@ -7,24 +7,46 @@
 #  include <unistd.h>
 #endif
 
-#include "slog_s.h"
 #include "public_.h"
 
 
-int printBuf_(const char* str, uint8_t* pBuf, uint16_t bufLen)
+int printBuf_(MLogLevel_t logLevel, const char* str, uint8_t* pBuf, uint16_t bufLen)
 {
-    if (pBuf == NULL || bufLen == 0) {
+    if (pBuf == NULL || bufLen == 0)
         return -1;
-    }
 
-    if (str != NULL || strlen(str) > 0) {
-        SLOG_INFO("%s", str);
-    }
+    switch (logLevel) {
+    case M_TRACE: {
+        if (str != NULL || strlen(str) > 0)
+            SLOG_TRACE("%s", str);
 
-    for (int i = 0; i < bufLen; i++) {
-        SLOG_INFO_RAW("%02x ", pBuf[i]);
+        for (int i = 0; i < bufLen; i++) {
+            SLOG_TRACE_RAW("%02x ", pBuf[i]);
+        }
+        SLOG_TRACE_RAW("\n");
+    } break;
+
+    case M_DEBUG: {
+        if (str != NULL || strlen(str) > 0)
+            SLOG_DEBUG("%s", str);
+
+        for (int i = 0; i < bufLen; i++) {
+            SLOG_DEBUG_RAW("%02x ", pBuf[i]);
+        }
+        SLOG_DEBUG_RAW("\n");
+    } break;
+
+    case M_INFO:
+    default: {
+        if (str != NULL || strlen(str) > 0)
+            SLOG_INFO("%s", str);
+
+        for (int i = 0; i < bufLen; i++) {
+            SLOG_INFO_RAW("%02x ", pBuf[i]);
+        }
+        SLOG_INFO_RAW("\n");
+    } break;
     }
-    SLOG_INFO_RAW("\n");
 
     return 0;
 }
