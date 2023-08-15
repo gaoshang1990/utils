@@ -12,8 +12,7 @@ extern "C" {
 typedef enum _E_SlogLevel { S_TRACE = 0, S_DEBUG, S_INFO, S_WARN, S_ERROR } SlogLevel;
 
 
-/* 注意：目录目前只能自动新建一级文件夹 */
-int slogInit_(const char* log_dir, const char* file_name, SlogLevel level);
+int slogInit__(const char* log_dir, const char* file_name, SlogLevel level);
 /* 注意：接口一次输出的内容最大长度约为10KB，超出长度会发生截断。通过MAX_LOG_LINE宏可修改最大长度 */
 void slogWrite_(SlogLevel level, bool braw, const char* func_name, int line, const char* fmt, ...);
 

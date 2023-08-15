@@ -35,7 +35,7 @@
 #define SLOG_FILE_MAX_ROTATE (5)               /* rotate file max num */
 #define MAX_TIME_STR         (20)
 #define TIME_STR_FMT         "%04d-%02d-%02d %02d:%02d:%02d"
-#define MAX_FILE_PATH        (260)
+#define MAX_FILE_PATH_LEN                      (256)
 #define MAX_LOG_LINE         (10 * 1024)
 
 
@@ -95,11 +95,11 @@ typedef struct _T_LoggerCfg {
     SlogMutex mtx;          /* mutex for safety */
     SlogLevel logLevel;     /* output levle control*/
     int       inited;       /* initial flag*/
-    int       fileMaxSize;  /* file max size */
+    int       maxSize;      /* file max size */
     int       maxRotateCnt; /* max rotate file count */
 } Slogger;
 
-static Slogger g_logger = {{0}, {0}, NULL, NULL, S_TRACE, false, SLOG_FILE_MAX_SIZE, SLOG_FILE_MAX_ROTATE};
+static Slogger s_logger = {{0}, {0}, NULL, NULL, S_TRACE, false, SLOG_FILE_MAX_SIZE, SLOG_FILE_MAX_ROTATE};
 
 
 static SlogMutex s_slog_init_mutex(int initialValue)
@@ -185,22 +185,22 @@ static void s_get_curr_time(int timestr_size, char timestr[])
 }
 
 
-/* mv xxx_1.log => xxx_n.log, and xxx.log => xxx_0.log */
+/* move xxx_1.log => xxx_n.log, and xxx.log => xxx_0.log */
 static void s_slog_file_rotate(void)
 {
     char fileName[256] = {0}; /* file name without suffix */
     char suffix[16]    = {0}; /* file suffix */
-    sscanf(g_logger.fileName, "%[^.]%s", fileName, suffix);
+    sscanf(s_logger.fileName, "%[^.]%s", fileName, suffix);
 
     char oldPath[256] = {0};
     char newPath[256] = {0};
 
-    snprintf(oldPath, sizeof(oldPath) - 1, "%s/%s", g_logger.fileDir, fileName);
+    snprintf(oldPath, sizeof(oldPath) - 1, "%s/%s", s_logger.fileDir, fileName);
     size_t baseLen = strlen(oldPath);
     strncpy(newPath, oldPath, baseLen);
 
     const uint8_t suffixLen = 10;
-    for (int n = g_logger.maxRotateCnt - 1; n >= 0; --n) {
+    for (int n = s_logger.maxRotateCnt - 1; n >= 0; --n) {
         if (n == 0) {
             snprintf(oldPath + baseLen, suffixLen, "%s", suffix);
         }
@@ -214,11 +214,17 @@ static void s_slog_file_rotate(void)
 }
 
 
-/* 创建多级目录 */
-int s_mkdir_m_(const char* dir)
+/* Create a multi-level directory */
+static int s_mkdir_m_(const char* dir)
 {
+    if (dir == NULL) {
+        printf("s_mkdir_m_: dir is NULL\n");
+        return -1;
+    }
+
     int len = strlen(dir) + 1;
-    if (dir == NULL || len == 0 || len > 256) {
+    if (len <= 0 || len > MAX_FILE_PATH_LEN) {
+        printf("s_mkdir_m_: strlen(dir) = %d\n", len);
         return -1;
     }
 
@@ -228,9 +234,9 @@ int s_mkdir_m_(const char* dir)
     for (int i = 0; i < len; i++) {
         if (dirTmp[i] == '\\' || dirTmp[i] == '/' || dirTmp[i] == '\0') {
             dirTmp[i] = '\0';
-            if (access(dirTmp, 0) != 0) {
-                if (mkdir_(dirTmp, 0755) != 0) { /* FIXME:这里有问题 */
-                    printf("mkdir %s failed!\n", dirTmp);
+            if (strlen(dirTmp) > 0 && access(dirTmp, 0) != 0) {
+                if (mkdir_(dirTmp, 0755) != 0) {
+                    printf("mkdir[%s] failed\n", dirTmp);
                     return -1;
                 }
             }
@@ -249,48 +255,57 @@ int s_mkdir_m_(const char* dir)
  * \param   filename    log file name
  * \param   level       log output level
  */
-int slogInit_(const char* log_dir, const char* file_name, SlogLevel level)
+int slogInit__(const char* log_dir, const char* file_name, SlogLevel level)
 {
-    char log_filepath[MAX_FILE_PATH] = {0};
+    s_logger.logLevel = level;
 
-    g_logger.logLevel = level;
-    g_logger.mtx      = s_slog_init_mutex(1);
-    if (true == g_logger.inited) {
-        return true;
+    if (true == s_logger.inited) {
+        return 0;
     }
+
+    s_logger.mtx = s_slog_init_mutex(1);
 
     if (log_dir == NULL || file_name == NULL) {
         return -1;
     }
     if (s_mkdir_m_(log_dir) < 0) {
-        printf("mkdir failed!\n");
-        // return false; /* FIXME */
+        printf("mkdir[%s] failed\n", log_dir);
+        return -1;
     }
 
-    snprintf(g_logger.fileDir, sizeof(g_logger.fileDir) - 1, "%s", log_dir);
-    snprintf(g_logger.fileName, sizeof(g_logger.fileName) - 1, "%s", file_name);
-    snprintf(log_filepath, sizeof(log_filepath) - 1, "%s/%s", log_dir, g_logger.fileName);
-    g_logger.fp = fopen(log_filepath, "a+");
-    if (NULL == g_logger.fp) {
-        printf("open log file failed!\n");
-        return false;
-    }
-    g_logger.inited = true;
+    char log_filepath[MAX_FILE_PATH_LEN] = {0};
 
-    return true;
+    snprintf(s_logger.fileDir, sizeof(s_logger.fileDir) - 1, "%s", log_dir);
+    snprintf(s_logger.fileName, sizeof(s_logger.fileName) - 1, "%s", file_name);
+    snprintf(log_filepath, sizeof(log_filepath) - 1, "%s/%s", log_dir, s_logger.fileName);
+    s_logger.fp = fopen(log_filepath, "a+");
+    if (NULL == s_logger.fp) {
+        printf("open log file[%s] failed\n", log_filepath);
+        return -1;
+    }
+    s_logger.inited = true;
+
+    return 0;
 }
 
 
+/* warn: The maximum length of the output content at one time is 10KB,
+ * and exceeding the length will result in truncation.
+ * Through MAX_LOG_LINE macro can modify maximum length
+ */
 void slogWrite_(SlogLevel level, bool braw, const char* szFunc, int line, const char* fmt, ...)
 {
     static char log_content[MAX_LOG_LINE] = {0};
     static char log_line[MAX_LOG_LINE]    = {0};
 
-    if (g_logger.logLevel > level) {
+    if (s_logger.logLevel > level) {
         return;
     }
 
-    s_slog_lock(g_logger.mtx);
+    if (level > S_ERROR)
+        level = S_TRACE;
+
+    s_slog_lock(s_logger.mtx);
 
     va_list args;
     va_start(args, fmt);
@@ -331,6 +346,7 @@ void slogWrite_(SlogLevel level, bool braw, const char* szFunc, int line, const 
                      szFunc,
                      line,
                      log_content);
+            break;
         }
     }
     else {
@@ -363,32 +379,32 @@ void slogWrite_(SlogLevel level, bool braw, const char* szFunc, int line, const 
 #  endif /* SLOG_COLOR_ENABLE */
 #endif   /* SLOG_PRINT_ENABLE */
 
-    if (g_logger.inited == false) {
-        s_slog_unlock(g_logger.mtx);
+    if (s_logger.inited == false) {
+        s_slog_unlock(s_logger.mtx);
         return;
     }
 
     /* log_file_rotate_check */
-    int         fd = fileno(g_logger.fp);
+    int         fd = fileno(s_logger.fp);
     struct stat statbuf;
     fstat(fd, &statbuf);
     int fileSize = statbuf.st_size;
-    if (fileSize >= g_logger.fileMaxSize) {
-        fclose(g_logger.fp);
-        g_logger.fp = NULL;
+    if (fileSize >= s_logger.maxSize) {
+        fclose(s_logger.fp);
+        s_logger.fp = NULL;
         s_slog_file_rotate();
     }
     /* reopen the log file */
-    if (g_logger.fp == NULL) {
+    if (s_logger.fp == NULL) {
         char full_file_name[256] = {0};
-        snprintf(full_file_name, sizeof(full_file_name) - 1, "%s/%s", g_logger.fileDir, g_logger.fileName);
-        g_logger.fp = fopen(full_file_name, "a+");
+        snprintf(full_file_name, sizeof(full_file_name) - 1, "%s/%s", s_logger.fileDir, s_logger.fileName);
+        s_logger.fp = fopen(full_file_name, "a+");
     }
 
-    if (g_logger.fp) {
-        fwrite(log_line, sizeof(char), strlen(log_line), g_logger.fp);
-        fflush(g_logger.fp);
+    if (s_logger.fp) {
+        fwrite(log_line, sizeof(char), strlen(log_line), s_logger.fp);
+        fflush(s_logger.fp);
     }
 
-    s_slog_unlock(g_logger.mtx);
+    s_slog_unlock(s_logger.mtx);
 }
