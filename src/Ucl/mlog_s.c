@@ -324,9 +324,8 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
         return;
     }
 
-    if (s_loggers[logNo]->level > level) {
+    if (s_loggers[logNo]->level > level)
         return;
-    }
 
     if (level > M_ERROR)
         level = M_TRACE;
