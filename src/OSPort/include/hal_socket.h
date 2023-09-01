@@ -28,7 +28,7 @@ typedef struct sSocket* Socket;
 /** Opaque reference for a set of server and socket handles */
 typedef struct sHandleSet* HandleSet;
 
-typedef struct sSoketAddr* SocketAddr_t; /* xu add 2022-09-01 */
+typedef struct sSocketAddr* SocketAddr_t; /* xu add 2022-09-01 */
 
 /**
  * \brief Create a new connection handle set (HandleSet)
@@ -220,7 +220,14 @@ char* Socket_getPeerAddressStatic(Socket self, char* peerAddressString);
 void Socket_destroy(Socket self);
 
 
-extern int setSocketLinger(Socket self, uint16_t onoff, uint16_t linger);
+int setSocketLinger(Socket self, uint16_t onoff, uint16_t linger);
+
+void Socket_destroyAddr(SocketAddr_t addr);
+
+Socket UdpServerSocket_create(const char* address, int port);
+int    UdpSocket_read(Socket self, uint8_t* buf, int size, SocketAddr_t* from);
+int    UdpSocket_write(Socket self, uint8_t* buf, int size, SocketAddr_t to);
+
 
 #ifdef __cplusplus
 }
