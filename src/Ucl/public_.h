@@ -11,6 +11,21 @@ extern "C" {
 #endif
 
 
+#define UCL_VERSION "0.1"
+
+#ifndef UCL_API
+#  ifdef _WIN32
+#    if UCL_EXPORT
+#      define UCL_API __declspec(dllexport)
+#    else
+#      define UCL_API __declspec(dllimport)
+#    endif
+#  else
+#    define UCL_API
+#  endif
+#endif
+
+
 #ifndef NULL
 #  define NULL ((void*)0)
 #endif
@@ -32,7 +47,7 @@ extern "C" {
 
 
 #ifndef sswap_
-#  define sswap_(x, y)       \
+#  define sswap_(x, y)      \
       do {                  \
           if ((x) != (y)) { \
               (x) ^= (y);   \
@@ -42,7 +57,7 @@ extern "C" {
       } while (0)
 #endif
 
-#define ffree_(p)            \
+#define ffree_(p)           \
     do {                    \
         if (p) {            \
             free((void*)p); \

@@ -6,7 +6,13 @@
         "type": "shell",
         "options": {"cwd": "${workspaceFolder}/build/win32"},
         "command": "cmake",
-        "args": ["../..", "-G", "Visual Studio 16 2019", "-A Win32"],
+        "args": [
+            "../..",
+            "-G",
+            "Visual Studio 16 2019",
+            "-A Win32",
+            "-DCMAKE_BUILD_TYPE=Release"
+        ],
         "group": "build",
     }, {
         "label": "Compile_win32",
@@ -21,7 +27,14 @@
         "type": "shell",
         "options": {"cwd": "${workspaceFolder}/build/mingw"},
         "command": ["cmake"],
-        "args": ["-DWIN32=0", "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_TOOLCHAIN_FILE:STRING=CMake/arm-gcc-toolchain.cmake", "../..", "-G", "MinGW Makefiles"],
+        "args": [
+            "-DWIN32=0",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_TOOLCHAIN_FILE:STRING=CMake/arm-gcc-toolchain.cmake",
+            "../..",
+            "-G",
+            "MinGW Makefiles"
+        ],
         "group": "build",
     }, {
         "label":    "Compile_mingw",

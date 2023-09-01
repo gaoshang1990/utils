@@ -19,6 +19,7 @@
 
 
 #include "mlog_s.h"
+
 int mlog_test()
 {
     slogInit_("../../../log/test/test", "mlog.log", M_TRACE);
@@ -61,10 +62,36 @@ int mlog_test()
     return 0;
 }
 
+#include "hal_socket.h"
+
+static int _udpTest()
+{
+    Socket udpSock = UdpServerSocket_create(NULL, 9001);
+
+    SocketAddr_t addr = NULL;
+
+    uint8_t recv[4096] = {0};
+
+    for (;;) {
+        int recvLen = UdpSocket_read(udpSock, recv, sizeof(recv), &addr);
+        if (recvLen > 0) {
+            printf("%s\n", recv);
+            UdpSocket_write(udpSock, (uint8_t*)"hahaha", 7, addr);
+        }
+
+        delayMs_(10);
+    }
+
+    return 0;
+}
+
 
 int main(int argc, char* argv[])
 {
-    mlog_test();
+    // mlog_test();
+
+    _udpTest();
+    // udpServerTest();
 
     return 0;
 }
