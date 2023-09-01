@@ -12,12 +12,12 @@
 
 int printBuf_(MLogLevel_t logLevel, const char* str, uint8_t* pBuf, uint16_t bufLen)
 {
-    if (pBuf == NULL || bufLen == 0)
+    if (pBuf == NULL && bufLen == 0)
         return -1;
 
     switch (logLevel) {
     case M_TRACE: {
-        if (str != NULL || strlen(str) > 0)
+        if (str != NULL && strlen(str) > 0)
             SLOG_TRACE("%s", str);
 
         for (int i = 0; i < bufLen; i++) {
@@ -27,7 +27,7 @@ int printBuf_(MLogLevel_t logLevel, const char* str, uint8_t* pBuf, uint16_t buf
     } break;
 
     case M_DEBUG: {
-        if (str != NULL || strlen(str) > 0)
+        if (str != NULL && strlen(str) > 0)
             SLOG_DEBUG("%s", str);
 
         for (int i = 0; i < bufLen; i++) {
@@ -38,7 +38,7 @@ int printBuf_(MLogLevel_t logLevel, const char* str, uint8_t* pBuf, uint16_t buf
 
     case M_INFO:
     default: {
-        if (str != NULL || strlen(str) > 0)
+        if (str != NULL && strlen(str) > 0)
             SLOG_INFO("%s", str);
 
         for (int i = 0; i < bufLen; i++) {
@@ -84,7 +84,7 @@ int printAppInfo_(const char* szName, const char* szVersion)
     uint8_t maxLen = 0;
 
     sprintf(strAppInfo, "* This is \"%s\" App", szName);
-    sprintf(strAppVer,  "* Version: %s", szVersion);
+    sprintf(strAppVer, "* Version: %s", szVersion);
     sprintf(strAppDate, "* Build time: %s, %s", __DATE__, __TIME__);
 
     if (strlen(strAppInfo) > maxLen) {
@@ -97,9 +97,9 @@ int printAppInfo_(const char* szName, const char* szVersion)
         maxLen = (uint8_t)strlen(strAppDate);
     }
 
-    makeStarStr(strStars,   maxLen + 2);
+    makeStarStr(strStars, maxLen + 2);
     makeInfoStr(strAppInfo, maxLen + 2);
-    makeInfoStr(strAppVer,  maxLen + 2);
+    makeInfoStr(strAppVer, maxLen + 2);
     makeInfoStr(strAppDate, maxLen + 2);
 
     SLOG_INFO_RAW("\n");
