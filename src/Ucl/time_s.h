@@ -21,7 +21,7 @@ extern "C" {
 
 typedef struct Timer_t Timer;
 
-extern const uint8_t g_monthTab[];
+extern const uint8_t _monthTab[];
 
 extern time_t    timestr2second_(const char* str);
 extern int       second2timestr_(char* timestr, time_t sec);

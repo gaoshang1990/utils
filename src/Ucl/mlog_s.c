@@ -217,16 +217,16 @@ static void s_rotateFile(int logNo)
 
 
 /* Create a multi-level directory */
-static int s_mkdir_m_(const char* dir)
+static int _mkdir_m_(const char* dir)
 {
     if (dir == NULL) {
-        printf("s_mkdir_m_: dir is NULL\n");
+        printf("_mkdir_m_: dir is NULL\n");
         return -1;
     }
 
     int len = strlen(dir) + 1;
     if (len <= 0 || len > MAX_FILE_PATH_LEN) {
-        printf("s_mkdir_m_: strlen(dir) = %d\n", len);
+        printf("_mkdir_m_: strlen(dir) = %d\n", len);
         return -1;
     }
 
@@ -279,7 +279,7 @@ int mlogInit_(int logNo, const char* logDir, const char* fileName, MLogLevel_t l
         return -1;
     }
 
-    if (s_mkdir_m_(logDir) < 0) {
+    if (_mkdir_m_(logDir) < 0) {
         printf("mlogInit_: mkdir[%s] failed\n", logDir);
         return -1;
     }

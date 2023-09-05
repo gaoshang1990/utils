@@ -81,6 +81,7 @@
         "file_.h": "c",
         "public_.h": "c",
         "unistd.h": "c",
-        "time_.h": "c"
+        "time_.h": "c",
+        "stat.h": "c"
     },
 }

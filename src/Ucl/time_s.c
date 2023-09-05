@@ -11,7 +11,7 @@
 #include "time_s.h"
 
 
-const uint8_t g_monthTab[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+const uint8_t _monthTab[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 
 /* 秒转换为时间结构体 */
@@ -184,13 +184,13 @@ uint64_t cpuMs_(void)
 }
 
 
-#define TMR_SEC_FLAG  0x01    /* 过秒标志 */
-#define TMR_MIN_FLAG  0x02    /* 过分标志 */
-#define TMR_HOUR_FLAG 0x04    /* 过时标志 */
-#define TMR_DAY_FLAG  0x08    /* 过日标志 */
-#define TMR_MON_FLAG  0x10    /* 过月标志 */
-#define TMR_WEEK_FLAG 0x20    /* 过星期标志 */
-#define TMR_YEAR_FLAG 0x40    /* 过年标志 */
+#define TMR_SEC_FLAG  0x01 /* 过秒标志 */
+#define TMR_MIN_FLAG  0x02 /* 过分标志 */
+#define TMR_HOUR_FLAG 0x04 /* 过时标志 */
+#define TMR_DAY_FLAG  0x08 /* 过日标志 */
+#define TMR_MON_FLAG  0x10 /* 过月标志 */
+#define TMR_WEEK_FLAG 0x20 /* 过星期标志 */
+#define TMR_YEAR_FLAG 0x40 /* 过年标志 */
 
 static uint8_t   s_timerFlag; /* 时间标识: bit0-过秒 1-过分 2-过时 3-过日 4-过月 5-过星期 6-过年 */
 static struct tm s_lastTm;
@@ -210,7 +210,7 @@ int timerRunning_(void)
         s_lastTm = s_nowTm;
     }
 
-    s_timerFlag = 0;                         /* 清时间标识 */
+    s_timerFlag = 0; /* 清时间标识 */
 
     if (s_nowTm.tm_sec != s_lastTm.tm_sec) { /* 过秒 */
         s_lastTm.tm_sec = s_nowTm.tm_sec;

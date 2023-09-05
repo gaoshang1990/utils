@@ -52,27 +52,25 @@ int printBuf_(MLogLevel_t logLevel, const char* str, uint8_t* pBuf, uint16_t buf
 }
 
 
-static int makeStarStr(char* str, uint8_t nb)
+static int _makeStarStr(char* str, uint8_t nb)
 {
-    int8_t i = 0;
-    for (i = 0; i < nb; i++) {
+    for (uint8_t i = 0; i < nb; i++) {
         str[i] = '*';
     }
     return 0;
 }
 
-static int makeInfoStr(char* str, uint8_t nb)
-{
-    uint8_t i   = 0;
-    uint8_t len = (uint8_t)strlen(str);
 
-    for (i = len; i < nb - 1; i++) {
+static int _makeInfoStr(char* str, uint8_t nb)
+{
+    for (uint8_t i = (uint8_t)strlen(str); i < nb - 1; i++) {
         str[i] = ' ';
     }
     str[nb - 1] = '*';
 
     return 0;
 }
+
 
 int printAppInfo_(const char* szName, const char* szVersion)
 {
@@ -97,10 +95,10 @@ int printAppInfo_(const char* szName, const char* szVersion)
         maxLen = (uint8_t)strlen(strAppDate);
     }
 
-    makeStarStr(strStars, maxLen + 2);
-    makeInfoStr(strAppInfo, maxLen + 2);
-    makeInfoStr(strAppVer, maxLen + 2);
-    makeInfoStr(strAppDate, maxLen + 2);
+    _makeStarStr(strStars, maxLen + 2);
+    _makeInfoStr(strAppInfo, maxLen + 2);
+    _makeInfoStr(strAppVer, maxLen + 2);
+    _makeInfoStr(strAppDate, maxLen + 2);
 
     SLOG_INFO_RAW("\n");
     SLOG_INFO("%s", strStars);
@@ -223,7 +221,7 @@ const char* getHistoryFilePath_(const char* strAppName)
     strcpy(strBuffer, szAbsAppNamePath);
 #else
     sprintf(strBuffer, "./history/");
-#endif // WIN32
+#endif /* _WIN32 */
 
     return strBuffer;
 }

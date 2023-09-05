@@ -1,14 +1,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#ifdef _WIN32
-// #    include <io.h>
-#else
+#ifndef _WIN32
 #  include <unistd.h>
 #endif
 
 #include "file_s.h"
 
+#ifdef _WIN32
+#  define mkdir_(path, arg) _mkdir(path)
+#  define access            _access
+#else
+#  define mkdir_(path, arg) mkdir(path, arg)
+#endif
+
+#define MAX_FILE_PATH_LEN (256)
 
 /* 读取文件，返回字符串，由调用者释放 */
 const char* file_content_(const char* path)
@@ -78,11 +84,17 @@ int file_size_fp_(FILE* fp)
 }
 
 
-/* 创建多级目录 */
+/* Create a multi-level directory */
 int mkdir_m_(const char* dir)
 {
+    if (dir == NULL) {
+        printf("_mkdir_m_: dir is NULL\n");
+        return -1;
+    }
+
     int len = strlen(dir) + 1;
-    if (dir == NULL || len == 0 || len > 256) {
+    if (len <= 0 || len > MAX_FILE_PATH_LEN) {
+        printf("_mkdir_m_: strlen(dir) = %d\n", len);
         return -1;
     }
 
@@ -92,17 +104,11 @@ int mkdir_m_(const char* dir)
     for (int i = 0; i < len; i++) {
         if (dirTmp[i] == '\\' || dirTmp[i] == '/' || dirTmp[i] == '\0') {
             dirTmp[i] = '\0';
-            if (file_exist_(dirTmp) == false) {
-#ifdef _WIN32
-                if (_mkdir(dirTmp) != 0) {
+            if (strlen(dirTmp) > 0 && access(dirTmp, 0) != 0) {
+                if (mkdir_(dirTmp, 0755) != 0) {
+                    printf("mkdir[%s] failed\n", dirTmp);
                     return -1;
                 }
-#else
-                if (mkdir(dirTmp, 0755) != 0) { /* FIXME:这里有问题 */
-                    printf("mkdir %s failed!\n", dirTmp);
-                    return -1;
-                }
-#endif
             }
             dirTmp[i] = dir[i];
         }

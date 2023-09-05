@@ -4,18 +4,6 @@
 #include <string.h>
 
 
-#ifndef sswap_
-#  define sswap_(x, y)       \
-      do {                  \
-          if ((x) != (y)) { \
-              (x) ^= (y);   \
-              (y) ^= (x);   \
-              (x) ^= (y);   \
-          }                 \
-      } while (0)
-#endif
-
-
 /* BCD转HEX: 0x10 -> 10(0x0a) */
 uint8_t bcd2hex_(uint8_t bcd)
 {
@@ -58,7 +46,9 @@ int memcpy_r_(uint8_t* dst, uint8_t* src, int len)
 int memrev_(uint8_t* buf, int len)
 {
     for (int i = 0; i < len / 2; i++) {
-        sswap_(buf[i], buf[len - i - 1]);
+        uint8_t tmp      = buf[i];
+        buf[i]           = buf[len - i - 1];
+        buf[len - i - 1] = tmp;
     }
 
     return 0;
@@ -149,25 +139,20 @@ double buf2double_(uint8_t* buf, uint16_t* offset, uint8_t mode)
 /* 字符串（最长支持8位）转16进制数 */
 int atox_(const char* str, uint8_t len)
 {
+    if (len > 8) /* 最长支持8位 */
+        len = 8;
+
     int hex = 0;
 
-    if (len > 8) { /* 最长支持8位 */
-        len = 8;
-    }
-    uint8_t i;
-    for (i = 0; i < len; i++) {
-        if (str[i] >= '0' && str[i] <= '9') {
+    for (uint8_t i = 0; i < len; i++) {
+        if (str[i] >= '0' && str[i] <= '9')
             hex = hex * 16 + str[i] - '0';
-        }
-        else if (str[i] >= 'a' && str[i] <= 'f') {
+        else if (str[i] >= 'a' && str[i] <= 'f')
             hex = hex * 16 + str[i] - 'a' + 10;
-        }
-        else if (str[i] >= 'A' && str[i] <= 'F') {
+        else if (str[i] >= 'A' && str[i] <= 'F')
             hex = hex * 16 + str[i] - 'A' + 10;
-        }
-        else {
+        else
             return -1;
-        }
     }
 
     return hex;
@@ -185,8 +170,7 @@ int str2hex_(uint8_t* buf, int bufSize, const char* str)
     uint16_t bufLen = 0;
     char     tmp[2] = {0};
 
-    uint16_t i;
-    for (i = 0; i < strlen(str); i++) {
+    for (uint16_t i = 0; i < strlen(str); i++) {
         if ((str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'f') || (str[i] >= 'A' && str[i] <= 'F')) {
             tmp[j++] = str[i];
             if (j >= 2) {
@@ -211,10 +195,8 @@ int hex2str_(char* str, uint8_t* buf, uint16_t bufLen)
         return -1;
     }
 
-    uint16_t i;
-    for (i = 0; i < bufLen; i++) {
+    for (uint16_t i = 0; i < bufLen; i++)
         sprintf(str + i * 2, "%02x", buf[i]);
-    }
 
     return 0;
 }
