@@ -19,7 +19,7 @@ extern "C" {
 #  define LOCAL_TIME(pSec, pTm) localtime_r(pSec, pTm)
 #endif
 
-typedef struct Timer_t Timer;
+typedef struct _Timer_t_* Timer_t;
 
 extern const uint8_t _monthTab[];
 
@@ -32,15 +32,39 @@ extern int       delayMs_(int ms);
 extern uint64_t  timeMs_(void);
 extern uint64_t  cpuMs_(void);
 
-/* ¶¨Ê±Æ÷ */
-extern int  timerRunning_(void);
-extern bool pastSecond_(void);
-extern bool pastMinute_(void);
-extern bool pastHour_(void);
-extern bool pastDay_(void);
-extern bool pastWeek_(void);
-extern bool pastMonth_(void);
-extern bool pastYear_(void);
+/* timer demo:
+    Timer_t timer = timerInit_(100);
+    while (1) {
+        timerRunning_(timer);
+
+        if (pastSecond_(timer))
+            printf("past second\n");
+
+        if (pastSettedMs_(timer))
+            printf("past 100ms\n");
+
+        delayMs_(10);
+    }
+ */
+
+/**
+ * \param   settedMs: unit: ms, if > 0, TMR_USER_FLAG can be used
+ */
+Timer_t timerInit_(uint64_t settedMs);
+
+/**
+ * \brief   call this function in the start of loop
+ */
+int     timerRunning_(Timer_t timer);
+
+bool    pastSettedMs_(Timer_t timer);
+bool    pastSecond_(Timer_t timer);
+bool    pastMinute_(Timer_t timer);
+bool    pastHour_(Timer_t timer);
+bool    pastDay_(Timer_t timer);
+bool    pastWeek_(Timer_t timer);
+bool    pastMonth_(Timer_t timer);
+bool    pastYear_(Timer_t timer);
 
 
 #ifdef __cplusplus

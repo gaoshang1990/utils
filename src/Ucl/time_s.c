@@ -191,97 +191,131 @@ uint64_t cpuMs_(void)
 #define TMR_MON_FLAG  0x10 /* 过月标志 */
 #define TMR_WEEK_FLAG 0x20 /* 过星期标志 */
 #define TMR_YEAR_FLAG 0x40 /* 过年标志 */
-
-static uint8_t   s_timerFlag; /* 时间标识: bit0-过秒 1-过分 2-过时 3-过日 4-过月 5-过星期 6-过年 */
-static struct tm s_lastTm;
-static struct tm s_nowTm;
-static time_t    s_nowSec = 0;
-static uint64_t  s_nowMs  = 0;
+#define TMR_USER_FLAG 0x80 /* 自定义标志 */
 
 
-/* 每次大循环开始处理被调用，用于时间标识的管理 */
-int timerRunning_(void)
+struct _Timer_t_ {
+    uint8_t   flag; /* bit: 0-过秒 1-过分 2-过时 3-过日 4-过月 5-过星期 6-过年 7-过自定义时间 */
+    uint64_t  settedMs; /* unit: ms, if > 0, TMR_USER_FLAG can be used */
+    uint64_t  lastMs;
+    struct tm lastTm;
+    struct tm nowTm;
+};
+
+
+/**
+ * \param   settedMs: unit: ms, if > 0, TMR_USER_FLAG can be used
+ */
+Timer_t timerInit_(uint64_t settedMs)
 {
-    /* 刷新当前时间 */
-    s_nowMs  = cpuMs_();
-    s_nowSec = time(NULL);
-    LOCAL_TIME(&s_nowSec, &s_nowTm);
-    if (s_lastTm.tm_year == 0) { /* 第一次运行调用 */
-        s_lastTm = s_nowTm;
+    Timer_t timer = (Timer_t)malloc(sizeof(struct _Timer_t_));
+    if (timer != NULL) {
+        time_t nowSec = time(NULL);
+        LOCAL_TIME(&nowSec, &timer->lastTm);
+
+        if (settedMs > 0) {
+            timer->settedMs = settedMs;
+            timer->lastMs   = cpuMs_();
+        }
     }
 
-    s_timerFlag = 0; /* 清时间标识 */
+    return timer;
+}
 
-    if (s_nowTm.tm_sec != s_lastTm.tm_sec) { /* 过秒 */
-        s_lastTm.tm_sec = s_nowTm.tm_sec;
-        s_timerFlag |= TMR_SEC_FLAG;
+
+/**
+ * \brief   call this function in the start of loop
+ */
+int timerRunning_(Timer_t timer)
+{
+    timer->flag = 0; /* clear timer flag */
+
+    time_t nowSec = time(NULL);
+    LOCAL_TIME(&nowSec, &timer->nowTm);
+
+    if (timer->settedMs > 0) {
+        uint64_t nowMs = cpuMs_();
+        if (nowMs - timer->lastMs > timer->settedMs) {
+            timer->lastMs = nowMs;
+            timer->flag |= TMR_USER_FLAG;
+        }
     }
-    if (s_nowTm.tm_min != s_lastTm.tm_min) { /* 过分 */
-        s_lastTm.tm_min = s_nowTm.tm_min;
-        s_timerFlag |= TMR_MIN_FLAG;
+    if (timer->nowTm.tm_sec != timer->lastTm.tm_sec) {
+        timer->lastTm.tm_sec = timer->nowTm.tm_sec;
+        timer->flag |= TMR_SEC_FLAG;
     }
-    if (s_nowTm.tm_hour != s_lastTm.tm_hour) { /* 过时 */
-        s_lastTm.tm_hour = s_nowTm.tm_hour;
-        s_timerFlag |= TMR_HOUR_FLAG;
+    if (timer->nowTm.tm_min != timer->lastTm.tm_min) {
+        timer->lastTm.tm_min = timer->nowTm.tm_min;
+        timer->flag |= TMR_MIN_FLAG;
     }
-    if (s_nowTm.tm_mday != s_lastTm.tm_mday) { /* 过日 */
-        s_lastTm.tm_mday = s_nowTm.tm_mday;
-        s_timerFlag |= TMR_DAY_FLAG;
+    if (timer->nowTm.tm_hour != timer->lastTm.tm_hour) {
+        timer->lastTm.tm_hour = timer->nowTm.tm_hour;
+        timer->flag |= TMR_HOUR_FLAG;
     }
-    if (s_nowTm.tm_mon != s_lastTm.tm_mon) { /* 过月 */
-        s_lastTm.tm_mon = s_nowTm.tm_mon;
-        s_timerFlag |= TMR_MON_FLAG;
+    if (timer->nowTm.tm_mday != timer->lastTm.tm_mday) {
+        timer->lastTm.tm_mday = timer->nowTm.tm_mday;
+        timer->flag |= TMR_DAY_FLAG;
     }
-    if (s_nowTm.tm_wday != s_lastTm.tm_wday) { /* 过星期 */
-        s_lastTm.tm_wday = s_nowTm.tm_wday;
-        s_timerFlag |= TMR_WEEK_FLAG;
+    if (timer->nowTm.tm_mon != timer->lastTm.tm_mon) {
+        timer->lastTm.tm_mon = timer->nowTm.tm_mon;
+        timer->flag |= TMR_MON_FLAG;
     }
-    if (s_nowTm.tm_year != s_lastTm.tm_year) { /* 过年 */
-        s_lastTm.tm_year = s_nowTm.tm_year;
-        s_timerFlag |= TMR_YEAR_FLAG;
+    if (timer->nowTm.tm_year != timer->lastTm.tm_year) {
+        timer->lastTm.tm_year = timer->nowTm.tm_year;
+        timer->flag |= TMR_YEAR_FLAG;
+    }
+    if (timer->nowTm.tm_min != timer->lastTm.tm_min) {
+        timer->lastTm.tm_min = timer->nowTm.tm_min;
+        timer->flag |= TMR_MIN_FLAG;
     }
 
     return 0;
 }
 
 
-bool pastSecond_(void)
+bool pastSettedMs_(Timer_t timer)
 {
-    return s_timerFlag & TMR_SEC_FLAG;
+    return timer->flag & TMR_USER_FLAG;
 }
 
 
-bool pastMinute_(void)
+bool pastSecond_(Timer_t timer)
 {
-    return s_timerFlag & TMR_MIN_FLAG;
+    return timer->flag & TMR_SEC_FLAG;
 }
 
 
-bool pastHour_(void)
+bool pastMinute_(Timer_t timer)
 {
-    return s_timerFlag & TMR_HOUR_FLAG;
+    return timer->flag & TMR_MIN_FLAG;
 }
 
 
-bool pastDay_(void)
+bool pastHour_(Timer_t timer)
 {
-    return s_timerFlag & TMR_DAY_FLAG;
+    return timer->flag & TMR_HOUR_FLAG;
 }
 
 
-bool pastMonth_(void)
+bool pastDay_(Timer_t timer)
 {
-    return s_timerFlag & TMR_MON_FLAG;
+    return timer->flag & TMR_DAY_FLAG;
 }
 
 
-bool pastWeek_(void)
+bool pastMonth_(Timer_t timer)
 {
-    return s_timerFlag & TMR_WEEK_FLAG;
+    return timer->flag & TMR_MON_FLAG;
 }
 
 
-bool pastYear_(void)
+bool pastWeek_(Timer_t timer)
 {
-    return s_timerFlag & TMR_YEAR_FLAG;
+    return timer->flag & TMR_WEEK_FLAG;
+}
+
+
+bool pastYear_(Timer_t timer)
+{
+    return timer->flag & TMR_YEAR_FLAG;
 }
