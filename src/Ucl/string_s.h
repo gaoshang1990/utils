@@ -1,5 +1,5 @@
-#ifndef USER_STRING_H
-#define USER_STRING_H
+#ifndef _UCL_STRING_H_
+#define _UCL_STRING_H_
 
 #include <stdint.h>
 
@@ -8,12 +8,12 @@
 extern "C" {
 #endif
 
-extern int str2lower_(char* str, int len);
-extern int str2upper_(char* str, int len);
+int str2lower_(char* str, int len);
+int str2upper_(char* str, int len);
 
 #ifdef __cplusplus
 }
 #endif
 
 
-#endif /* USER_STRING_H */
+#endif /* _UCL_STRING_H_ */
