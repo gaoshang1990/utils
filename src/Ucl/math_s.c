@@ -110,7 +110,10 @@ int shiftDecimalPoint_(char* szNum, int scaler)
             break;
         }
     }
-    szNum[pos] = '.'; /* 如果没有小数点 则在最后加一个 */
+    if (pos == len) {
+        szNum[pos]     = '.'; /* 如果没有小数点 则在最后加一个 */
+        szNum[pos + 1] = '\0';
+    }
 
     if (scaler < 0) { /* 小数点左移 */
         scaler *= -1;
