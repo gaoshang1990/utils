@@ -12,12 +12,13 @@ extern "C" {
 /**
  * \brief   caller should free content after use
  */
-const char* file_content_(const char* path);
+const char* fileContent_(const char* path);
 
-bool        file_exist_(const char* filePath);
-int         mkdir_m_(const char* dir);
-int         file_size_(const char* filePath);
-int         file_size_fp_(FILE* fp);
+int  mkdir_m_(const char* dir);
+bool fileExist_(const char* filePath);
+int  fileSize_(const char* filePath);
+int  fileSize_fd_(int fd);
+int  fileSize_fp_(FILE* fp);
 
 #ifdef __cplusplus
 }

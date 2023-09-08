@@ -33,7 +33,7 @@ int randNum_(int min, int max);
 void** createArray2_(uint16_t rows, uint16_t cols, ArrayType_e type);
 int    freeArray2_(void** arr, uint16_t rows);
 int    swapInt8_(int8_t* a, int8_t* b);
-int    numstrScalerDeal_(char* szNum, int scaler);
+int    shiftDecimalPoint_(char* szNum, int scaler);
 int    shellSort_(int* arr, int len);
 
 

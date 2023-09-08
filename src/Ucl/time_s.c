@@ -14,7 +14,6 @@
 const uint8_t _monthTab[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 
-/* 秒转换为时间结构体 */
 struct tm second2struct_(time_t sec)
 {
     struct tm tms;
@@ -84,6 +83,7 @@ int delayMs_(int ms)
     return 0;
 }
 
+
 /**
  * \brief   基姆拉尔森计算星期公式
  * \retval  0-6：星期日~六
@@ -97,6 +97,7 @@ int getWeekDay_(int year, int month, int day)
 
     return (day + 2 * month + 3 * (month + 1) / 5 + year + year / 4 - year / 100 + year / 400) % 7;
 }
+
 
 /**
  * \brief   判定一个时间的合法性，注意该检测包含非法日期检测

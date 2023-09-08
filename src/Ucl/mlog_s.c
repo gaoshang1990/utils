@@ -18,17 +18,15 @@
 
 
 #ifdef _WIN32
-#  define mkdir_(path, arg)     _mkdir(path)
+#  define mkdir(path, arg)     _mkdir(path)
 #  define access                _access
 #  define snprintf              _snprintf
 #  define LOCAL_TIME(pSec, pTm) localtime_s(pTm, pSec)
 #  define MLOG_COLOR_ENABLE     /* enalbe print color. support on linux/unix platform */
 #else
-#  define mkdir_(path, arg)     mkdir(path, arg)
 #  define LOCAL_TIME(pSec, pTm) localtime_r(pSec, pTm)
 #  define MLOG_COLOR_ENABLE     /* enalbe print color. support on linux/unix platform */
 #endif
-
 
 #define MLOG_PRINT_ENABLE                      /* enalbe print output to console fd=stdout */
 #define MLOG_FILE_MAX_SIZE   (5 * 1024 * 1024) /* max size of logfile */
@@ -87,7 +85,7 @@
 
 typedef void* MLogMutex_t;
 
-static const char* s_szLevel[] = {"[TRACE]", "[DEBUG]", "[INFO ]", "[WARN ]", "[ERROR]"};
+static const char* _szLevel[] = {"[TRACE]", "[DEBUG]", "[INFO ]", "[WARN ]", "[ERROR]"};
 
 typedef struct _LoggerCfg_ {
     char        dir[128]; /* file path */
@@ -104,7 +102,7 @@ typedef struct _LoggerCfg_ {
 static MLogger_t* s_loggers[MAX_LOG_NUM] = {NULL};
 
 
-static MLogMutex_t s_mlogInitMutex(int initialValue)
+static MLogMutex_t _mlogInitMutex(int initialValue)
 {
 #ifdef _WIN32
     HANDLE self = CreateSemaphore(NULL, initialValue, 1, NULL);
@@ -117,7 +115,7 @@ static MLogMutex_t s_mlogInitMutex(int initialValue)
 }
 
 
-static void s_mlogLock(MLogMutex_t self)
+static void _mlogLock(MLogMutex_t self)
 {
 #ifdef _WIN32
     WaitForSingleObject((HANDLE)self, INFINITE);
@@ -127,7 +125,7 @@ static void s_mlogLock(MLogMutex_t self)
 }
 
 
-static void s_mlogUnlock(MLogMutex_t self)
+static void _mlogUnlock(MLogMutex_t self)
 {
 #ifdef _WIN32
     ReleaseSemaphore((HANDLE)self, 1, NULL);
@@ -137,7 +135,7 @@ static void s_mlogUnlock(MLogMutex_t self)
 }
 
 
-static char* s_getProcessInfo(void)
+static char* _getProcessInfo(void)
 {
     static char cur_process_info[10] = {0};
 
@@ -153,7 +151,7 @@ static char* s_getProcessInfo(void)
 }
 
 
-static char* s_getThreadInfo(void)
+static char* _getThreadInfo(void)
 {
     static char cur_thread_info[10] = {0};
 
@@ -169,7 +167,7 @@ static char* s_getThreadInfo(void)
 }
 
 
-static void s_getCurrTime(int timestr_size, char timestr[])
+static void _getCurrTime(int timestr_size, char timestr[])
 {
     struct tm nowTm;
     time_t    nowSec = time(NULL);
@@ -188,7 +186,7 @@ static void s_getCurrTime(int timestr_size, char timestr[])
 
 
 /* move xxx_1.log => xxx_n.log, and xxx.log => xxx_0.log */
-static void s_rotateFile(int logNo)
+static void _rotateFile(int logNo)
 {
     char fileName[256] = {0}; /* file name without suffix */
     char suffix[16]    = {0}; /* file suffix */
@@ -237,7 +235,7 @@ static int _mkdir_m_(const char* dir)
         if (dirTmp[i] == '\\' || dirTmp[i] == '/' || dirTmp[i] == '\0') {
             dirTmp[i] = '\0';
             if (strlen(dirTmp) > 0 && access(dirTmp, 0) != 0) {
-                if (mkdir_(dirTmp, 0755) != 0) {
+                if (mkdir(dirTmp, 0755) != 0) {
                     printf("mkdir[%s] failed\n", dirTmp);
                     return -1;
                 }
@@ -296,7 +294,7 @@ int mlogInit_(int logNo, const char* logDir, const char* fileName, MLogLevel_t l
         return -1;
     }
 
-    s_loggers[logNo]->mtx    = s_mlogInitMutex(1);
+    s_loggers[logNo]->mtx    = _mlogInitMutex(1);
     s_loggers[logNo]->inited = true;
 
     return 0;
@@ -330,7 +328,7 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
     if (level > M_ERROR)
         level = M_TRACE;
 
-    s_mlogLock(s_loggers[logNo]->mtx);
+    _mlogLock(s_loggers[logNo]->mtx);
 
     va_list args;
     va_start(args, fmt);
@@ -339,9 +337,9 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
 
     if (!braw) {
         char timestr[MAX_TIME_STR] = {0};
-        s_getCurrTime(sizeof(timestr), timestr); /* time */
-        char* process_info = s_getProcessInfo(); /* pid */
-        char* thread_info  = s_getThreadInfo();  /* tid */
+        _getCurrTime(sizeof(timestr), timestr); /* time */
+        char* process_info = _getProcessInfo(); /* pid */
+        char* thread_info  = _getThreadInfo();  /* tid */
 
         /* log format for different level please modify below */
         switch (level) {
@@ -350,7 +348,7 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
             snprintf(logOutput,
                      sizeof(logOutput) - 1,
                      "%s %s- %s:%d | %s\n",
-                     s_szLevel[level],
+                     _szLevel[level],
                      timestr,
                      szFunc,
                      line,
@@ -360,7 +358,7 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
             snprintf(logOutput,
                      sizeof(logOutput) - 1,
                      "%s %s [%s %s]- %s:%d | %s\n",
-                     s_szLevel[level],
+                     _szLevel[level],
                      timestr,
                      process_info,
                      thread_info,
@@ -371,7 +369,7 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
         case M_DEBUG:
         case M_INFO:
         default:
-            snprintf(logOutput, sizeof(logOutput) - 1, "%s %s | %s\n", s_szLevel[level], timestr, logContent);
+            snprintf(logOutput, sizeof(logOutput) - 1, "%s %s | %s\n", _szLevel[level], timestr, logContent);
             break;
         }
     }
@@ -406,7 +404,7 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
 #endif   /* MLOG_PRINT_ENABLE */
 
     if (s_loggers[logNo]->inited == false) {
-        s_mlogUnlock(s_loggers[logNo]->mtx);
+        _mlogUnlock(s_loggers[logNo]->mtx);
         return;
     }
 
@@ -418,7 +416,7 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
     if (fileSize >= s_loggers[logNo]->maxSize) {
         fclose(s_loggers[logNo]->fp);
         s_loggers[logNo]->fp = NULL;
-        s_rotateFile(logNo);
+        _rotateFile(logNo);
     }
     /* reopen the log file */
     if (s_loggers[logNo]->fp == NULL) {
@@ -432,5 +430,5 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
         fflush(s_loggers[logNo]->fp);
     }
 
-    s_mlogUnlock(s_loggers[logNo]->mtx);
+    _mlogUnlock(s_loggers[logNo]->mtx);
 }

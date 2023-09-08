@@ -95,7 +95,7 @@ int swapInt8_(int8_t* a, int8_t* b)
 
 
 /* 字符串数字的倍率转换 */
-int numstrScalerDeal_(char* szNum, int scaler)
+int shiftDecimalPoint_(char* szNum, int scaler)
 {
     if (scaler == 0) { /* 无需处理 */
         return 0;

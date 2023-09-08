@@ -3,8 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "lib_s.h"
 
-/* BCD转HEX: 0x10 -> 10(0x0a) */
+
+/* bcd to hex: 0x10 -> 10(0x0a) */
 uint8_t bcd2hex_(uint8_t bcd)
 {
     if (((bcd & 0x0f) > 9) || (((bcd >> 4) & 0x0f) > 9)) {
@@ -14,7 +16,7 @@ uint8_t bcd2hex_(uint8_t bcd)
 }
 
 
-/* HEX转BCD: 0x10(16) -> 0x16 */
+/* hex to bcd: 0x10(16) -> 0x16 */
 uint8_t hex2bcd_(uint8_t hex)
 {
     if (hex > 99) {
@@ -28,7 +30,8 @@ uint8_t hex2bcd_(uint8_t hex)
     return bcd;
 }
 
-/* 反向memcpy */
+
+/* memcpy in an opposite direction */
 int memcpy_r_(uint8_t* dst, uint8_t* src, int len)
 {
     if (dst == NULL || src == NULL) {
@@ -42,7 +45,7 @@ int memcpy_r_(uint8_t* dst, uint8_t* src, int len)
 }
 
 
-/* 指定长度的内存数据反转 */
+/* memory data inversion of specified length */
 int memrev_(uint8_t* buf, int len)
 {
     for (int i = 0; i < len / 2; i++) {
@@ -55,8 +58,10 @@ int memrev_(uint8_t* buf, int len)
 }
 
 
-/* mode: 0-小端 1-大端 */
-int16_t buf2int16_(uint8_t* buf, uint16_t* offset, uint8_t mode)
+/**
+ * \param   mode: 0-little endian, 1-big endian
+ */
+int16_t buf2int16_(uint8_t* buf, uint16_t* offset, int mode)
 {
     if (buf == NULL) {
         printf("buf is NULL!\n");
@@ -65,7 +70,7 @@ int16_t buf2int16_(uint8_t* buf, uint16_t* offset, uint8_t mode)
     if (offset) {
         buf += *offset;
     }
-    int16_t ret = mode ? (buf[0] << 8) | buf[1] : (buf[1] << 8) | buf[0];
+    int16_t ret = (mode == UCL_BIG_ENDIAN) ? (buf[0] << 8) | buf[1] : (buf[1] << 8) | buf[0];
 
     if (offset) {
         *offset += sizeof(int16_t);
@@ -74,50 +79,55 @@ int16_t buf2int16_(uint8_t* buf, uint16_t* offset, uint8_t mode)
 }
 
 
-/* mode: 0-小端 1-大端 */
-int32_t buf2int32_(uint8_t* buf, uint16_t* offset, uint8_t mode)
+/**
+ * \param   mode: 0-little endian, 1-big endian
+ */
+int32_t buf2int32_(uint8_t* buf, uint16_t* offset, int mode)
 {
     if (buf == NULL) {
         printf("buf is NULL!\n");
         return -1;
     }
-    if (offset) {
+    if (offset)
         buf += *offset;
-    }
-    int32_t ret = mode ? (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3] :
-                         (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0];
 
-    if (offset) {
+    int32_t ret = (mode == UCL_BIG_ENDIAN) ? (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3] :
+                                             (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0];
+
+    if (offset)
         *offset += sizeof(int32_t);
-    }
+
     return ret;
 }
 
 
-/* mode: 0-小端 1-大端 */
-int64_t buf2int64_(uint8_t* buf, uint16_t* offset, uint8_t mode)
+/**
+ * \param   mode: 0-little endian, 1-big endian
+ */
+int64_t buf2int64_(uint8_t* buf, uint16_t* offset, int mode)
 {
     if (buf == NULL) {
         printf("buf is NULL!\n");
         return -1;
     }
-    if (offset) {
+    if (offset)
         buf += *offset;
-    }
-    int64_t ret =
-        mode ? ((int64_t)buf[0] << 56) | ((int64_t)buf[1] << 48) | ((int64_t)buf[2] << 40) | ((int64_t)buf[3] << 32) |
-                   ((int64_t)buf[4] << 24) | ((int64_t)buf[5] << 16) | ((int64_t)buf[6] << 8) | (int64_t)buf[7] :
-               ((int64_t)buf[7] << 56) | ((int64_t)buf[6] << 48) | ((int64_t)buf[5] << 40) | ((int64_t)buf[4] << 32) |
-                   ((int64_t)buf[3] << 24) | ((int64_t)buf[2] << 16) | ((int64_t)buf[1] << 8) | (int64_t)buf[0];
 
-    if (offset) {
+    int64_t ret =
+        (mode == UCL_BIG_ENDIAN) ?
+            ((int64_t)buf[0] << 56) | ((int64_t)buf[1] << 48) | ((int64_t)buf[2] << 40) | ((int64_t)buf[3] << 32) |
+                ((int64_t)buf[4] << 24) | ((int64_t)buf[5] << 16) | ((int64_t)buf[6] << 8) | (int64_t)buf[7] :
+            ((int64_t)buf[7] << 56) | ((int64_t)buf[6] << 48) | ((int64_t)buf[5] << 40) | ((int64_t)buf[4] << 32) |
+                ((int64_t)buf[3] << 24) | ((int64_t)buf[2] << 16) | ((int64_t)buf[1] << 8) | (int64_t)buf[0];
+
+    if (offset)
         *offset += sizeof(int64_t);
-    }
+
     return ret;
 }
 
 
-float buf2float_(uint8_t* buf, uint16_t* offset, uint8_t mode)
+float buf2float_(uint8_t* buf, uint16_t* offset, int mode)
 {
     int32_t ret = buf2int32_(buf, offset, mode);
     float*  p   = (float*)&ret;
@@ -126,8 +136,8 @@ float buf2float_(uint8_t* buf, uint16_t* offset, uint8_t mode)
 }
 
 
-/* mode: 0-小端 1-大端 */
-double buf2double_(uint8_t* buf, uint16_t* offset, uint8_t mode)
+/* mode: 0-little endian, 1-big endian */
+double buf2double_(uint8_t* buf, uint16_t* offset, int mode)
 {
     int64_t ret = buf2int64_(buf, offset, mode);
     double* p   = (double*)&ret;
@@ -136,10 +146,10 @@ double buf2double_(uint8_t* buf, uint16_t* offset, uint8_t mode)
 }
 
 
-/* 字符串（最长支持8位）转16进制数 */
-int atox_(const char* str, uint8_t len)
+/* string to number, strlen should <= 8 */
+int atox_(const char* str, int len)
 {
-    if (len > 8) /* 最长支持8位 */
+    if (len > 8)
         len = 8;
 
     int hex = 0;
@@ -159,6 +169,10 @@ int atox_(const char* str, uint8_t len)
 }
 
 
+/**
+ * \brief   string turn to uint8 array:
+ *          "680100" -> [0x68, 0x01, 0x00]
+ */
 int str2hex_(uint8_t* buf, int bufSize, const char* str)
 {
     if (buf == NULL || str == NULL) {
@@ -188,14 +202,18 @@ int str2hex_(uint8_t* buf, int bufSize, const char* str)
 }
 
 
-int hex2str_(char* str, uint8_t* buf, uint16_t bufLen)
+/**
+ * \brief   uint8 array turn to string:
+ *          [0x68, 0x01, 0x00] -> "680100"
+ */
+int hex2str_(char* str, uint8_t* buf, int bufLen)
 {
-    if (buf == NULL || str == NULL) {
-        printf("buf or str is NULL!\n");
+    if (buf == NULL || str == NULL || bufLen <= 0) {
+        printf("buf/str is NULL, or bufLen <= 0\n");
         return -1;
     }
 
-    for (uint16_t i = 0; i < bufLen; i++)
+    for (int i = 0; i < bufLen; i++)
         sprintf(str + i * 2, "%02x", buf[i]);
 
     return 0;
