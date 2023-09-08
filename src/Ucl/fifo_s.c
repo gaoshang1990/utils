@@ -35,7 +35,7 @@ struct _Fifo_t_ {
 };
 
 
-static FifoMutex s_Semaphore_create(int initialValue)
+static FifoMutex _semaphore_create(int initialValue)
 {
 #ifdef _WIN32
     HANDLE self = CreateSemaphore(NULL, initialValue, 1, NULL);
@@ -80,20 +80,20 @@ static void _semaphore_destroy(FifoMutex self)
 
 
 /* 环形队列初始化 */
-Fifo_t fifo_init_(int QSize)
+Fifo_t fifoInit_(int QSize)
 {
     Fifo_t fifo = (Fifo_t)malloc(sizeof(struct _Fifo_t_));
     if (fifo == NULL) {
-        printf("fifo_init_: fifo is NULL!\n");
+        printf("fifoInit_: fifo is NULL!\n");
         return NULL;
     }
 
     memset(fifo, 0, sizeof(struct _Fifo_t_));
-    fifo->lock  = s_Semaphore_create(1);
+    fifo->lock  = _semaphore_create(1);
     fifo->size  = QSize;
     fifo->datas = (void**)malloc(QSize * sizeof(void*));
     if (fifo->datas == NULL) {
-        printf("fifo_init_: fifo->datas is NULL!\n");
+        printf("fifoInit_: fifo->datas is NULL!\n");
         _semaphore_destroy(fifo->lock);
         _ffree(fifo);
         return NULL;
@@ -105,10 +105,10 @@ Fifo_t fifo_init_(int QSize)
 
 
 /* 判断环形队列是否已满 */
-bool fifo_full_(Fifo_t fifo)
+bool fifoFull_(Fifo_t fifo)
 {
     if (fifo == NULL) {
-        printf("fifo_full_: fifo is NULL!\n");
+        printf("fifoFull_: fifo is NULL!\n");
         return true;
     }
 
@@ -128,10 +128,10 @@ bool fifo_full_(Fifo_t fifo)
 
 
 /* 判断环形队列为空 */
-bool fifo_empty_(Fifo_t fifo)
+bool fifoEmpty_(Fifo_t fifo)
 {
     if (fifo == NULL) {
-        printf("fifo_empty_: fifo is NULL!\n");
+        printf("fifoEmpty_: fifo is NULL!\n");
         return true;
     }
 
@@ -146,21 +146,21 @@ bool fifo_empty_(Fifo_t fifo)
 
 
 /* 插入数据 */
-int fifo_write_(Fifo_t fifo, void* data)
+int fifoWrite_(Fifo_t fifo, void* data)
 {
     if (fifo == NULL) {
-        printf("fifo_write_: fifo is NULL\n");
+        printf("fifoWrite_: fifo is NULL\n");
         return -FIFO_NULL;
     }
-    if (fifo_full_(fifo)) {
+    if (fifoFull_(fifo)) {
         // _ffree(data); /* 直接释放待增加的数据 */
         /* 调用者根据返回值判断是否释放或重新添加 */
-        printf("fifo_write_: fifo is full\n");
+        printf("fifoWrite_: fifo is full\n");
         return -FIFO_FULL;
     }
     _semaphore_wait(fifo->lock);
 
-    fifo->datas[fifo->write % fifo->size] = data; /* free data in fifo_read_ */
+    fifo->datas[fifo->write % fifo->size] = data; /* free data in fifoRead_ */
     fifo->write++;
 
     _semaphore_post(fifo->lock);
@@ -169,13 +169,13 @@ int fifo_write_(Fifo_t fifo, void* data)
 
 
 /* 读取数据 */
-int fifo_read_(void* dst, int dstLen, Fifo_t fifo)
+int fifoRead_(void* dst, int dstLen, Fifo_t fifo)
 {
     if (fifo == NULL) {
-        printf("fifo_read_: fifo is NULL!\n");
+        printf("fifoRead_: fifo is NULL!\n");
         return -FIFO_NULL;
     }
-    if (fifo_empty_(fifo)) {
+    if (fifoEmpty_(fifo)) {
         return -FIFO_EMPTY;
     }
 
@@ -194,22 +194,22 @@ int fifo_read_(void* dst, int dstLen, Fifo_t fifo)
 }
 
 
-int fifo_clear_(Fifo_t fifo)
+int fifoClear_(Fifo_t fifo)
 {
     if (fifo == NULL) {
         printf("fifo is NULL!\n");
         return -FIFO_NULL;
     }
 
-    while (fifo_empty_(fifo) == false) {
-        fifo_read_(NULL, 0, fifo);
+    while (fifoEmpty_(fifo) == false) {
+        fifoRead_(NULL, 0, fifo);
     }
 
     return FIFO_OK;
 }
 
 
-int fifo_destroy_(Fifo_t fifo)
+int fifoDestroy_(Fifo_t fifo)
 {
     if (fifo == NULL) {
         printf("fifo is NULL!\n");
