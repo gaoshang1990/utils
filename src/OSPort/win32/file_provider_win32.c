@@ -2,13 +2,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <windows.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
 #include "hal_filesystem.h"
 
-#include <windows.h>
 
 struct sDirectoryHandle {
     HANDLE           handle;

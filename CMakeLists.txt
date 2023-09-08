@@ -8,9 +8,23 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(functions)
 
 message(STATUS "Find all source and header files")
-auto_sources(C_FILES   "*.c"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src")
-auto_sources(CPP_FILES "*.cpp" "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src")
-auto_sources(H_FILES   "*.h"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src")
+if(USE_B64)
+    auto_sources(C_FILES   "*.c"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src/base64")
+    auto_sources(H_FILES   "*.h"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src/base64")
+endif()
+if(USE_INI)
+    auto_sources(C_FILES   "*.c"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src/INI")
+    auto_sources(H_FILES   "*.h"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src/INI")
+endif()
+if(USE_OSP)
+    auto_sources(C_FILES   "*.c"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src/OSPort")
+    auto_sources(H_FILES   "*.h"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src/OSPort")
+endif()
+if(USE_UCL)
+    auto_sources(C_FILES   "*.c"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src/ucl")
+    auto_sources(H_FILES   "*.h"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src/ucl")
+endif()
+
 include(configwin32)
 include(configlinux)
 
@@ -41,5 +55,37 @@ if (MSVC)
     link_directories(${CMAKE_CURRENT_SOURCE_DIR}/build/win32/Debug)
     # set(TEST_LINK_LIB_FILE ucl.lib)
     add_executable(test ${TEST_C_FILES} ${C_FILES} ${TEST_CPP_FILES} ${CPP_FILES} ${H_FILES} ${TEST_H_FILES})
-    # target_link_libraries(test ${TEST_LINK_LIB_FILE})
+    target_link_libraries(test ${LINK_LIB_FILES})
 endif ()
+
+
+# 复制头文件到指定目录
+set(SRC_DIR_B64 "${CMAKE_CURRENT_SOURCE_DIR}/src/base64")
+set(SRC_DIR_INI "${CMAKE_CURRENT_SOURCE_DIR}/src/iniparser")
+set(SRC_DIR_OSP "${CMAKE_CURRENT_SOURCE_DIR}/src/OSPort")
+set(SRC_DIR_UCL "${CMAKE_CURRENT_SOURCE_DIR}/src/ucl")
+
+set(DST_DIR_B64 "${CMAKE_CURRENT_SOURCE_DIR}/inc/base64")
+set(DST_DIR_INI "${CMAKE_CURRENT_SOURCE_DIR}/inc/iniparser")
+set(DST_DIR_OSP "${CMAKE_CURRENT_SOURCE_DIR}/inc/OSPort")
+set(DST_DIR_UCL "${CMAKE_CURRENT_SOURCE_DIR}/inc/ucl")
+
+auto_sources(H_FILES_B64 "*.h" "RECURSE" ${SRC_DIR_B64})
+auto_sources(H_FILES_INI "*.h" "RECURSE" ${SRC_DIR_INI})
+auto_sources(H_FILES_OSP "*.h" "RECURSE" ${SRC_DIR_OSP})
+auto_sources(H_FILES_UCL "*.h" "RECURSE" ${SRC_DIR_UCL})
+
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR_B64}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR_INI}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR_OSP}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR_UCL}
+    RESULT_VARIABLE result
+)
+
+if(${result} EQUAL "0")
+    file(COPY ${H_FILES_B64} DESTINATION ${DST_DIR_B64})
+    file(COPY ${H_FILES_INI} DESTINATION ${DST_DIR_INI})
+    file(COPY ${H_FILES_OSP} DESTINATION ${DST_DIR_OSP})
+    file(COPY ${H_FILES_UCL} DESTINATION ${DST_DIR_UCL})
+endif()

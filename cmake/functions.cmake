@@ -1,4 +1,4 @@
-# À´×Ôfolly
+# from folly
 
 function(auto_sources RETURN_VALUE PATTERN SOURCE_SUBDIRS)
   if ("${SOURCE_SUBDIRS}" STREQUAL "RECURSE")
@@ -9,7 +9,7 @@ function(auto_sources RETURN_VALUE PATTERN SOURCE_SUBDIRS)
   endif()
 
   if ("${SOURCE_SUBDIRS}" STREQUAL "RECURSE")
-    unset(${RETURN_VALUE})
+    # unset(${RETURN_VALUE})
     file(GLOB SUBDIR_FILES "${PATH}/${PATTERN}")
     list(APPEND ${RETURN_VALUE} ${SUBDIR_FILES})
 

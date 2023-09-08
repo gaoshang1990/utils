@@ -11,7 +11,27 @@
             "-G",
             "Visual Studio 16 2019",
             "-A Win32",
-            "-DCMAKE_BUILD_TYPE=Release"
+            // "-DUSE_B64=1",
+            // "-DUSE_INI=1",
+            "-DUSE_OSP=1",
+            "-DUSE_UCL=1"
+        ],
+        "group": "build",
+    }, {
+        "label": "CMake_mingw",
+        "type": "shell",
+        "options": {"cwd": "${workspaceFolder}/build/mingw"},
+        "command": ["cmake"],
+        "args": [
+            "../..",
+            "-G",
+            "MinGW Makefiles",
+            "-DCMAKE_TOOLCHAIN_FILE:STRING=CMake/arm-gcc-toolchain.cmake",
+            "-DCMAKE_BUILD_TYPE=Release",
+            // "-DUSE_B64=1",
+            // "-DUSE_INI=1",
+            "-DUSE_OSP=1",
+            "-DUSE_UCL=1"
         ],
         "group": "build",
     }, {
@@ -23,19 +43,13 @@
         "dependsOn": ["CMake_win32"],
         "problemMatcher": "$msCompile"
     }, {
-        "label": "CMake_mingw",
+        "label": "Compile_win32_Release",
         "type": "shell",
-        "options": {"cwd": "${workspaceFolder}/build/mingw"},
-        "command": ["cmake"],
-        "args": [
-            "-DWIN32=0",
-            "-DCMAKE_BUILD_TYPE=Release",
-            "-DCMAKE_TOOLCHAIN_FILE:STRING=CMake/arm-gcc-toolchain.cmake",
-            "../..",
-            "-G",
-            "MinGW Makefiles"
-        ],
+        "options": {"cwd": "${workspaceFolder}/build/win32"},
+        "command": "cmake --build . --config Release",
         "group": "build",
+        "dependsOn": ["CMake_win32"],
+        "problemMatcher": "$msCompile"
     }, {
         "label":    "Compile_mingw",
         "type":     "process",

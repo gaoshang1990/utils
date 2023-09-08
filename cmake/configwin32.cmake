@@ -17,6 +17,7 @@ if (MSVC)
   link_directories(${LIB_FILES_PATHS})
   set(LINK_LIB_FILES 
       legacy_stdio_definitions
+      msvcrtd
   )
 
   set(CMAKE_EXE_LINKER_FLAGS /NODEFAULTLIB:"MSVCRT.lib")

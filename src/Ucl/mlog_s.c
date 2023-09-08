@@ -201,7 +201,7 @@ static void s_rotateFile(int logNo)
     size_t baseLen = strlen(oldPath);
     strncpy(newPath, oldPath, baseLen);
 
-    const uint8_t suffixLen = 10;
+    const uint8_t suffixLen = 32;
     for (int n = s_loggers[logNo]->maxCnt - 1; n >= 0; --n) {
         if (n == 0) {
             snprintf(oldPath + baseLen, suffixLen, "%s", suffix);

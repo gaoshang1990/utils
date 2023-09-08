@@ -1,3 +1,4 @@
+
 #include "file_s.h"
 #include "fifo_s.h"
 #include "lib_s.h"
@@ -88,7 +89,7 @@ static int _udpTest()
 
 int main(int argc, char* argv[])
 {
-    // mlog_test();
+    mlog_test();
 
     _udpTest();
     // udpServerTest();

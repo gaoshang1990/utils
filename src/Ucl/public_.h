@@ -46,17 +46,6 @@ extern "C" {
 #endif
 
 
-#ifndef sswap_
-#  define sswap_(x, y)      \
-      do {                  \
-          if ((x) != (y)) { \
-              (x) ^= (y);   \
-              (y) ^= (x);   \
-              (x) ^= (y);   \
-          }                 \
-      } while (0)
-#endif
-
 #define ffree_(p)           \
     do {                    \
         if (p) {            \
@@ -66,11 +55,11 @@ extern "C" {
     } while (0)
 
 
-int                printBuf_(MLogLevel_t logLevel, const char* str, uint8_t* pBuf, uint16_t bufLen);
-extern int         printAppInfo_(const char* szName, const char* szVersion);
-extern const char* getLogFilePath_(const char* strAppName);
-extern const char* getConfigFilePath_(const char* strAppName, const char* strFileName);
-extern const char* getHistoryFilePath_(const char* strAppName);
+int         printBuf_(MLogLevel_t logLevel, const char* str, uint8_t* pBuf, uint16_t bufLen);
+int         printAppInfo_(const char* szName, const char* szVersion);
+const char* getLogFilePath_(const char* strAppName);
+const char* getConfigFilePath_(const char* strAppName, const char* strFileName);
+const char* getHistoryFilePath_(const char* strAppName);
 
 
 #ifdef __cplusplus
