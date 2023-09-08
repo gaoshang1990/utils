@@ -97,18 +97,14 @@ int swapInt8_(int8_t* a, int8_t* b)
 /* 字符串数字的倍率转换 */
 int shiftDecimalPoint_(char* szNum, int scaler)
 {
-    if (scaler == 0) { /* 无需处理 */
+    if (scaler == 0)
         return 0;
-    }
-    uint8_t i;
-    uint8_t len = (uint8_t)strlen(szNum);
-    char    szTmp[32];
 
-    uint8_t pos;
+    uint8_t pos; /* 小数点所在索引 */
+    uint8_t len = (uint8_t)strlen(szNum);
     for (pos = 0; pos < len; pos++) {
-        if (szNum[pos] == '.') {
+        if (szNum[pos] == '.')
             break;
-        }
     }
     if (pos == len) {
         szNum[pos]     = '.'; /* 如果没有小数点 则在最后加一个 */
@@ -117,29 +113,25 @@ int shiftDecimalPoint_(char* szNum, int scaler)
 
     if (scaler < 0) { /* 小数点左移 */
         scaler *= -1;
-        i = pos;
-        if (szNum[0] == '-' || szNum[0] == '+') { /* 带符号的数字前面应多补偿一个0 */
-            i--;
+
+        uint8_t nbLeft = pos; /* 当前小数点左侧的数字个数 */
+        if (szNum[0] == '-' || szNum[0] == '+') {
+            nbLeft--;
         }
-        for (; scaler + 1 > i; i++, pos++) { /* 数字前补0 */
-            strcpy(szTmp, szNum);
-            if (szNum[0] == '-') {
-                sprintf(szNum, "-0%s", szTmp + 1);
-            }
-            else if (szNum[0] == '+') {
-                sprintf(szNum, "+0%s", szTmp + 1);
-            }
-            else {
-                sprintf(szNum, "0%s", szTmp);
-            }
+        uint8_t nbZero = (nbLeft > scaler) ? 0 : scaler - nbLeft + 1; /* 需补0的个数 */
+        if (nbZero > 0) {
+            int bsign = szNum[0] == '-' || szNum[0] == '+';
+            memmove(&szNum[nbZero + bsign], &szNum[bsign], strlen(szNum) + 1); /* 有符号需偏移1位 */
+            memset(&szNum[bsign], '0', nbZero);
+            pos += nbZero;
         }
-        for (i = 0; i < scaler; i++) {
+        for (int i = 0; i < scaler; i++) {
             swapInt8_((int8_t*)&szNum[pos], (int8_t*)&szNum[pos - 1]);
             pos--;
         }
     }
     else { /* 小数点右移 */
-        for (i = 0; i < scaler; i++) {
+        for (int i = 0; i < scaler; i++) {
             if (szNum[pos + 1] == '\0') {
                 szNum[pos + 1] = '0';
                 szNum[pos + 2] = '\0';
