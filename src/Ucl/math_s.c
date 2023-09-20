@@ -19,7 +19,10 @@
 /* return a random nuber: [min, max]  */
 int randNum_(int min, int max)
 {
-    srand((unsigned)time(NULL) + rand());
+    static uint32_t s = 0;
+
+    srand((unsigned)time(NULL) + rand() + s++);
+
     return min + rand() % (max + 1 - min);
 }
 
