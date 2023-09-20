@@ -49,6 +49,8 @@ int str2hex_(uint8_t* buf, int bufSize, const char* str);
  */
 int hex2str_(char* str, uint8_t* buf, int bufLen);
 
+int reduceGap_(uint8_t* data, int len, uint8_t gap);
+int addGap_(uint8_t* data, int len, uint8_t gap);
 
 #ifdef __cplusplus
 }

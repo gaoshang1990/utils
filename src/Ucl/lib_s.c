@@ -218,3 +218,31 @@ int hex2str_(char* str, uint8_t* buf, int bufLen)
 
     return 0;
 }
+
+
+int reduceGap_(uint8_t* data, int len, uint8_t gap)
+{
+    if (len <= 0 || data == NULL) {
+        printf("len[%d] <= 0 or data is null", len);
+        return -1;
+    }
+
+    for (int i = 0; i < len; i++)
+        data[i] -= gap;
+
+    return 0;
+}
+
+
+int addGap_(uint8_t* data, int len, uint8_t gap)
+{
+    if (len <= 0 || data == NULL) {
+        printf("len[%d] <= 0 or data is null", len);
+        return -1;
+    }
+
+    for (int i = 0; i < len; i++)
+        data[i] += gap;
+
+    return 0;
+}
