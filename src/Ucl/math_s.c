@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdbool.h>
 
 #include "math_s.h"
 
@@ -19,9 +20,11 @@
 /* return a random nuber: [min, max]  */
 int randNum_(int min, int max)
 {
-    static uint32_t s = 0;
-
-    srand((unsigned)time(NULL) + rand() + s++);
+    static bool seeded = false;
+    if (!seeded) {
+        srand((unsigned)time(NULL));
+        seeded = true;
+    }
 
     return min + rand() % (max + 1 - min);
 }
