@@ -26,7 +26,7 @@ extern "C" {
 typedef enum _E_ArrayType { TYPE_CHAR, TYPE_INT, TYPE_FLOAT } ArrayType_e;
 
 /**
- * \brief   return a int in [min, max)
+ * \brief   return a random nuber: [min, max]
  */
 int randNum_(int min, int max);
 

@@ -16,11 +16,11 @@
 #endif
 
 
-/* ·µ»Ø [min,max) Ëæ»úÊı */
+/* return a random nuber: [min, max]  */
 int randNum_(int min, int max)
 {
     srand((unsigned)time(NULL) + rand());
-    return min + rand() % (max - min);
+    return min + rand() % (max + 1 - min);
 }
 
 
