@@ -224,6 +224,22 @@ Timer_t timerInit_(uint64_t settedMs)
 }
 
 
+void timerSetMs_(Timer_t timer, uint64_t settedMs)
+{
+    timer->settedMs = settedMs;
+    timer->lastMs   = cpuMs_();
+}
+
+
+void timerDestroy_(Timer_t timer)
+{
+    if (timer != NULL) {
+        free(timer);
+        timer = NULL;
+    }
+}
+
+
 /**
  * \brief   call this function in the start of loop
  */
