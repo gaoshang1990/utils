@@ -18,7 +18,7 @@
 
 
 #ifdef _WIN32
-#  define mkdir(path, arg)     _mkdir(path)
+#  define mkdir(path, arg)      _mkdir(path)
 #  define access                _access
 #  define snprintf              _snprintf
 #  define LOCAL_TIME(pSec, pTm) localtime_s(pTm, pSec)
@@ -99,7 +99,7 @@ typedef struct _LoggerCfg_ {
 } MLogger_t;
 
 
-static MLogger_t* s_loggers[MAX_LOG_NUM] = {NULL};
+static MLogger_t* _loggers[MAX_LOG_NUM] = {NULL};
 
 
 static MLogMutex_t _mlogInitMutex(int initialValue)
@@ -190,17 +190,17 @@ static void _rotateFile(int logNo)
 {
     char fileName[256] = {0}; /* file name without suffix */
     char suffix[16]    = {0}; /* file suffix */
-    sscanf(s_loggers[logNo]->name, "%[^.]%s", fileName, suffix);
+    sscanf(_loggers[logNo]->name, "%[^.]%s", fileName, suffix);
 
     char oldPath[256] = {0};
     char newPath[256] = {0};
 
-    snprintf(oldPath, sizeof(oldPath) - 1, "%s/%s", s_loggers[logNo]->dir, fileName);
+    snprintf(oldPath, sizeof(oldPath) - 1, "%s/%s", _loggers[logNo]->dir, fileName);
     size_t baseLen = strlen(oldPath);
     strncpy(newPath, oldPath, baseLen);
 
     const uint8_t suffixLen = 32;
-    for (int n = s_loggers[logNo]->maxCnt - 1; n >= 0; --n) {
+    for (int n = _loggers[logNo]->maxCnt - 1; n >= 0; --n) {
         if (n == 0) {
             snprintf(oldPath + baseLen, suffixLen, "%s", suffix);
         }
@@ -261,14 +261,14 @@ int mlogInit_(int logNo, const char* logDir, const char* fileName, MLogLevel_t l
         return -1;
     }
 
-    if (s_loggers[logNo] == NULL) {
-        s_loggers[logNo]  = (MLogger_t*)malloc(sizeof(MLogger_t));
-        *s_loggers[logNo] = (MLogger_t){{0}, {0}, NULL, NULL, M_TRACE, false, MLOG_FILE_MAX_SIZE, MLOG_FILE_MAX_ROTATE};
+    if (_loggers[logNo] == NULL) {
+        _loggers[logNo]  = (MLogger_t*)malloc(sizeof(MLogger_t));
+        *_loggers[logNo] = (MLogger_t){{0}, {0}, NULL, NULL, M_TRACE, false, MLOG_FILE_MAX_SIZE, MLOG_FILE_MAX_ROTATE};
     }
 
-    s_loggers[logNo]->level = level;
+    _loggers[logNo]->level = level;
 
-    if (true == s_loggers[logNo]->inited)
+    if (true == _loggers[logNo]->inited)
         return 0;
 
 
@@ -284,18 +284,18 @@ int mlogInit_(int logNo, const char* logDir, const char* fileName, MLogLevel_t l
 
     char logFilePath[MAX_FILE_PATH_LEN] = {0};
 
-    snprintf(s_loggers[logNo]->dir, sizeof(s_loggers[logNo]->dir) - 1, "%s", logDir);
-    snprintf(s_loggers[logNo]->name, sizeof(s_loggers[logNo]->name) - 1, "%s", fileName);
-    snprintf(logFilePath, sizeof(logFilePath) - 1, "%s/%s", logDir, s_loggers[logNo]->name);
+    snprintf(_loggers[logNo]->dir, sizeof(_loggers[logNo]->dir) - 1, "%s", logDir);
+    snprintf(_loggers[logNo]->name, sizeof(_loggers[logNo]->name) - 1, "%s", fileName);
+    snprintf(logFilePath, sizeof(logFilePath) - 1, "%s/%s", logDir, _loggers[logNo]->name);
 
-    s_loggers[logNo]->fp = fopen(logFilePath, "a+");
-    if (NULL == s_loggers[logNo]->fp) {
+    _loggers[logNo]->fp = fopen(logFilePath, "a+");
+    if (NULL == _loggers[logNo]->fp) {
         printf("open log file[%s] failed\n", logFilePath);
         return -1;
     }
 
-    s_loggers[logNo]->mtx    = _mlogInitMutex(1);
-    s_loggers[logNo]->inited = true;
+    _loggers[logNo]->mtx    = _mlogInitMutex(1);
+    _loggers[logNo]->inited = true;
 
     return 0;
 }
@@ -322,13 +322,16 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
         return;
     }
 
-    if (s_loggers[logNo]->level > level)
+    if (_loggers[logNo] == NULL)
+        mlogInit_(logNo, NULL, NULL, M_DEBUG);
+
+    if (_loggers[logNo]->level > level)
         return;
 
     if (level > M_ERROR)
         level = M_TRACE;
 
-    _mlogLock(s_loggers[logNo]->mtx);
+    _mlogLock(_loggers[logNo]->mtx);
 
     va_list args;
     va_start(args, fmt);
@@ -403,32 +406,32 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
 #  endif /* MLOG_COLOR_ENABLE */
 #endif   /* MLOG_PRINT_ENABLE */
 
-    if (s_loggers[logNo]->inited == false) {
-        _mlogUnlock(s_loggers[logNo]->mtx);
+    if (_loggers[logNo]->inited == false) {
+        _mlogUnlock(_loggers[logNo]->mtx);
         return;
     }
 
     /* log_file_rotate_check */
-    int         fd = fileno(s_loggers[logNo]->fp);
+    int         fd = fileno(_loggers[logNo]->fp);
     struct stat statbuf;
     fstat(fd, &statbuf);
     int fileSize = statbuf.st_size;
-    if (fileSize >= s_loggers[logNo]->maxSize) {
-        fclose(s_loggers[logNo]->fp);
-        s_loggers[logNo]->fp = NULL;
+    if (fileSize >= _loggers[logNo]->maxSize) {
+        fclose(_loggers[logNo]->fp);
+        _loggers[logNo]->fp = NULL;
         _rotateFile(logNo);
     }
     /* reopen the log file */
-    if (s_loggers[logNo]->fp == NULL) {
+    if (_loggers[logNo]->fp == NULL) {
         char full_file_name[256] = {0};
-        snprintf(full_file_name, sizeof(full_file_name) - 1, "%s/%s", s_loggers[logNo]->dir, s_loggers[logNo]->name);
-        s_loggers[logNo]->fp = fopen(full_file_name, "a+");
+        snprintf(full_file_name, sizeof(full_file_name) - 1, "%s/%s", _loggers[logNo]->dir, _loggers[logNo]->name);
+        _loggers[logNo]->fp = fopen(full_file_name, "a+");
     }
 
-    if (s_loggers[logNo]->fp) {
-        fwrite(logOutput, sizeof(char), strlen(logOutput), s_loggers[logNo]->fp);
-        fflush(s_loggers[logNo]->fp);
+    if (_loggers[logNo]->fp) {
+        fwrite(logOutput, sizeof(char), strlen(logOutput), _loggers[logNo]->fp);
+        fflush(_loggers[logNo]->fp);
     }
 
-    _mlogUnlock(s_loggers[logNo]->mtx);
+    _mlogUnlock(_loggers[logNo]->mtx);
 }

@@ -10,7 +10,7 @@
 #include "public_.h"
 
 
-int printBuf_(MLogLevel_t logLevel, const char* str, uint8_t* pBuf, uint16_t bufLen)
+int printBuf_(int logLevel, const char* str, uint8_t* pBuf, uint16_t bufLen)
 {
     if (pBuf == NULL && bufLen == 0)
         return -1;

@@ -17,7 +17,7 @@ int  slogInit_(const char* logDir, const char* fileName, MLogLevel_t level);
 void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int line, const char* fmt, ...);
 
 /*!
- * Multi instance mode:
+ * Multiton mode:
  * mlogInit_(0, "./log", "mlog1.log", M_TRACE);
  * mlogInit_(1, "./log", "mlog2.log", M_DEBUG);
  * MLOG_ERROR(0, "MLOG ERROR TEST");
@@ -35,7 +35,7 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
 #define MLOG_TRACE_RAW(logNo, fmt, ...) mlogWrite_(logNo, M_TRACE, 1, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 
 /*!
- * single instance mode:
+ * singleton mode:
  * slogInit_("./log", "mlog.log", M_TRACE);
  * SLOG_ERROR("SLOG ERROR TEST");
  */

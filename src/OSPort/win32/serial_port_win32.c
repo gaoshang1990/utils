@@ -46,7 +46,6 @@ void SerialPort_destroy(SerialPort self)
     if (self != NULL) {
         if (self->comPort != INVALID_HANDLE_VALUE)
             SerialPort_close(self);
-
         free(self);
     }
 
@@ -63,12 +62,10 @@ bool SerialPort_modify(SerialPort self, int baudRate, uint8_t dataBits, char par
         self->stopBits = stopBits;
 
         parity = toupper(parity);
-        if (parity != 'E' && parity != 'O' && parity != 'N') {
+        if (parity != 'E' && parity != 'O' && parity != 'N')
             parity = 'N';
-        }
         self->parity = parity;
 
-        // printf("Init COM[%s]: %d,%c\r\n",self->interfaceName,self->baudRate,self->parity);
         return SerialPort_open(self);
     }
 

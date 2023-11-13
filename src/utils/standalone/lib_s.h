@@ -33,6 +33,7 @@ int32_t buf2int32_(uint8_t* buf, uint16_t* offset, int mode);
 int64_t buf2int64_(uint8_t* buf, uint16_t* offset, int mode);
 float   buf2float_(uint8_t* buf, uint16_t* offset, int mode);
 double  buf2double_(uint8_t* buf, uint16_t* offset, int mode);
+int64_t buf2int_(uint8_t* buf, int* offset, int len, int mode);
 
 /* string to number, strlen should <= 8 */
 int atox_(const char* str, int len);

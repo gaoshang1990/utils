@@ -55,7 +55,7 @@ extern "C" {
     } while (0)
 
 
-int         printBuf_(MLogLevel_t logLevel, const char* str, uint8_t* pBuf, uint16_t bufLen);
+int         printBuf_(int logLevel, const char* str, uint8_t* pBuf, uint16_t bufLen);
 int         printAppInfo_(const char* szName, const char* szVersion);
 const char* getLogFilePath_(const char* strAppName);
 const char* getConfigFilePath_(const char* strAppName, const char* strFileName);

@@ -82,6 +82,10 @@
         "public_.h": "c",
         "unistd.h": "c",
         "time_.h": "c",
-        "stat.h": "c"
+        "stat.h": "c",
+        "math_s.h": "c",
+        "lib_s.h": "c",
+        "fsm_s.h": "c",
+        "lstlib_s.h": "c"
     },
 }

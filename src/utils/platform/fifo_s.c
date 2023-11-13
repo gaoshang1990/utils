@@ -11,6 +11,11 @@
 
 #include "fifo_s.h"
 
+/**
+ * TODO..
+ * 增加队列节点数据的释放函数
+ */
+
 
 #ifndef _ffree
 #  define _ffree(p)           \

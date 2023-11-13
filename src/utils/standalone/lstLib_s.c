@@ -1,11 +1,11 @@
 #include "lstLib_s.h"
 
 #ifndef NULL
-#    ifdef __cplusplus
-#        define NULL 0
-#    else
-#        define NULL ((void*)0)
-#    endif
+#  ifdef __cplusplus
+#    define NULL 0
+#  else
+#    define NULL ((void*)0)
+#  endif
 #endif
 
 #define HEAD node.next     /* first node in list */
@@ -78,19 +78,19 @@ NODE* lstNext(NODE* pNode)
 
 
 /************************************************************************
-*
-* lstNth - find the Nth node in a list
-*
-* This routine returns a pointer to the node specified by a number <nodenum>
-* where the first node in the list is numbered 1.
-* Note that the search is optimized by searching forward from the beginning
-* if the node is closer to the head, and searching back from the end
-* if it is closer to the tail.
-*
-* RETURNS:
-* A pointer to the Nth node, or
-* NULL if there is no Nth node.
-*/
+ *
+ * lstNth - find the Nth node in a list
+ *
+ * This routine returns a pointer to the node specified by a number <nodenum>
+ * where the first node in the list is numbered 1.
+ * Note that the search is optimized by searching forward from the beginning
+ * if the node is closer to the head, and searching back from the end
+ * if it is closer to the tail.
+ *
+ * RETURNS:
+ * A pointer to the Nth node, or
+ * NULL if there is no Nth node.
+ */
 NODE* lstNth(LIST* pList, int nodenum)
 {
     return lstNStep(pList->node.next, nodenum);

@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -143,6 +142,44 @@ double buf2double_(uint8_t* buf, uint16_t* offset, int mode)
     double* p   = (double*)&ret;
 
     return *p;
+}
+
+uint64_t BinToNWords(uint8_t* pSrcBuf, uint8_t byteLen)
+{
+    uint64_t value = 0;
+
+    while (byteLen > 0) {
+        if (byteLen <= 6) {
+            value = value * 100;
+            value += (uint64_t)pSrcBuf[byteLen - 1];
+        }
+        byteLen--;
+    }
+
+    return value;
+}
+
+
+int64_t buf2int_(uint8_t* buf, int* offset, int len, int mode)
+{
+    if (offset)
+        buf += *offset;
+
+    if (len > sizeof(int64_t))
+        len = sizeof(int64_t);
+
+    int64_t ret = 0;
+    for (int i = 0; i < len; i++) {
+        int pos = (mode == UCL_BIG_ENDIAN) ? i : len - 1 - i;
+
+        ret = ret << 8;
+        ret += buf[pos];
+    }
+
+    if (offset)
+        *offset += len;
+
+    return ret;
 }
 
 
