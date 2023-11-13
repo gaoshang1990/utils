@@ -1,7 +1,7 @@
 # CMake 最低版本号要求
 cmake_minimum_required (VERSION 3.16)
 
-set(PROJECT_NAME "ucl")
+set(PROJECT_NAME "utils")
 project(${PROJECT_NAME})
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -21,8 +21,8 @@ if(USE_OSP)
     auto_sources(H_FILES   "*.h"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src/OSPort")
 endif()
 if(USE_UCL)
-    auto_sources(C_FILES   "*.c"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src/ucl")
-    auto_sources(H_FILES   "*.h"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src/ucl")
+    auto_sources(C_FILES   "*.c"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src/utils")
+    auto_sources(H_FILES   "*.h"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/src/utils")
 endif()
 
 include(configwin32)
@@ -39,7 +39,7 @@ include_directories(${ALL_INC_DIRS})
 if(MSVC)
     add_library(${PROJECT_NAME} ${C_FILES} ${CPP_FILES} ${H_FILES})
 else()
-    add_library(${PROJECT_NAME} SHARED ${C_FILES} ${CPP_FILES} ${H_FILES})
+    add_library(${PROJECT_NAME} ${C_FILES} ${CPP_FILES} ${H_FILES})
 endif()
 
 # 添加链接库
@@ -51,44 +51,41 @@ if (MSVC)
     auto_sources(TEST_C_FILES   "*.c"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/test")
     auto_sources(TEST_H_FILES   "*.h"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/test")
     auto_sources(TEST_CPP_FILES "*.cpp" "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/test")
-    # 添加链接库
     link_directories(${CMAKE_CURRENT_SOURCE_DIR}/build/win32/Debug)
-    # set(TEST_LINK_LIB_FILE ucl.lib)
     add_executable(test ${TEST_C_FILES} ${C_FILES} ${TEST_CPP_FILES} ${CPP_FILES} ${H_FILES} ${TEST_H_FILES})
     target_link_libraries(test ${LINK_LIB_FILES})
 endif ()
 
 
 # 复制头文件到指定目录
-set(SRC_DIR_B64 "${CMAKE_CURRENT_SOURCE_DIR}/src/base64")
-set(SRC_DIR_INI "${CMAKE_CURRENT_SOURCE_DIR}/src/iniparser")
-set(SRC_DIR_OSP "${CMAKE_CURRENT_SOURCE_DIR}/src/OSPort")
-set(SRC_DIR_UCL "${CMAKE_CURRENT_SOURCE_DIR}/src/ucl")
-
 set(DST_DIR_B64 "${CMAKE_CURRENT_SOURCE_DIR}/inc/base64")
 set(DST_DIR_INI "${CMAKE_CURRENT_SOURCE_DIR}/inc/iniparser")
 set(DST_DIR_OSP "${CMAKE_CURRENT_SOURCE_DIR}/inc/OSPort")
-set(DST_DIR_UCL "${CMAKE_CURRENT_SOURCE_DIR}/inc/ucl")
+set(DST_DIR_ALO "${CMAKE_CURRENT_SOURCE_DIR}/inc/utils/standalone")
+set(DST_DIR_PLF "${CMAKE_CURRENT_SOURCE_DIR}/inc/utils/platform")
 
-auto_sources(H_FILES_B64 "*.h" "RECURSE" ${SRC_DIR_B64})
-auto_sources(H_FILES_INI "*.h" "RECURSE" ${SRC_DIR_INI})
-auto_sources(H_FILES_OSP "*.h" "RECURSE" ${SRC_DIR_OSP})
-auto_sources(H_FILES_UCL "*.h" "RECURSE" ${SRC_DIR_UCL})
+auto_sources(H_FILES_B64 "*.h" "RECURSE" ${CMAKE_CURRENT_SOURCE_DIR}/src/base64)
+auto_sources(H_FILES_INI "*.h" "RECURSE" ${CMAKE_CURRENT_SOURCE_DIR}/src/iniparser)
+auto_sources(H_FILES_OSP "*.h" "RECURSE" ${CMAKE_CURRENT_SOURCE_DIR}/src/OSPort)
+auto_sources(H_FILES_ALO "*.h" "RECURSE" ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/standalone)
+auto_sources(H_FILES_PLF "*.h" "RECURSE" ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/platform)
 
-execute_process(
+# 添加自定义命令，将目标文件复制到指定目录
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR_B64}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR_INI}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR_OSP}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR_UCL}
-    RESULT_VARIABLE result
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR_ALO}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR_PLF}
+    COMMAND ${CMAKE_COMMAND} -E copy ${H_FILES_B64} ${DST_DIR_B64}
+    COMMAND ${CMAKE_COMMAND} -E copy ${H_FILES_INI} ${DST_DIR_INI}
+    COMMAND ${CMAKE_COMMAND} -E copy ${H_FILES_OSP} ${DST_DIR_OSP}
+    COMMAND ${CMAKE_COMMAND} -E copy ${H_FILES_ALO} ${DST_DIR_ALO}
+    COMMAND ${CMAKE_COMMAND} -E copy ${H_FILES_PLF} ${DST_DIR_PLF}
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/build/win32/Release/${PROJECT_NAME}.lib ${CMAKE_CURRENT_SOURCE_DIR}/inc
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/build/mingw/lib${PROJECT_NAME}.a        ${CMAKE_CURRENT_SOURCE_DIR}/inc
 )
 
-if(${result} EQUAL "0")
-    file(COPY ${H_FILES_B64} DESTINATION ${DST_DIR_B64})
-    file(COPY ${H_FILES_INI} DESTINATION ${DST_DIR_INI})
-    file(COPY ${H_FILES_OSP} DESTINATION ${DST_DIR_OSP})
-    file(COPY ${H_FILES_UCL} DESTINATION ${DST_DIR_UCL})
-
-    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/build/win32/Release/${PROJECT_NAME}.lib DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/inc)
-    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/build/mingw/lib${PROJECT_NAME}.so DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/inc)
-endif()
+# 添加自定义目标，将上述自定义命令作为依赖
+add_custom_target(CopyTarget ALL DEPENDS ${PROJECT_NAME})
+add_dependencies(CopyTarget ${PROJECT_NAME} )

@@ -7,7 +7,7 @@ elseif(UNIX OR APPLE)
     set(UTIL_SEARCH_CMD which)
 endif()
 
-set(TOOLCHAIN_PREFIX arm-linux-gnueabihf-)
+set(TOOLCHAIN_PREFIX aarch64-linux-gnu-)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 11)
