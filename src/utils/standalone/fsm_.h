@@ -16,22 +16,23 @@ enum {
     FSM_SIG_NULL = 0,
     FSM_SIG_ENTER,
     FSM_SIG_EXIT,
-    FSM_SIG_USER_START = 32
-    /* 用户信号请在用户文件定义，不允许在此定义 */
+
+    FSM_SIG_USER_START = 32 /* 用户信号请在用户文件定义, 不允许在此定义 */
+
 };
 
 typedef struct _Fsm_t* Fsm_t;
 
 typedef uint32_t FsmSignal;
 
-typedef void (*IFsmState)(Fsm_t const, FsmSignal const);
+typedef void (*FsmState_cb)(Fsm_t const, FsmSignal const);
 
 
 Fsm_t fsmInit_(Fsm_t* ppFsm); /* 创建状态机(内部分配空间) */
 
 
 /* 设置初始状态 */
-int fsmSetState_(Fsm_t const pFsm, IFsmState initialState);
+int fsmSetState_(Fsm_t const pFsm, FsmState_cb initialState);
 
 /* 运行当前状态机 */
 int fsmRun_(Fsm_t const pFsm);
@@ -40,28 +41,30 @@ int fsmRun_(Fsm_t const pFsm);
 int fsmRunAll_(Fsm_t const pFsm);
 
 /* 停止当前状态机 */
-int fsmStop(Fsm_t const pFsm);
+int fsmStop_(Fsm_t const pFsm);
 
 /* 停止当前状态机和子状态机 */
-int fsmStopAll(Fsm_t const pFsm);
+int fsmStopAll_(Fsm_t const pFsm);
 
 /* 释放当前状态机 */
-int fsmDestroy(Fsm_t const pFsm);
+int fsmDestroy_(Fsm_t const pFsm);
 
 /* 添加子状态机 */
-int fsmAddchild(Fsm_t const pFsm, Fsm_t const pChildFsm);
+int fsmAddChild_(Fsm_t const pFsm, Fsm_t const pChildFsm);
+
+int fsmSetOwner_(Fsm_t const fsm, FsmState_cb state);
 
 /* 移除子状态机(不释放空间) */
-int fsmRemoveChild(Fsm_t const pFsm, Fsm_t const pChildFsm);
+int fsmRemoveChild_(Fsm_t const pFsm, Fsm_t const pChildFsm);
 
 /* 调度状态机 */
-int fsmDispatch(Fsm_t const pFsm, FsmSignal const signal);
+int fsmDispatch_(Fsm_t const pFsm, FsmSignal const signal);
 
 /* 状态转移 */
-void fsmTransfer(Fsm_t const pFsm, IFsmState nextState);
+void fsmTransfer_(Fsm_t const pFsm, FsmState_cb nextState);
 
 /* 状态转移(触发转出和转入事件) */
-void fsmTransferWithEvent(Fsm_t const pFsm, IFsmState nextState);
+void fsmTransferWithEvent_(Fsm_t const pFsm, FsmState_cb nextState);
 
 
 #ifdef __cplusplus
