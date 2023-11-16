@@ -1,6 +1,9 @@
 #ifndef _USER_DEBUG_H_
 #define _USER_DEBUG_H_
 
+
+#include <stdio.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -65,6 +68,8 @@ enum { LOG_LEVEL_DEBUG, LOG_LEVEL_INFO, LOG_LEVEL_WARN, LOG_LEVEL_OFF };
       do {                          \
           if (!(expression_)) {     \
               LOG_WARN("asserted"); \
+              while (1)             \
+                  ;                 \
           }                         \
       } while (0)
 #else
