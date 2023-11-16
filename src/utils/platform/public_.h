@@ -3,9 +3,6 @@
 
 #include <stdint.h>
 
-#include "mlog_s.h"
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -46,17 +43,15 @@ extern "C" {
 #endif
 
 
-#define ffree_(p)           \
-    do {                    \
-        if (p) {            \
-            free((void*)p); \
-            p = NULL;       \
-        }                   \
+#define ffree_(p)                                                                                                      \
+    do {                                                                                                               \
+        if (p) {                                                                                                       \
+            free((void*)p);                                                                                            \
+            p = NULL;                                                                                                  \
+        }                                                                                                              \
     } while (0)
 
 
-int         printBuf_(int logLevel, const char* str, uint8_t* pBuf, uint16_t bufLen);
-int         printAppInfo_(const char* szName, const char* szVersion);
 const char* getLogFilePath_(const char* strAppName);
 const char* getConfigFilePath_(const char* strAppName, const char* strFileName);
 const char* getHistoryFilePath_(const char* strAppName);

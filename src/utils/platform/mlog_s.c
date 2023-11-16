@@ -350,7 +350,7 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
         case M_ERROR:
             snprintf(logOutput,
                      sizeof(logOutput) - 1,
-                     "%s %s- %s:%d | %s\n",
+                     "%s %s- %s: %d | %s\n",
                      _szLevel[level],
                      timestr,
                      szFunc,
@@ -360,7 +360,7 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
         case M_TRACE:
             snprintf(logOutput,
                      sizeof(logOutput) - 1,
-                     "%s %s [%s %s]- %s:%d | %s\n",
+                     "%s %s [%s %s] - %s: %d | %s\n",
                      _szLevel[level],
                      timestr,
                      process_info,
@@ -434,4 +434,89 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
     }
 
     _mlogUnlock(_loggers[logNo]->mtx);
+}
+
+
+int printBuffer_(int logLevel, uint8_t* pBuf, uint16_t bufLen)
+{
+    if (pBuf == NULL && bufLen == 0)
+        return -1;
+
+    switch (logLevel) {
+    case M_TRACE: {
+        for (int i = 0; i < bufLen; i++)
+            SLOG_TRACE_RAW("%02x ", pBuf[i]);
+        SLOG_TRACE_RAW("\n");
+    } break;
+
+    case M_DEBUG: {
+        for (int i = 0; i < bufLen; i++)
+            SLOG_DEBUG_RAW("%02x ", pBuf[i]);
+        SLOG_DEBUG_RAW("\n");
+    } break;
+
+    case M_INFO:
+    default: {
+        for (int i = 0; i < bufLen; i++)
+            SLOG_INFO_RAW("%02x ", pBuf[i]);
+        SLOG_INFO_RAW("\n");
+    } break;
+    }
+
+    return 0;
+}
+
+
+static int _makeStarStr(char* str, uint8_t nb)
+{
+    for (uint8_t i = 0; i < nb; i++)
+        str[i] = '*';
+
+    return 0;
+}
+
+
+static int _makeInfoStr(char* str, uint8_t nb)
+{
+    for (uint8_t i = (uint8_t)strlen(str); i < nb - 1; i++)
+        str[i] = ' ';
+
+    str[nb - 1] = '*';
+
+    return 0;
+}
+
+
+int printAppInfo_(const char* szName, const char* szVersion, const char* szDate, const char* szTime)
+{
+    char szStars[128]   = {0};
+    char szAppInfo[128] = {0};
+    char szAppVer[128]  = {0};
+    char szAppDate[128] = {0};
+
+
+    snprintf(szAppInfo, sizeof(szAppInfo), "* This is \"%s\" App", szName);
+    snprintf(szAppVer, sizeof(szAppVer), "* Version: %s", szVersion);
+    snprintf(szAppDate, sizeof(szAppDate), "* Build time: %s, %s", szDate, szTime);
+
+    int maxLen = strlen(szAppInfo);
+    if (strlen(szAppVer) > maxLen)
+        maxLen = strlen(szAppVer);
+    if (strlen(szAppDate) > maxLen)
+        maxLen = strlen(szAppDate);
+
+    _makeStarStr(szStars, maxLen + 2);
+    _makeInfoStr(szAppInfo, maxLen + 2);
+    _makeInfoStr(szAppVer, maxLen + 2);
+    _makeInfoStr(szAppDate, maxLen + 2);
+
+    SLOG_INFO_RAW("\n");
+    SLOG_INFO("%s", szStars);
+    SLOG_INFO("%s", szAppInfo);
+    SLOG_INFO("%s", szAppVer);
+    SLOG_INFO("%s", szAppDate);
+    SLOG_INFO("%s", szStars);
+    SLOG_INFO_RAW("\n");
+
+    return 0;
 }
