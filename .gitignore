@@ -1,3 +1,4 @@
-build
-src/main.c
+build/
+test/
 inc/
+.vscode/settings.json

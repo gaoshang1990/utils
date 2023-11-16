@@ -8,38 +8,38 @@
 /* bcd to hex: 0x10 -> 10(0x0a) */
 uint8_t bcd2hex_(uint8_t bcd)
 {
-    if (((bcd & 0x0f) > 9) || (((bcd >> 4) & 0x0f) > 9)) {
+    uint8_t lowerNibble = bcd & 0x0f;
+    uint8_t upperNibble = (bcd >> 4) & 0x0f;
+
+    if (lowerNibble > 9 || upperNibble > 9)
         return 0;
-    }
-    return ((bcd >> 4) * 10 + (bcd & 0x0f));
+
+    return upperNibble * 10 + lowerNibble;
 }
 
 
 /* hex to bcd: 0x10(16) -> 0x16 */
 uint8_t hex2bcd_(uint8_t hex)
 {
-    if (hex > 99) {
+    if (hex > 99)
         return 0x99;
-    }
-    uint8_t bcd = hex % 10;
-    uint8_t tmp = (hex / 10) % 10;
-    tmp <<= 4;
-    bcd |= tmp;
 
-    return bcd;
+    uint8_t lowerNibble = hex % 10;
+    uint8_t upperNibble = (hex / 10) % 10;
+
+    return (upperNibble << 4) | lowerNibble;
 }
 
 
 /* memcpy in an opposite direction */
 int memcpy_r_(uint8_t* dst, uint8_t* src, int len)
 {
-    if (dst == NULL || src == NULL) {
+    if (dst == NULL || src == NULL)
         return -1;
-    }
-    int i = 0;
-    for (i = 0; i < len; i++) {
+
+    for (int i = 0; i < len; i++)
         dst[i] = src[len - i - 1];
-    }
+
     return 0;
 }
 
@@ -66,14 +66,15 @@ int16_t buf2int16_(uint8_t* buf, uint16_t* offset, int mode)
         printf("buf is NULL!\n");
         return -1;
     }
-    if (offset) {
+
+    if (offset)
         buf += *offset;
-    }
+
     int16_t ret = (mode == UCL_BIG_ENDIAN) ? (buf[0] << 8) | buf[1] : (buf[1] << 8) | buf[0];
 
-    if (offset) {
+    if (offset)
         *offset += sizeof(int16_t);
-    }
+
     return ret;
 }
 
@@ -112,19 +113,21 @@ int64_t buf2int64_(uint8_t* buf, uint16_t* offset, int mode)
     if (offset)
         buf += *offset;
 
-    int64_t ret =
-        (mode == UCL_BIG_ENDIAN) ?
-            ((int64_t)buf[0] << 56) | ((int64_t)buf[1] << 48) | ((int64_t)buf[2] << 40) | ((int64_t)buf[3] << 32) |
-                ((int64_t)buf[4] << 24) | ((int64_t)buf[5] << 16) | ((int64_t)buf[6] << 8) | (int64_t)buf[7] :
-            ((int64_t)buf[7] << 56) | ((int64_t)buf[6] << 48) | ((int64_t)buf[5] << 40) | ((int64_t)buf[4] << 32) |
-                ((int64_t)buf[3] << 24) | ((int64_t)buf[2] << 16) | ((int64_t)buf[1] << 8) | (int64_t)buf[0];
+    int64_t ret = 0;
+    if (mode == UCL_BIG_ENDIAN) {
+        for (int i = 0; i < 8; i++)
+            ret = (ret << 8) | buf[i];
+    }
+    else {
+        for (int i = 7; i >= 0; i--)
+            ret = (ret << 8) | buf[i];
+    }
 
     if (offset)
         *offset += sizeof(int64_t);
 
     return ret;
 }
-
 
 float buf2float_(uint8_t* buf, uint16_t* offset, int mode)
 {

@@ -45,11 +45,11 @@ static FifoMutex _semaphore_create(int initialValue)
 #ifdef _WIN32
     HANDLE self = CreateSemaphore(NULL, initialValue, 1, NULL);
 #else
-    FifoMutex self = malloc(sizeof(sem_t));
+    sem_t* self = (sem_t*)malloc(sizeof(sem_t));
     sem_init((sem_t*)self, 0, initialValue);
 #endif
 
-    return self;
+    return (FifoMutex)self;
 }
 
 
@@ -84,7 +84,6 @@ static void _semaphore_destroy(FifoMutex self)
 }
 
 
-/* 环形队列初始化 */
 Fifo_t fifoInit_(int QSize)
 {
     Fifo_t fifo = (Fifo_t)malloc(sizeof(struct _Fifo_t_));
@@ -109,7 +108,6 @@ Fifo_t fifoInit_(int QSize)
 }
 
 
-/* 判断环形队列是否已满 */
 bool fifoFull_(Fifo_t fifo)
 {
     if (fifo == NULL) {
@@ -132,7 +130,6 @@ bool fifoFull_(Fifo_t fifo)
 }
 
 
-/* 判断环形队列为空 */
 bool fifoEmpty_(Fifo_t fifo)
 {
     if (fifo == NULL) {
@@ -150,7 +147,6 @@ bool fifoEmpty_(Fifo_t fifo)
 }
 
 
-/* 插入数据 */
 int fifoWrite_(Fifo_t fifo, void* data)
 {
     if (fifo == NULL) {
@@ -173,7 +169,6 @@ int fifoWrite_(Fifo_t fifo, void* data)
 }
 
 
-/* 读取数据 */
 int fifoRead_(void* dst, int dstLen, Fifo_t fifo)
 {
     if (fifo == NULL) {
