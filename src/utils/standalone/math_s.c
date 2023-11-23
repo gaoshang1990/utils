@@ -106,28 +106,28 @@ int shiftDecimalPoint_(char* szNum, int scaler)
     if (scaler == 0)
         return 0;
 
-    uint8_t pos; /* 小数点所在索引 */
+    uint8_t pos; /* Decimal point index */
     uint8_t len = (uint8_t)strlen(szNum);
     for (pos = 0; pos < len; pos++) {
         if (szNum[pos] == '.')
             break;
     }
     if (pos == len) {
-        szNum[pos]     = '.'; /* 如果没有小数点 则在最后加一个 */
+        szNum[pos]     = '.'; /* If there is no decimal point, add one at the end */
         szNum[pos + 1] = '\0';
     }
 
-    if (scaler < 0) { /* 小数点左移 */
+    if (scaler < 0) { /* Move decimal point to the left */
         scaler *= -1;
 
-        uint8_t nbLeft = pos; /* 当前小数点左侧的数字个数 */
+        uint8_t nbLeft = pos; /* Number of digits to the left of the decimal point */
         if (szNum[0] == '-' || szNum[0] == '+') {
             nbLeft--;
         }
-        uint8_t nbZero = (nbLeft > scaler) ? 0 : scaler - nbLeft + 1; /* 需补0的个数 */
+        uint8_t nbZero = (nbLeft > scaler) ? 0 : scaler - nbLeft + 1; /* Number of zeros to be added */
         if (nbZero > 0) {
             int bsign = szNum[0] == '-' || szNum[0] == '+';
-            memmove(&szNum[nbZero + bsign], &szNum[bsign], strlen(szNum) + 1); /* 有符号需偏移1位 */
+            memmove(&szNum[nbZero + bsign], &szNum[bsign], strlen(szNum) + 1); /* If there is a sign, offset by 1 */
             memset(&szNum[bsign], '0', nbZero);
             pos += nbZero;
         }
@@ -136,7 +136,7 @@ int shiftDecimalPoint_(char* szNum, int scaler)
             pos--;
         }
     }
-    else { /* 小数点右移 */
+    else { /* Move decimal point to the right */
         for (int i = 0; i < scaler; i++) {
             if (szNum[pos + 1] == '\0') {
                 szNum[pos + 1] = '0';
@@ -147,16 +147,13 @@ int shiftDecimalPoint_(char* szNum, int scaler)
         }
     }
 
-    /* 处理末尾多余的零 */
+    /* Handle trailing zeros */
     len = (uint8_t)strlen(szNum) - 1;
     while (szNum[len] == '0') {
         szNum[len--] = '\0';
     }
     if (szNum[len] == '.') {
         szNum[len--] = '\0';
-    }
-    if (len == 0) {
-        szNum[0] = '0';
     }
 
     return 0;
