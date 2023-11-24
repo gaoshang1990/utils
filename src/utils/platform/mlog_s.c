@@ -442,26 +442,9 @@ int printBuffer_(int logLevel, uint8_t* pBuf, uint16_t bufLen)
     if (pBuf == NULL && bufLen == 0)
         return -1;
 
-    switch (logLevel) {
-    case M_TRACE: {
-        for (int i = 0; i < bufLen; i++)
-            SLOG_TRACE_RAW("%02x ", pBuf[i]);
-        SLOG_TRACE_RAW("\n");
-    } break;
-
-    case M_DEBUG: {
-        for (int i = 0; i < bufLen; i++)
-            SLOG_DEBUG_RAW("%02x ", pBuf[i]);
-        SLOG_DEBUG_RAW("\n");
-    } break;
-
-    case M_INFO:
-    default: {
-        for (int i = 0; i < bufLen; i++)
-            SLOG_INFO_RAW("%02x ", pBuf[i]);
-        SLOG_INFO_RAW("\n");
-    } break;
-    }
+    for (int i = 0; i < bufLen; i++)
+        SLOG_RAW(logLevel, "%02x ", pBuf[i]);
+    SLOG_RAW(logLevel, "\n");
 
     return 0;
 }
