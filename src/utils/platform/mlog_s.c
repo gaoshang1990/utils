@@ -312,7 +312,7 @@ int slogInit_(const char* logDir, const char* fileName, MLogLevel_t level)
  * and exceeding the length will result in truncation.
  * Through MAX_LOG_LINE macro can modify maximum length
  */
-void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int line, const char* fmt, ...)
+void mlogWrite_(int logNo, int level, bool isRaw, const char* szFunc, int line, const char* fmt, ...)
 {
     static char logContent[MAX_LOG_LINE] = {0};
     static char logOutput[MAX_LOG_LINE]  = {0};
@@ -338,7 +338,7 @@ void mlogWrite_(int logNo, MLogLevel_t level, bool braw, const char* szFunc, int
     vsnprintf(logContent, sizeof(logContent) - 1, fmt, args);
     va_end(args);
 
-    if (!braw) {
+    if (!isRaw) {
         char timestr[MAX_TIME_STR] = {0};
         _getCurrTime(sizeof(timestr), timestr); /* time */
         char* process_info = _getProcessInfo(); /* pid */
