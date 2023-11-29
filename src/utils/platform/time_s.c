@@ -11,7 +11,7 @@
 #include "time_s.h"
 
 
-const uint8_t _monthTab[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+const uint8_t MONTH_TAB[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 
 struct tm second2struct_(time_t sec)
