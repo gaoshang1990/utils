@@ -26,16 +26,17 @@ typedef void* FifoMutex;
 
 
 typedef struct _FifoNode_t_ {
-    void*  data;
-    size_t size;
+    void* data;
 } FifoNode;
 
 
 struct _Fifo_t_ {
-    FifoMutex   lock;
-    uint16_t    size;
-    uint16_t    write;
-    uint16_t    read;
+    FifoMutex lock;
+    size_t    size;
+    size_t    write;
+    size_t    read;
+
+    size_t      data_len;
     FifoNode*   nodes;
     FreeNode_cb free_cb;
 };
@@ -85,20 +86,21 @@ static void _semaphore_destroy(FifoMutex self)
 }
 
 
-Fifo_t fifo_init(uint16_t QSize, FreeNode_cb free_cb)
+Fifo_t fifo_init(size_t fifo_size, size_t data_len, FreeNode_cb free_cb)
 {
     Fifo_t fifo = (Fifo_t)calloc(1, sizeof(struct _Fifo_t_));
     if (fifo == NULL)
         return NULL;
 
-    fifo->nodes = (FifoNode*)calloc(QSize, sizeof(FifoNode));
+    fifo->nodes = (FifoNode*)calloc(fifo_size, sizeof(FifoNode));
     if (fifo->nodes) {
-        fifo->size    = QSize;
-        fifo->free_cb = free_cb;
-        fifo->lock    = _semaphore_create(1);
+        fifo->lock     = _semaphore_create(1);
+        fifo->size     = fifo_size;
+        fifo->data_len = data_len;
+        fifo->free_cb  = free_cb;
     }
     else {
-        free(fifo);
+        _ffree(fifo);
     }
 
     return fifo;
@@ -140,7 +142,7 @@ bool fifo_empty(Fifo_t fifo)
 }
 
 
-int fifo_write(Fifo_t fifo, void* src, int src_len, bool caller_owned)
+int fifo_write(Fifo_t fifo, void* src, bool caller_owned)
 {
     if (fifo == NULL)
         return -FIFO_NULL;
@@ -154,14 +156,27 @@ int fifo_write(Fifo_t fifo, void* src, int src_len, bool caller_owned)
 
     if (caller_owned) { /* data is malloc by caller */
         fifo->nodes[pos].data = src;
-        fifo->nodes[pos].size = src_len;
     }
     else {
-        fifo->nodes[pos].data = malloc(src_len);
-        memcpy(fifo->nodes[pos].data, src, src_len);
+        fifo->nodes[pos].data = malloc(fifo->data_len);
+        memcpy(fifo->nodes[pos].data, src, fifo->data_len);
     }
 
     _semaphore_post(fifo->lock);
+
+    return FIFO_OK;
+}
+
+
+int fifo_free_data(Fifo_t fifo, void* data)
+{
+    if (fifo == NULL)
+        return -FIFO_NULL;
+
+    if (fifo->free_cb)
+        fifo->free_cb(data);
+    else
+        free(data);
 
     return FIFO_OK;
 }
@@ -171,7 +186,7 @@ int fifo_write(Fifo_t fifo, void* src, int src_len, bool caller_owned)
  * \param   caller2free if true, make dst point to data, and caller should free data after use
  *                      if false, copy data to dst and free data
  */
-int fifo_read(Fifo_t fifo, void* dst, int dst_len, bool caller2free)
+int fifo_read(Fifo_t fifo, void* dst, bool caller2free)
 {
     if (fifo == NULL)
         return -FIFO_NULL;
@@ -185,16 +200,13 @@ int fifo_read(Fifo_t fifo, void* dst, int dst_len, bool caller2free)
     FifoNode* node = &fifo->nodes[pos];
 
     if (caller2free) {
-        dst = fifo->nodes[pos].data; /* caller should free data */
+        dst = node->data; /* caller should free data after use */
     }
     else {
         if (dst != NULL && node->data != NULL)
-            memcpy(dst, node->data, dst_len);
+            memcpy(dst, node->data, fifo->data_len);
 
-        if (fifo->free_cb)
-            fifo->free_cb(fifo->nodes[pos].data);
-        else
-            _ffree(fifo->nodes[pos].data);
+        fifo_free_data(fifo, node->data);
     }
 
     _semaphore_post(fifo->lock);
@@ -209,7 +221,7 @@ int fifo_clear(Fifo_t fifo)
         return -FIFO_NULL;
 
     while (fifo_empty(fifo) == false)
-        fifo_read(fifo, NULL, 0, false);
+        fifo_read(fifo, NULL, false);
 
     return FIFO_OK;
 }
