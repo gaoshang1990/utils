@@ -12,8 +12,8 @@ extern "C" {
 enum { LOG_LEVEL_DEBUG, LOG_LEVEL_INFO, LOG_LEVEL_WARN, LOG_LEVEL_OFF };
 
 
-#define USER_ASSERT_ON 1               /* 启用断言功能 */
-#define DEBUG_LEVEL    LOG_LEVEL_DEBUG /* 日志等级 */
+#define USER_ASSERT_ON 1
+#define DEBUG_LEVEL    LOG_LEVEL_DEBUG
 
 
 #define LOG_DEBUG(fmt, ...)                   \
