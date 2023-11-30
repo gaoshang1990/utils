@@ -1,7 +1,7 @@
 # linux下的配置
 # 在查找到所有的c文件、cpp文件、头文件后，包含在CMakeLists.txt中
 
-if (NOT WIN32)
+if (NOT MSVC)
   message(STATUS "Configuring for Linux")
 
   # 删除不需要的文件

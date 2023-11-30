@@ -52,7 +52,7 @@ const char* getConfigFilePath_(const char* strAppName, const char* strFileName)
 #ifndef _WIN32
     char szAbsConfigPath[256];
     char szAbsAppNamePath[256];
-    char szTmp[256];
+    char szTmp[256 + 32];
 
     sprintf(szAbsAppNamePath, "/data/app/%s", strAppName);
     sprintf(szAbsConfigPath, "/data/app/%s/configFile/%s", strAppName, strFileName);

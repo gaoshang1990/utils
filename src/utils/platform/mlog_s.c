@@ -32,7 +32,7 @@
 #define MLOG_FILE_MAX_SIZE   (5 * 1024 * 1024) /* max size of logfile */
 #define MLOG_FILE_MAX_ROTATE (5)               /* rotate file max num */
 #define MAX_TIME_STR         (20)
-#define TIME_STR_FMT         "%04d-%02d-%02d %02d:%02d:%02d"
+#define TIME_STR_FMT         "%04u-%02u-%02u %02u:%02u:%02u"
 #define MAX_FILE_PATH_LEN    (256)
 #define MAX_LOG_LINE         (10 * 1024)
 #define MAX_LOG_NUM          (16)
@@ -197,7 +197,7 @@ static void _rotateFile(int logNo)
 
     snprintf(oldPath, sizeof(oldPath) - 1, "%s/%s", _loggers[logNo]->dir, fileName);
     size_t baseLen = strlen(oldPath);
-    strncpy(newPath, oldPath, baseLen);
+    snprintf(newPath, baseLen + 1, "%s", oldPath);
 
     const uint8_t suffixLen = 32;
     for (int n = _loggers[logNo]->maxCnt - 1; n >= 0; --n) {
@@ -314,8 +314,8 @@ int slogInit_(const char* logDir, const char* fileName, MLogLevel_t level)
  */
 void mlogWrite_(int logNo, int level, bool isRaw, const char* szFunc, int line, const char* fmt, ...)
 {
-    static char logContent[MAX_LOG_LINE] = {0};
-    static char logOutput[MAX_LOG_LINE]  = {0};
+    static char logContent[MAX_LOG_LINE]     = {0};
+    static char logOutput[MAX_LOG_LINE + 64] = {0};
 
     if (logNo < 0 || logNo >= MAX_LOG_NUM) {
         printf("mlogWrite_: logNo[%d] is invalid\n", logNo);

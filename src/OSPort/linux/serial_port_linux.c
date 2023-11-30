@@ -296,8 +296,8 @@ int SerialPort_readByte(SerialPort self)
         return -1;
     }
     else {
-        read(self->fd, (char*)buf, 1);
-        return (int)buf[0];
+        int rc = read(self->fd, (char*)buf, 1);
+        return rc == 1 ? (int)buf[0] : -1;
     }
 }
 
