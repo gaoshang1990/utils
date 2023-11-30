@@ -10,6 +10,7 @@ extern "C" {
 
 
 typedef void (*FreeNode_cb)(void* data);
+typedef void* (*CopyNode_cb)(void* dst, const void* src, size_t len);
 typedef struct _Fifo_t_* Fifo_t;
 
 
@@ -21,12 +22,12 @@ enum {
 };
 
 
-Fifo_t fifo_init(size_t fifo_size, size_t data_len, FreeNode_cb free_cb);
+Fifo_t fifo_init(size_t fifo_size, size_t data_len, FreeNode_cb free_cb, CopyNode_cb copy_cb);
 bool   fifo_full(Fifo_t fifo);
 bool   fifo_empty(Fifo_t fifo);
 int    fifo_free_data(Fifo_t fifo, void* data);
 int    fifo_write(Fifo_t fifo, void* src, bool caller_owned);
-int    fifo_read(Fifo_t fifo, void* dst, bool caller2free);
+void*  fifo_read(Fifo_t fifo, void* dst);
 int    fifo_clear(Fifo_t fifo);
 int    fifo_destroy(Fifo_t fifo);
 
