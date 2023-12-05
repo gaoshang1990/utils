@@ -39,23 +39,11 @@ include_directories(${ALL_INC_DIRS})
 if(MSVC)
     add_library(${PROJECT_NAME} ${C_FILES} ${CPP_FILES} ${H_FILES})
 else()
-    add_library(${PROJECT_NAME} SHARED ${C_FILES} ${CPP_FILES} ${H_FILES})
+    add_library(${PROJECT_NAME} ${C_FILES} ${CPP_FILES} ${H_FILES})
 endif()
 
 # 添加链接库
 target_link_libraries(${PROJECT_NAME} ${LINK_LIB_FILES})
-
-
-# 生成测试工程
-if (MSVC)
-    auto_sources(TEST_C_FILES   "*.c"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/test")
-    auto_sources(TEST_H_FILES   "*.h"   "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/test")
-    auto_sources(TEST_CPP_FILES "*.cpp" "RECURSE" "${CMAKE_CURRENT_SOURCE_DIR}/test")
-    link_directories(${CMAKE_CURRENT_SOURCE_DIR}/build/win32/Debug)
-    add_executable(test ${TEST_C_FILES} ${C_FILES} ${TEST_CPP_FILES} ${CPP_FILES} ${H_FILES} ${TEST_H_FILES})
-    target_link_libraries(test ${LINK_LIB_FILES})
-endif ()
-
 
 # 复制头文件到指定目录
 set(DST_DIR_B64 "${CMAKE_CURRENT_SOURCE_DIR}/inc/base64")
@@ -83,7 +71,7 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${H_FILES_ALO} ${DST_DIR_ALO}
     COMMAND ${CMAKE_COMMAND} -E copy ${H_FILES_PLF} ${DST_DIR_PLF}
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/build/win32/Release/${PROJECT_NAME}.lib ${CMAKE_CURRENT_SOURCE_DIR}/inc
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/build/mingw/lib${PROJECT_NAME}.so        ${CMAKE_CURRENT_SOURCE_DIR}/inc
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/build/linux/lib${PROJECT_NAME}.a        ${CMAKE_CURRENT_SOURCE_DIR}/inc
 )
 
 # 添加自定义目标，将上述自定义命令作为依赖

@@ -1,23 +1,21 @@
 {
     "version": "0.2.0",
     "manual": "https://code.visualstudio.com/docs/cpp/launch-json-reference",
-    "configurations": [{
-        "name": "C++ Launch (Windows)",
-        "type": "cppvsdbg",
-        "request": "launch",
-        "program": "${workspaceFolder}/build/win32/Debug/test.exe",
-        // "symbolSearchPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx86/x86",
-        "stopAtEntry": false,
-        "cwd": "${workspaceFolder}/build/win32",
-        "environment": [],
-        "console": "integratedTerminal",
-        // "console": "externalTerminal",
-        // "console": "internalConsole",
-        // "externalConsole": false,
-        "logging": {
-            "moduleLoad": false,
-            "trace": true
-        },
-        "preLaunchTask": "Compile_win32"
-    }]
+    "configurations": [
+        {
+            "name": "C++ Launch (Windows)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/Debug/test_utils.exe",
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/win32",
+            "environment": [],
+            "console": "integratedTerminal",
+            "logging": {
+                "moduleLoad": false,
+                "trace": true
+            },
+            "preLaunchTask": "compile_test"
+        }
+    ]
 }
