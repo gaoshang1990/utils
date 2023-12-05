@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "debug_s.h"
+#include "debug_.h"
 #include "fsm_.h"
 
 
@@ -61,8 +61,8 @@ Fsm_t fsmInit_(Fsm_t* fsm)
 
 int fsmSetState_(Fsm_t const fsm, FsmState_cb initialState)
 {
-    ASSERT_(fsm != NULL);
-    ASSERT_(initialState != NULL);
+    ASSERT_(fsm != NULL, "fsm is null");
+    ASSERT_(initialState != NULL, "initialState is null");
 
     fsm->currentState = initialState;
 
@@ -72,7 +72,7 @@ int fsmSetState_(Fsm_t const fsm, FsmState_cb initialState)
 
 int fsmRun_(Fsm_t const fsm)
 {
-    ASSERT_(fsm != NULL);
+    ASSERT_(fsm != NULL, "fsm is null");
 
     if (!fsm->isRunning) {
         fsm->isRunning = true;
@@ -85,7 +85,7 @@ int fsmRun_(Fsm_t const fsm)
 
 int fsmRunAll_(Fsm_t const fsm)
 {
-    ASSERT_(fsm != (Fsm_t)0);
+    ASSERT_(fsm != (Fsm_t)0, "fsm is null");
 
     fsmRun_(fsm);
 
@@ -100,7 +100,7 @@ int fsmRunAll_(Fsm_t const fsm)
 
 int fsmStop_(Fsm_t const fsm)
 {
-    ASSERT_(fsm != (Fsm_t)0);
+    ASSERT_(fsm != (Fsm_t)0, "fsm is null");
 
     fsm->isRunning = false;
 
@@ -110,7 +110,7 @@ int fsmStop_(Fsm_t const fsm)
 
 int fsmStopAll_(Fsm_t const fsm)
 {
-    ASSERT_(fsm != (Fsm_t)0);
+    ASSERT_(fsm != (Fsm_t)0, "fsm is null");
 
     fsmStop_(fsm);
 
@@ -125,7 +125,7 @@ int fsmStopAll_(Fsm_t const fsm)
 
 int fsmDestroy_(Fsm_t const fsm)
 {
-    ASSERT_(fsm != (Fsm_t)0);
+    ASSERT_(fsm != (Fsm_t)0, "fsm is null");
 
     for (int i = 0; i < lstCount(&fsm->children); i++) {
         Fsm_t child = (Fsm_t)lstNth(&fsm->children, i);
@@ -140,8 +140,8 @@ int fsmDestroy_(Fsm_t const fsm)
 
 int fsmAddChild_(Fsm_t const fsm, Fsm_t const child)
 {
-    ASSERT_(fsm != (Fsm_t)0);
-    ASSERT_(child != (Fsm_t)0);
+    ASSERT_(fsm != (Fsm_t)0, "fsm is null");
+    ASSERT_(child != (Fsm_t)0, "child is null");
 
     child->father = fsm;
     child->depth  = fsm->depth + 1;
@@ -154,7 +154,7 @@ int fsmAddChild_(Fsm_t const fsm, Fsm_t const child)
 
 int fsmSetOwner_(Fsm_t const fsm, FsmState_cb state)
 {
-    ASSERT_(fsm != (Fsm_t)0);
+    ASSERT_(fsm != (Fsm_t)0, "fsm is null");
 
     fsm->ownerTrigger = state;
 
@@ -164,8 +164,8 @@ int fsmSetOwner_(Fsm_t const fsm, FsmState_cb state)
 
 int fsmRemoveChild_(Fsm_t const fsm, Fsm_t const child)
 {
-    ASSERT_(fsm != (Fsm_t)0);
-    ASSERT_(child != (Fsm_t)0);
+    ASSERT_(fsm != (Fsm_t)0, "fsm is null");
+    ASSERT_(child != (Fsm_t)0, "child is null");
 
     lstDelete(&fsm->children, (NODE*)child);
 
@@ -175,7 +175,7 @@ int fsmRemoveChild_(Fsm_t const fsm, Fsm_t const child)
 
 int fsmDispatch_(Fsm_t const fsm, FsmSignal const signal)
 {
-    ASSERT_(fsm != NULL);
+    ASSERT_(fsm != NULL, "fsm is null");
 
     if (!fsm->isRunning)
         return -1;
@@ -201,8 +201,8 @@ int fsmDispatch_(Fsm_t const fsm, FsmSignal const signal)
 
 void fsmTransfer_(Fsm_t const fsm, FsmState_cb nextState)
 {
-    ASSERT_(fsm != (Fsm_t)0);
-    ASSERT_(nextState != (FsmState_cb)0);
+    ASSERT_(fsm != (Fsm_t)0, "fsm is null");
+    ASSERT_(nextState != (FsmState_cb)0, "nextState is null");
 
     fsm->currentState = (FsmState_cb)nextState;
 }
@@ -210,8 +210,8 @@ void fsmTransfer_(Fsm_t const fsm, FsmState_cb nextState)
 
 void fsmTransferWithEvent_(Fsm_t const fsm, FsmState_cb nextState)
 {
-    ASSERT_(fsm != (Fsm_t)0);
-    ASSERT_(nextState != (FsmState_cb)0);
+    ASSERT_(fsm != (Fsm_t)0, "fsm is null");
+    ASSERT_(nextState != (FsmState_cb)0, "nextState is null");
 
     fsmDispatch_(fsm, FSM_SIG_EXIT);
     fsmTransfer_(fsm, nextState);

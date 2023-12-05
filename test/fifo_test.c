@@ -1,6 +1,7 @@
 
 #include "mlog_s.h"
 #include "fifo_.h"
+#include "debug_.h"
 
 
 typedef struct _FifoTest_t_ {
@@ -42,8 +43,7 @@ int fifo_test()
                             sizeof(FifoTest),
                             FifoTest_free,  // FifoTest_copy can be NULL, equal to free()
                             FifoTest_copy); // FifoTest_free can be NULL, equal to memcpy()
-    if (fifo == NULL)
-        return -1;
+    ASSERT_(fifo, "fifo_init failed");
 
     FifoTest test1;
     test1.len    = 2;
