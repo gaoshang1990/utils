@@ -307,6 +307,28 @@ int slogInit_(const char* logDir, const char* fileName, MLogLevel_t level)
 }
 
 
+int mlog_set_level(int log_no, int level)
+{
+    if (log_no < 0 || log_no >= MAX_LOG_NUM) {
+        printf("mlog_set_level_: log_no[%d] is invalid\n", log_no);
+        return -1;
+    }
+
+    if (_loggers[log_no] == NULL)
+        mlogInit_(log_no, NULL, NULL, M_DEBUG);
+
+    _loggers[log_no]->level = (MLogLevel_t)level;
+
+    return 0;
+}
+
+
+int slog_set_level(int level)
+{
+    return mlog_set_level(0, level);
+}
+
+
 /*!
  * warn: The maximum length of the output content at one time is 10KB,
  * and exceeding the length will result in truncation.

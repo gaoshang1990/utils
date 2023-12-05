@@ -14,6 +14,8 @@ typedef enum _E_MlogLevel { M_TRACE = 0, M_DEBUG, M_INFO, M_WARN, M_ERROR } MLog
 
 int  mlogInit_(int logNo, const char* logDir, const char* fileName, MLogLevel_t level);
 int  slogInit_(const char* logDir, const char* fileName, MLogLevel_t level);
+int  mlog_set_level(int log_no, int level);
+int  slog_set_level(int level);
 void mlogWrite_(int logNo, int level, bool isRaw, const char* szFunc, int line, const char* fmt, ...);
 int  printBuffer_(int logLevel, uint8_t* pBuf, uint16_t bufLen);
 int  printAppInfo_(const char* szName, const char* szVersion, const char* szDate, const char* szTime);
