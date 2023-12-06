@@ -47,11 +47,11 @@
             "label": "cmake_test",
             "type": "shell",
             "options": {
-                "cwd": "${workspaceFolder}/build/test"
+                "cwd": "${workspaceFolder}/build/win32"
             },
             "command": "cmake",
             "args": [
-                "../../test",
+                "../..",
                 "-G",
                 "Visual Studio 16 2019",
                 "-A Win32"
@@ -62,7 +62,7 @@
             "label": "compile_test",
             "type": "shell",
             "options": {
-                "cwd": "${workspaceFolder}/build/test"
+                "cwd": "${workspaceFolder}/build/win32"
             },
             "command": "cmake --build .",
             "group": "build",
