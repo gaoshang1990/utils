@@ -6,7 +6,7 @@
             "name": "C++ Launch (Windows)",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/test/Debug/test_utils.exe",
+            "program": "${workspaceFolder}/build/win32/Debug/test_utils.exe",
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/win32",
             "environment": [],
