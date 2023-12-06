@@ -27,9 +27,7 @@
             "options": {
                 "cwd": "${workspaceFolder}/build/mingw"
             },
-            "command": [
-                "cmake"
-            ],
+            "command": "cmake",
             "args": [
                 "../..",
                 "-G",
@@ -44,21 +42,6 @@
             "group": "build",
         },
         {
-            "label": "cmake_test",
-            "type": "shell",
-            "options": {
-                "cwd": "${workspaceFolder}/build/win32"
-            },
-            "command": "cmake",
-            "args": [
-                "../..",
-                "-G",
-                "Visual Studio 16 2019",
-                "-A Win32"
-            ],
-            "group": "build",
-        },
-        {
             "label": "compile_test",
             "type": "shell",
             "options": {
@@ -66,9 +49,7 @@
             },
             "command": "cmake --build .",
             "group": "build",
-            "dependsOn": [
-                "cmake_test"
-            ],
+            "dependsOn": "cmake_win32",
             "problemMatcher": "$msCompile"
         },
         {
@@ -79,9 +60,7 @@
             },
             "command": "cmake --build . --config Release",
             "group": "build",
-            "dependsOn": [
-                "cmake_win32"
-            ],
+            "dependsOn": "cmake_win32",
             "problemMatcher": "$msCompile"
         },
         {
@@ -92,9 +71,7 @@
             },
             "command": "mingw32-make",
             "group": "build",
-            "dependsOn": [
-                "CMake_mingw"
-            ],
+            "dependsOn": "CMake_mingw",
         },
         {
             "label": "mkdir",
@@ -102,7 +79,7 @@
             "command": "mkdir",
             "args": [
                 "-p",
-                "${workspaceFolder}/build,${workspaceFolder}/build/linux,${workspaceFolder}/build/win32,${workspaceFolder}/build/mingw,${workspaceFolder}/build/test"
+                "${workspaceFolder}/build,${workspaceFolder}/build/linux,${workspaceFolder}/build/win32,${workspaceFolder}/build/mingw"
             ],
             "group": "build"
         },

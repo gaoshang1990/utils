@@ -10,7 +10,6 @@
                 "UNICODE",
                 "_UNICODE",
                 "_WIN32",
-                "WIN32",
                 "WIN32"
             ],
             "compilerPath": "C:/MinGW/bin/gcc.exe",
