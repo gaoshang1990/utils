@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lib_s.h"
+#include "lib_.h"
 
 
 /* bcd to hex: 0x10 -> 10(0x0a) */
-uint8_t bcd2hex_(uint8_t bcd)
+uint8_t bcd2hex(uint8_t bcd)
 {
     uint8_t lowerNibble = bcd & 0x0f;
     uint8_t upperNibble = (bcd >> 4) & 0x0f;
@@ -19,7 +19,7 @@ uint8_t bcd2hex_(uint8_t bcd)
 
 
 /* hex to bcd: 0x10(16) -> 0x16 */
-uint8_t hex2bcd_(uint8_t hex)
+uint8_t hex2bcd(uint8_t hex)
 {
     if (hex > 99)
         return 0x99;
@@ -32,7 +32,7 @@ uint8_t hex2bcd_(uint8_t hex)
 
 
 /* memcpy in an opposite direction */
-int memcpy_r_(uint8_t* dst, uint8_t* src, int len)
+int memcpy_r(uint8_t* dst, uint8_t* src, int len)
 {
     if (dst == NULL || src == NULL)
         return -1;
@@ -57,113 +57,8 @@ int memrev_(uint8_t* buf, int len)
 }
 
 
-/**
- * \param   mode: 0-little endian, 1-big endian
- */
-int16_t buf2int16_(uint8_t* buf, uint16_t* offset, int mode)
-{
-    if (buf == NULL) {
-        printf("buf is NULL!\n");
-        return -1;
-    }
-
-    if (offset)
-        buf += *offset;
-
-    int16_t ret = (mode == UCL_BIG_ENDIAN) ? (buf[0] << 8) | buf[1] : (buf[1] << 8) | buf[0];
-
-    if (offset)
-        *offset += sizeof(int16_t);
-
-    return ret;
-}
-
-
-/**
- * \param   mode: 0-little endian, 1-big endian
- */
-int32_t buf2int32_(uint8_t* buf, uint16_t* offset, int mode)
-{
-    if (buf == NULL) {
-        printf("buf is NULL!\n");
-        return -1;
-    }
-    if (offset)
-        buf += *offset;
-
-    int32_t ret = (mode == UCL_BIG_ENDIAN) ? (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3] :
-                                             (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0];
-
-    if (offset)
-        *offset += sizeof(int32_t);
-
-    return ret;
-}
-
-
-/**
- * \param   mode: 0-little endian, 1-big endian
- */
-int64_t buf2int64_(uint8_t* buf, uint16_t* offset, int mode)
-{
-    if (buf == NULL) {
-        printf("buf is NULL!\n");
-        return -1;
-    }
-    if (offset)
-        buf += *offset;
-
-    int64_t ret = 0;
-    if (mode == UCL_BIG_ENDIAN) {
-        for (int i = 0; i < 8; i++)
-            ret = (ret << 8) | buf[i];
-    }
-    else {
-        for (int i = 7; i >= 0; i--)
-            ret = (ret << 8) | buf[i];
-    }
-
-    if (offset)
-        *offset += sizeof(int64_t);
-
-    return ret;
-}
-
-float buf2float_(uint8_t* buf, uint16_t* offset, int mode)
-{
-    int32_t ret = buf2int32_(buf, offset, mode);
-    float*  p   = (float*)&ret;
-
-    return *p;
-}
-
-
 /* mode: 0-little endian, 1-big endian */
-double buf2double_(uint8_t* buf, uint16_t* offset, int mode)
-{
-    int64_t ret = buf2int64_(buf, offset, mode);
-    double* p   = (double*)&ret;
-
-    return *p;
-}
-
-uint64_t BinToNWords(uint8_t* pSrcBuf, uint8_t byteLen)
-{
-    uint64_t value = 0;
-
-    while (byteLen > 0) {
-        if (byteLen <= 6) {
-            value = value * 100;
-            value += (uint64_t)pSrcBuf[byteLen - 1];
-        }
-        byteLen--;
-    }
-
-    return value;
-}
-
-
-int64_t buf2int_(uint8_t* buf, int* offset, int len, int mode)
+int64_t bytes2int(uint8_t* buf, int* offset, int len, int mode)
 {
     if (offset)
         buf += *offset;
@@ -183,6 +78,24 @@ int64_t buf2int_(uint8_t* buf, int* offset, int len, int mode)
         *offset += len;
 
     return ret;
+}
+
+
+float bytes2float(uint8_t* buf, uint16_t* offset, int mode)
+{
+    int32_t ret = (int32_t)bytes2int(buf, offset, sizeof(float), mode);
+    float*  p   = (float*)&ret;
+
+    return *p;
+}
+
+
+double bytes2double(uint8_t* buf, uint16_t* offset, int mode)
+{
+    int64_t ret = bytes2int(buf, offset, sizeof(double), mode);
+    double* p   = (double*)&ret;
+
+    return *p;
 }
 
 
@@ -213,7 +126,7 @@ int atox_(const char* str, int len)
  * \brief   string turn to uint8 array:
  *          "680100" -> [0x68, 0x01, 0x00]
  */
-int str2hex_(uint8_t* buf, int bufSize, const char* str)
+int str2hex(uint8_t* buf, int bufSize, const char* str)
 {
     if (buf == NULL || str == NULL) {
         printf("buf or str is NULL!\n");
@@ -246,7 +159,7 @@ int str2hex_(uint8_t* buf, int bufSize, const char* str)
  * \brief   uint8 array turn to string:
  *          [0x68, 0x01, 0x00] -> "680100"
  */
-int hex2str_(char* str, uint8_t* buf, int bufLen)
+int hex2str(char* str, uint8_t* buf, int bufLen)
 {
     if (buf == NULL || str == NULL || bufLen <= 0) {
         printf("buf/str is NULL, or bufLen <= 0\n");

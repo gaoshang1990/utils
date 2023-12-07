@@ -8,21 +8,6 @@
 extern "C" {
 #endif
 
-/**
- * \file hal_thread.h
- * \brief Abstraction layer for threading and synchronization
- */
-
-/*! \addtogroup hal
- *
- *  @{
- */
-
-/**
- * @defgroup HAL_THREAD Threading and synchronization API
- *
- * @{
- */
 
 /** Opaque reference of a Thread instance */
 typedef struct sThread* Thread;
@@ -70,14 +55,11 @@ void Semaphore_wait(Semaphore self);
 
 int  Semaphore_wait_timeout(Semaphore self, int ms);
 void Semaphore_post(Semaphore self);
-
 void Semaphore_destroy(Semaphore self);
 
-extern uint32_t Thread_getTID(void);
-extern uint32_t Thread_getPID(void);
+uint32_t Thread_getTID(void);
+uint32_t Thread_getPID(void);
 
-
-/*! @} */
 
 #ifdef __cplusplus
 }
