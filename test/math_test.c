@@ -1,6 +1,6 @@
 
-#include "mlog_s.h"
-#include "math_s.h"
+#include "mlog_.h"
+#include "math_.h"
 
 static int _userShift(const char* src, int scaler)
 {

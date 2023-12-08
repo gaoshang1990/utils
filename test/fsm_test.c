@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "time_s.h"
+#include "time_.h"
 #include "fsm_.h"
 
 /* 定义用户信号 */

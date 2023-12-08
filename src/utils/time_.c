@@ -8,7 +8,7 @@
 #  include <unistd.h>
 #endif
 
-#include "time_s.h"
+#include "time_.h"
 
 
 const uint8_t MONTH_TAB[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};

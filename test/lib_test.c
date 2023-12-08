@@ -1,6 +1,6 @@
 
-#include "mlog_s.h"
-#include "lib_s.h"
+#include "mlog_.h"
+#include "lib_.h"
 
 
 int buf2int_test()

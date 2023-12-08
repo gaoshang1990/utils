@@ -29,8 +29,8 @@ int memrev_(uint8_t* buf, int len);
  * \param   mode: 0-little endian, 1-big endian
  */
 int64_t bytes2int(uint8_t* buf, int* offset, int len, int mode);
-float   bytes2float(uint8_t* buf, uint16_t* offset, int mode);
-double  bytes2double(uint8_t* buf, uint16_t* offset, int mode);
+float   bytes2float(uint8_t* buf, int* offset, int mode);
+double  bytes2double(uint8_t* buf, int* offset, int mode);
 
 /* string to number, strlen should <= 8 */
 int atox_(const char* str, int len);

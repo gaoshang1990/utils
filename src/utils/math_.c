@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdbool.h>
 
-#include "math_s.h"
+#include "math_.h"
 
 #ifndef ffree_
 #  define ffree_(p)           \

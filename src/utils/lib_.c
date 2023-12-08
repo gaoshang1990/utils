@@ -81,7 +81,7 @@ int64_t bytes2int(uint8_t* buf, int* offset, int len, int mode)
 }
 
 
-float bytes2float(uint8_t* buf, uint16_t* offset, int mode)
+float bytes2float(uint8_t* buf, int* offset, int mode)
 {
     int32_t ret = (int32_t)bytes2int(buf, offset, sizeof(float), mode);
     float*  p   = (float*)&ret;
@@ -90,7 +90,7 @@ float bytes2float(uint8_t* buf, uint16_t* offset, int mode)
 }
 
 
-double bytes2double(uint8_t* buf, uint16_t* offset, int mode)
+double bytes2double(uint8_t* buf, int* offset, int mode)
 {
     int64_t ret = bytes2int(buf, offset, sizeof(double), mode);
     double* p   = (double*)&ret;

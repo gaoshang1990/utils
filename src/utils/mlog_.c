@@ -14,7 +14,7 @@
 #  include <semaphore.h>
 #endif
 
-#include "mlog_s.h"
+#include "mlog_.h"
 
 
 #ifdef _WIN32

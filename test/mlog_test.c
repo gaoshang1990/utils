@@ -1,5 +1,5 @@
 
-#include "mlog_s.h"
+#include "mlog_.h"
 
 int mlog_test()
 {
