@@ -9,7 +9,7 @@ int buf2int_test()
 
     uint8_t buf[] = {0x12, 0x34, 0x56, 0x78};
     SLOG_DEBUG("input:");
-    printBuffer_(M_DEBUG, buf, sizeof(buf));
+    print_buf(M_DEBUG, buf, sizeof(buf));
 
     int n = (int)bytes2int(buf, NULL, 4, UCL_BIG_ENDIAN);
     SLOG_DEBUG("big endien:    n = 0x%08x", n);

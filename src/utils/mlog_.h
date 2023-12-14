@@ -12,15 +12,15 @@ extern "C" {
 typedef enum _E_MlogLevel { M_TRACE = 0, M_DEBUG, M_INFO, M_WARN, M_ERROR } MLogLevel_t;
 
 
-int  mlogInit_(int logNo, const char* logDir, const char* fileName, MLogLevel_t level);
-int  slogInit_(const char* logDir, const char* fileName, MLogLevel_t level);
+int  mlog_init(int logNo, const char* logDir, const char* fileName, MLogLevel_t level);
+int  slog_init(const char* logDir, const char* fileName, MLogLevel_t level);
 int  mlog_set_level(int log_no, int level);
 int  slog_set_level(int level);
-void mlogWrite_(int logNo, int level, bool isRaw, const char* szFunc, int line, const char* fmt, ...);
-int  printBuffer_(int logLevel, uint8_t* pBuf, uint16_t bufLen);
-int  printAppInfo_(const char* szName, const char* szVersion, const char* szDate, const char* szTime);
+void mlog_write(int logNo, int level, bool isRaw, const char* szFunc, int line, const char* fmt, ...);
+int  print_buf(int logLevel, uint8_t* pBuf, uint16_t bufLen);
+int  print_app_info(const char* szName, const char* szVersion, const char* szDate, const char* szTime);
 
-#define PRINT_APP_INFO(name, version)    printAppInfo_(name, version, __DATE__, __TIME__)
+#define PRINT_APP_INFO(name, version)    print_app_info(name, version, __DATE__, __TIME__)
 
 /*!
  * Multiton mode:
@@ -29,14 +29,14 @@ int  printAppInfo_(const char* szName, const char* szVersion, const char* szDate
  * MLOG_ERROR(0, "MLOG ERROR TEST");
  * MLOG_WARN(1, "MLOG WARN TEST");
  */
-#define MLOG(logNo, level, fmt, ...)     mlogWrite_(logNo, level, 0, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define MLOG(logNo, level, fmt, ...)     mlog_write(logNo, level, 0, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 #define MLOG_TRACE(logNo, fmt, ...)      MLOG(logNo, M_TRACE, fmt, ##__VA_ARGS__)
 #define MLOG_DEBUG(logNo, fmt, ...)      MLOG(logNo, M_DEBUG, fmt, ##__VA_ARGS__)
 #define MLOG_INFO(logNo, fmt, ...)       MLOG(logNo, M_INFO, fmt, ##__VA_ARGS__)
 #define MLOG_WARN(logNo, fmt, ...)       MLOG(logNo, M_WARN, fmt, ##__VA_ARGS__)
 #define MLOG_ERROR(logNo, fmt, ...)      MLOG(logNo, M_ERROR, fmt, ##__VA_ARGS__)
 
-#define MLOG_RAW(logNo, level, fmt, ...) mlogWrite_(logNo, level, 1, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define MLOG_RAW(logNo, level, fmt, ...) mlog_write(logNo, level, 1, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 #define MLOG_TRACE_RAW(logNo, fmt, ...)  MLOG_RAW(logNo, M_TRACE, fmt, ##__VA_ARGS__)
 #define MLOG_DEBUG_RAW(logNo, fmt, ...)  MLOG_RAW(logNo, M_DEBUG, fmt, ##__VA_ARGS__)
 #define MLOG_INFO_RAW(logNo, fmt, ...)   MLOG_RAW(logNo, M_INFO, fmt, ##__VA_ARGS__)

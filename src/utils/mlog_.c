@@ -248,13 +248,28 @@ static int _mkdir_m_(const char* dir)
 }
 
 
+// static int _windows_version(void)
+// {
+//     static int version = -1;
+
+//     if (version == -1) {
+//         OSVERSIONINFO info;
+//         info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+//         if (GetVersionEx(&info))
+//             version = info.dwMajorVersion << 16 | info.dwMinorVersion;
+//     }
+
+//     return version;
+// }
+
+
 /* external function */
 
 /**
  * \brief   1. non thread-safe function
  *          2. can be repeatedly called to change the log level
  */
-int mlogInit_(int logNo, const char* logDir, const char* fileName, MLogLevel_t level)
+int mlog_init(int logNo, const char* logDir, const char* fileName, MLogLevel_t level)
 {
     if (logNo < 0 || logNo >= MAX_LOG_NUM) {
         printf("mlogInit_: logNo[%d] is invalid\n", logNo);
@@ -271,6 +286,7 @@ int mlogInit_(int logNo, const char* logDir, const char* fileName, MLogLevel_t l
     if (true == _loggers[logNo]->inited)
         return 0;
 
+    // int version = _windows_version();
 
     if (logDir == NULL || fileName == NULL) {
         printf("mlogInit_: log_dir or file_name is NULL\n");
@@ -301,9 +317,9 @@ int mlogInit_(int logNo, const char* logDir, const char* fileName, MLogLevel_t l
 }
 
 
-int slogInit_(const char* logDir, const char* fileName, MLogLevel_t level)
+int slog_init(const char* logDir, const char* fileName, MLogLevel_t level)
 {
-    return mlogInit_(0, logDir, fileName, level);
+    return mlog_init(0, logDir, fileName, level);
 }
 
 
@@ -315,7 +331,7 @@ int mlog_set_level(int log_no, int level)
     }
 
     if (_loggers[log_no] == NULL)
-        mlogInit_(log_no, NULL, NULL, M_DEBUG);
+        mlog_init(log_no, NULL, NULL, M_DEBUG);
 
     _loggers[log_no]->level = (MLogLevel_t)level;
 
@@ -334,18 +350,18 @@ int slog_set_level(int level)
  * and exceeding the length will result in truncation.
  * Through MAX_LOG_LINE macro can modify maximum length
  */
-void mlogWrite_(int logNo, int level, bool isRaw, const char* szFunc, int line, const char* fmt, ...)
+void mlog_write(int logNo, int level, bool isRaw, const char* szFunc, int line, const char* fmt, ...)
 {
     static char logContent[MAX_LOG_LINE]     = {0};
     static char logOutput[MAX_LOG_LINE + 64] = {0};
 
     if (logNo < 0 || logNo >= MAX_LOG_NUM) {
-        printf("mlogWrite_: logNo[%d] is invalid\n", logNo);
+        printf("mlog_write: logNo[%d] is invalid\n", logNo);
         return;
     }
 
     if (_loggers[logNo] == NULL)
-        mlogInit_(logNo, NULL, NULL, M_DEBUG);
+        mlog_init(logNo, NULL, NULL, M_DEBUG);
 
     if (_loggers[logNo]->level > level)
         return;
@@ -459,7 +475,7 @@ void mlogWrite_(int logNo, int level, bool isRaw, const char* szFunc, int line, 
 }
 
 
-int printBuffer_(int logLevel, uint8_t* pBuf, uint16_t bufLen)
+int print_buf(int logLevel, uint8_t* pBuf, uint16_t bufLen)
 {
     if (pBuf == NULL && bufLen == 0)
         return -1;
@@ -492,13 +508,12 @@ static int _makeInfoStr(char* str, uint8_t nb)
 }
 
 
-int printAppInfo_(const char* szName, const char* szVersion, const char* szDate, const char* szTime)
+int print_app_info(const char* szName, const char* szVersion, const char* szDate, const char* szTime)
 {
     char szStars[128]   = {0};
     char szAppInfo[128] = {0};
     char szAppVer[128]  = {0};
     char szAppDate[128] = {0};
-
 
     snprintf(szAppInfo, sizeof(szAppInfo), "* This is \"%s\" App", szName);
     snprintf(szAppVer, sizeof(szAppVer), "* Version: %s", szVersion);

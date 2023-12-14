@@ -6,19 +6,9 @@
 
 #include "math_.h"
 
-#ifndef ffree_
-#  define ffree_(p)           \
-      do {                    \
-          if (p) {            \
-              free((void*)p); \
-              p = NULL;       \
-          }                   \
-      } while (0)
-#endif
-
 
 /* return a random nuber: [min, max]  */
-int randNum_(int min, int max)
+int rand_num(int min, int max)
 {
     static bool seeded = false;
     if (!seeded) {
@@ -53,7 +43,7 @@ static void** _mallocArray2(uint16_t rows, uint16_t cols, uint8_t typeSize)
 }
 
 
-/* åŠ¨æ€åˆ›å»ºäºŒç»´æ•°ç»„,ArrayTypr:0-char 1-int 2-float */
+/* ¶¯Ì¬´´½¨¶şÎ¬Êı×é,ArrayTypr:0-char 1-int 2-float */
 void** createArray2_(uint16_t rows, uint16_t cols, ArrayType_e type)
 {
     void** arr = NULL;
@@ -76,15 +66,15 @@ void** createArray2_(uint16_t rows, uint16_t cols, ArrayType_e type)
 }
 
 
-/* é‡Šæ”¾åŠ¨æ€äºŒç»´æ•°ç»„ */
+/* ÊÍ·Å¶¯Ì¬¶şÎ¬Êı×é */
 int freeArray2_(void** arr, uint16_t rows)
 {
     uint16_t i;
 
-    for (i = 0; i < rows; i++) {
-        ffree_(arr[i]);
-    }
-    ffree_(arr);
+    for (i = 0; i < rows; i++)
+        free(arr[i]);
+
+    free(arr);
 
     return 0;
 }
@@ -100,7 +90,7 @@ int swapInt8_(int8_t* a, int8_t* b)
 }
 
 
-/* å­—ç¬¦ä¸²æ•°å­—çš„å€ç‡è½¬æ¢ */
+/* ×Ö·û´®Êı×ÖµÄ±¶ÂÊ×ª»» */
 int shiftDecimalPoint_(char* szNum, int scaler)
 {
     if (scaler == 0)
@@ -160,17 +150,17 @@ int shiftDecimalPoint_(char* szNum, int scaler)
 }
 
 
-/* å¸Œå°”æ’åº */
+/* Ï£¶ûÅÅĞò */
 int shellSort_(int* arr, int len)
 {
-    for (int gap = len / 2; gap > 0; gap /= 2) { /* æ­¥é•¿åˆå§‹åŒ–ä¸ºæ•°ç»„é•¿åº¦çš„ä¸€åŠï¼Œæ¯æ¬¡éå†åæ­¥é•¿å‡åŠ */
-        for (int i = 0; i < gap; ++i) {          /* å˜é‡iä¸ºæ¯æ¬¡åˆ†ç»„çš„ç¬¬ä¸€ä¸ªå…ƒç´ ä¸‹æ ‡ */
+    for (int gap = len / 2; gap > 0; gap /= 2) { /* ²½³¤³õÊ¼»¯ÎªÊı×é³¤¶ÈµÄÒ»°ë£¬Ã¿´Î±éÀúºó²½³¤¼õ°ë */
+        for (int i = 0; i < gap; ++i) {          /* ±äÁ¿iÎªÃ¿´Î·Ö×éµÄµÚÒ»¸öÔªËØÏÂ±ê */
             for (int j = i + gap; j < len; j += gap) {
-                /* å¯¹æ­¥é•¿ä¸ºgapçš„å…ƒç´ è¿›è¡Œç›´æ’æ’åºï¼Œå½“gapä¸º1æ—¶ï¼Œå°±æ˜¯ç›´æ’æ’åº */
+                /* ¶Ô²½³¤ÎªgapµÄÔªËØ½øĞĞÖ±²åÅÅĞò£¬µ±gapÎª1Ê±£¬¾ÍÊÇÖ±²åÅÅĞò */
                 int tmp = arr[j];
-                int k   = j - gap; /* kåˆå§‹åŒ–ä¸ºjçš„å‰ä¸€ä¸ªå…ƒç´ ï¼ˆä¸jç›¸å·®gapé•¿åº¦ï¼‰ */
+                int k   = j - gap; /* k³õÊ¼»¯ÎªjµÄÇ°Ò»¸öÔªËØ£¨ÓëjÏà²îgap³¤¶È£© */
                 while (k >= 0 && arr[k] > tmp) {
-                    arr[k + gap] = arr[k]; /* å°†åœ¨a[i]å‰ä¸”æ¯”tmpçš„å€¼å¤§çš„å…ƒç´ å‘åç§»åŠ¨ä¸€ä½ */
+                    arr[k + gap] = arr[k]; /* ½«ÔÚa[i]Ç°ÇÒ±ÈtmpµÄÖµ´óµÄÔªËØÏòºóÒÆ¶¯Ò»Î» */
                     k -= gap;
                 }
                 arr[k + gap] = tmp;

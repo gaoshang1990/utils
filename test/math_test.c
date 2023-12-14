@@ -1,3 +1,4 @@
+#include <stdio.h>
 
 #include "mlog_.h"
 #include "math_.h"
@@ -74,10 +75,10 @@ int randNum_test()
     int b[10] = {0};
 
     for (int i = 0; i < 10000; i++) {
-        a[i] = randNum_(0, 9);
+        a[i] = rand_num(0, 9);
         b[a[i]]++;
         if (i % 100 == 0)
-            SLOG_DEBUG("random number in [0, 9]: %d, i = %d", randNum_(0, 9), i);
+            SLOG_DEBUG("random number in [0, 9]: %d, i = %d", rand_num(0, 9), i);
     }
 
     for (int i = 0; i < 10; i++)
