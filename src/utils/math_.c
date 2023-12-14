@@ -53,7 +53,7 @@ static void** _mallocArray2(uint16_t rows, uint16_t cols, uint8_t typeSize)
 }
 
 
-/* ¶¯Ì¬´´½¨¶şÎ¬Êı×é,ArrayTypr:0-char 1-int 2-float */
+/* åŠ¨æ€åˆ›å»ºäºŒç»´æ•°ç»„,ArrayTypr:0-char 1-int 2-float */
 void** createArray2_(uint16_t rows, uint16_t cols, ArrayType_e type)
 {
     void** arr = NULL;
@@ -76,7 +76,7 @@ void** createArray2_(uint16_t rows, uint16_t cols, ArrayType_e type)
 }
 
 
-/* ÊÍ·Å¶¯Ì¬¶şÎ¬Êı×é */
+/* é‡Šæ”¾åŠ¨æ€äºŒç»´æ•°ç»„ */
 int freeArray2_(void** arr, uint16_t rows)
 {
     uint16_t i;
@@ -100,7 +100,7 @@ int swapInt8_(int8_t* a, int8_t* b)
 }
 
 
-/* ×Ö·û´®Êı×ÖµÄ±¶ÂÊ×ª»» */
+/* å­—ç¬¦ä¸²æ•°å­—çš„å€ç‡è½¬æ¢ */
 int shiftDecimalPoint_(char* szNum, int scaler)
 {
     if (scaler == 0)
@@ -160,23 +160,455 @@ int shiftDecimalPoint_(char* szNum, int scaler)
 }
 
 
-/* Ï£¶ûÅÅĞò */
+/* å¸Œå°”æ’åº */
 int shellSort_(int* arr, int len)
 {
-    for (int gap = len / 2; gap > 0; gap /= 2) { /* ²½³¤³õÊ¼»¯ÎªÊı×é³¤¶ÈµÄÒ»°ë£¬Ã¿´Î±éÀúºó²½³¤¼õ°ë */
-        for (int i = 0; i < gap; ++i) {          /* ±äÁ¿iÎªÃ¿´Î·Ö×éµÄµÚÒ»¸öÔªËØÏÂ±ê */
+    for (int gap = len / 2; gap > 0; gap /= 2) { /* æ­¥é•¿åˆå§‹åŒ–ä¸ºæ•°ç»„é•¿åº¦çš„ä¸€åŠï¼Œæ¯æ¬¡éå†åæ­¥é•¿å‡åŠ */
+        for (int i = 0; i < gap; ++i) {          /* å˜é‡iä¸ºæ¯æ¬¡åˆ†ç»„çš„ç¬¬ä¸€ä¸ªå…ƒç´ ä¸‹æ ‡ */
             for (int j = i + gap; j < len; j += gap) {
-                /* ¶Ô²½³¤ÎªgapµÄÔªËØ½øĞĞÖ±²åÅÅĞò£¬µ±gapÎª1Ê±£¬¾ÍÊÇÖ±²åÅÅĞò */
+                /* å¯¹æ­¥é•¿ä¸ºgapçš„å…ƒç´ è¿›è¡Œç›´æ’æ’åºï¼Œå½“gapä¸º1æ—¶ï¼Œå°±æ˜¯ç›´æ’æ’åº */
                 int tmp = arr[j];
-                int k   = j - gap; /* k³õÊ¼»¯ÎªjµÄÇ°Ò»¸öÔªËØ£¨ÓëjÏà²îgap³¤¶È£© */
+                int k   = j - gap; /* kåˆå§‹åŒ–ä¸ºjçš„å‰ä¸€ä¸ªå…ƒç´ ï¼ˆä¸jç›¸å·®gapé•¿åº¦ï¼‰ */
                 while (k >= 0 && arr[k] > tmp) {
-                    arr[k + gap] = arr[k]; /* ½«ÔÚa[i]Ç°ÇÒ±ÈtmpµÄÖµ´óµÄÔªËØÏòºóÒÆ¶¯Ò»Î» */
+                    arr[k + gap] = arr[k]; /* å°†åœ¨a[i]å‰ä¸”æ¯”tmpçš„å€¼å¤§çš„å…ƒç´ å‘åç§»åŠ¨ä¸€ä½ */
                     k -= gap;
                 }
                 arr[k + gap] = tmp;
             }
         }
     }
+
+    return 0;
+}
+
+
+/* stat unit */
+
+
+typedef union {
+    int64_t int64_;
+    double  double_;
+} StatVar;
+
+struct _StatUnit_ {
+    struct {
+        int count;
+        int type;
+    } setting;
+
+    struct {
+        StatVar value;
+    } input;
+
+    struct {
+        StatVar min;
+        StatVar max;
+        StatVar avg;
+        StatVar sum;
+    } output;
+
+    struct {
+        bool     is_first;
+        int      count;
+        StatVar* his;
+        int      head;
+    } priv;
+};
+
+
+static bool _is_sliding_window(StatUnit stat)
+{
+    if (stat == NULL)
+        return false;
+
+    return stat->setting.count > 0;
+}
+
+
+static bool _has_started_sliding(StatUnit stat)
+{
+    if (stat == NULL)
+        return false;
+
+    return stat->priv.count >= stat->setting.count;
+}
+
+
+int stat_restart(StatUnit stat)
+{
+    if (stat == NULL)
+        return -1;
+
+    stat->output.min        = stat->input.value;
+    stat->output.max        = stat->input.value;
+    stat->output.sum.int64_ = 0;
+    stat->priv.head         = 0;
+    stat->priv.count        = 0;
+
+    return 0;
+}
+
+
+static bool _cmp_equal(StatVar var1, StatVar var2)
+{
+    if (0 == memcmp(&var1, &var2, sizeof(StatVar)))
+        return true;
+
+    return false;
+}
+
+
+static StatVar _cmp_min(int type, StatVar var1, StatVar var2)
+{
+    switch (type) {
+    case STAT_TYPE_DOUBLE:
+        if (var1.double_ < var2.double_)
+            return var1;
+        break;
+
+    case STAT_TYPE_INT:
+    default:
+        if (var1.int64_ < var2.int64_)
+            return var1;
+        break;
+    }
+
+    return var2;
+}
+
+
+static StatVar _cmp_max(int type, StatVar var1, StatVar var2)
+{
+    switch (type) {
+    case STAT_TYPE_DOUBLE:
+        if (var1.double_ > var2.double_)
+            return var1;
+        break;
+
+    case STAT_TYPE_INT:
+    default:
+        if (var1.int64_ > var2.int64_)
+            return var1;
+        break;
+    }
+
+    return var2;
+}
+
+
+static StatVar _calc_minus(int type, StatVar var1, StatVar var2)
+{
+    StatVar ret;
+
+    switch (type) {
+    case STAT_TYPE_DOUBLE:
+        ret.double_ = var1.double_ - var2.double_;
+        break;
+
+    case STAT_TYPE_INT:
+    default:
+        ret.int64_ = var1.int64_ - var2.int64_;
+        break;
+    }
+
+    return ret;
+}
+
+
+static StatVar _calc_plus(int type, StatVar var1, StatVar var2)
+{
+    StatVar ret;
+
+    switch (type) {
+    case STAT_TYPE_DOUBLE:
+        ret.double_ = var1.double_ + var2.double_;
+        break;
+
+    case STAT_TYPE_INT:
+    default:
+        ret.int64_ = var1.int64_ + var2.int64_;
+        break;
+    }
+
+    return ret;
+}
+
+
+static StatVar _calc_div(int type, StatVar var1, StatVar var2)
+{
+    StatVar ret;
+
+    switch (type) {
+    case STAT_TYPE_DOUBLE:
+        ret.double_ = var1.double_ / var2.double_;
+        break;
+
+    case STAT_TYPE_INT:
+    default:
+        ret.int64_ = var1.int64_ / var2.int64_;
+        break;
+    }
+
+    return ret;
+}
+
+
+static int _update_sum_avg(StatUnit stat)
+{
+    if (stat == NULL)
+        return -1;
+
+    stat->output.sum = _calc_plus(stat->setting.type, stat->output.sum, stat->input.value);
+
+    int flag = _is_sliding_window(stat) && _has_started_sliding(stat);
+
+    StatVar tmp;
+    switch (stat->setting.type) {
+    case STAT_TYPE_DOUBLE:
+        tmp.double_ = stat->priv.count + !flag;
+        break;
+
+    case STAT_TYPE_INT:
+    default:
+        tmp.int64_ = stat->priv.count + !flag;
+        break;
+    }
+
+    if (flag) {
+        stat->output.sum = _calc_minus(stat->setting.type, stat->output.sum, stat->priv.his[stat->priv.head]);
+        stat->output.avg = _calc_div(stat->setting.type, stat->output.sum, tmp);
+    }
+    else {
+        stat->output.avg = _calc_div(stat->setting.type, stat->output.sum, tmp);
+    }
+
+    return 0;
+}
+
+
+static int _update_min_max(StatUnit stat)
+{
+    if (stat == NULL)
+        return -1;
+
+    if (_is_sliding_window(stat) && _has_started_sliding(stat)) {
+        if (_cmp_equal(stat->output.min, stat->priv.his[stat->priv.head])) {
+            stat->output.min = stat->input.value;
+
+            for (int i = 0; i < stat->priv.head; i++)
+                stat->output.min = _cmp_min(stat->setting.type, stat->output.min, stat->priv.his[i]);
+
+            for (int i = stat->priv.head + 1; i < stat->setting.count; i++)
+                stat->output.min = _cmp_min(stat->setting.type, stat->output.min, stat->priv.his[i]);
+        }
+        else
+            stat->output.min = _cmp_min(stat->setting.type, stat->output.min, stat->input.value);
+
+        if (_cmp_equal(stat->output.max, stat->priv.his[stat->priv.head])) {
+            stat->output.max = stat->input.value;
+
+            for (int i = 0; i < stat->priv.head; i++)
+                stat->output.max = _cmp_max(stat->setting.type, stat->output.max, stat->priv.his[i]);
+
+            for (int i = stat->priv.head + 1; i < stat->setting.count; i++)
+                stat->output.max = _cmp_max(stat->setting.type, stat->output.max, stat->priv.his[i]);
+        }
+        else
+            stat->output.max = _cmp_max(stat->setting.type, stat->output.max, stat->input.value);
+    }
+    else {
+        stat->output.min = _cmp_min(stat->setting.type, stat->output.min, stat->input.value);
+        stat->output.max = _cmp_max(stat->setting.type, stat->output.max, stat->input.value);
+    }
+
+    return 0;
+}
+
+
+static int _update_his(StatUnit stat)
+{
+    if (stat == NULL)
+        return -1;
+
+    if (_is_sliding_window(stat)) {
+        stat->priv.his[stat->priv.head++] = stat->input.value;
+
+        if (stat->priv.head >= stat->setting.count)
+            stat->priv.head = 0;
+    }
+
+    return 0;
+}
+
+
+static int _stat_count_next(StatUnit stat)
+{
+    if (stat == NULL)
+        return -1;
+
+    if (!_is_sliding_window(stat) || !_has_started_sliding(stat))
+        stat->priv.count++;
+
+    if (stat->priv.count >= INT32_MAX)
+        stat->priv.count /= 2;
+
+    return 0;
+}
+
+
+static int _stat_unit(StatUnit stat)
+{
+    _update_sum_avg(stat);
+    _update_min_max(stat);
+    _update_his(stat);
+
+    _stat_count_next(stat);
+
+    return 0;
+}
+
+
+int stat_push_int(StatUnit stat, int64_t item)
+{
+    stat->input.value.int64_ = item;
+
+    if (stat->priv.is_first) {
+        stat_restart(stat);
+        stat->priv.is_first = false;
+    }
+
+    return _stat_unit(stat);
+}
+
+
+int stat_push_double(StatUnit stat, double item)
+{
+    stat->input.value.double_ = item;
+
+    if (stat->priv.is_first) {
+        stat_restart(stat);
+        stat->priv.is_first = false;
+    }
+
+    return _stat_unit(stat);
+}
+
+
+int64_t stat_min_int(StatUnit stat)
+{
+    if (stat == NULL)
+        return 0;
+
+    return stat->output.min.int64_;
+}
+
+
+int64_t stat_max_int(StatUnit stat)
+{
+    if (stat == NULL)
+        return 0;
+
+    return stat->output.max.int64_;
+}
+
+
+int64_t stat_avg_int(StatUnit stat)
+{
+    if (stat == NULL)
+        return 0;
+
+    return stat->output.avg.int64_;
+}
+
+
+int64_t stat_sum_int(StatUnit stat)
+{
+    if (stat == NULL)
+        return 0;
+
+    return stat->output.sum.int64_;
+}
+
+
+int64_t stat_cur_int(StatUnit stat)
+{
+    if (stat == NULL)
+        return 0;
+
+    return stat->input.value.int64_;
+}
+
+
+double stat_min_double(StatUnit stat)
+{
+    if (stat == NULL)
+        return 0;
+
+    return stat->output.min.double_;
+}
+
+
+double stat_max_double(StatUnit stat)
+{
+    if (stat == NULL)
+        return 0;
+
+    return stat->output.max.double_;
+}
+
+
+double stat_avg_double(StatUnit stat)
+{
+    if (stat == NULL)
+        return 0;
+
+    return stat->output.avg.double_;
+}
+
+
+double stat_sum_double(StatUnit stat)
+{
+    if (stat == NULL)
+        return 0;
+
+    return stat->output.sum.double_;
+}
+
+
+double stat_cur_double(StatUnit stat)
+{
+    if (stat == NULL)
+        return 0;
+
+    return stat->input.value.double_;
+}
+
+
+StatUnit stat_init(int type, int count)
+{
+    StatUnit stat = (StatUnit)malloc(sizeof(struct _StatUnit_));
+
+    stat->setting.type  = type;
+    stat->setting.count = count;
+    stat->priv.is_first = true;
+    stat->priv.his      = NULL;
+
+    if (count > 0)
+        stat->priv.his = (StatVar*)malloc(stat->setting.count * sizeof(StatVar));
+
+    return stat;
+}
+
+
+int stat_free(StatUnit stat)
+{
+    if (stat == NULL)
+        return -1;
+
+    if (stat->priv.his)
+        free(stat->priv.his);
+
+    free(stat);
 
     return 0;
 }
