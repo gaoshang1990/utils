@@ -89,12 +89,77 @@ int randNum_test()
 }
 
 
+int stat_test()
+{
+    SLOG_INFO("--- stat test start ---\n");
+
+    StatUnit stat = stat_init(STAT_TYPE_INT, 3);
+    for (int i = 1; i < 10; i++) {
+        stat_push_int(stat, i);
+        SLOG_DEBUG("min = %lld, max = %lld, avg = %lld, sum = %lld",
+                   stat_min_int(stat),
+                   stat_max_int(stat),
+                   stat_avg_int(stat),
+                   stat_sum_int(stat));
+    }
+    stat_free(stat);
+    SLOG_DEBUG_RAW("\n");
+
+    stat = stat_init(STAT_TYPE_INT, 0);
+    for (int i = 1; i < 10; i++) {
+        if (i == 5)
+            stat_restart(stat);
+
+        stat_push_int(stat, i);
+        SLOG_DEBUG("min = %lld, max = %lld, avg = %lld, sum = %lld",
+                   stat_min_int(stat),
+                   stat_max_int(stat),
+                   stat_avg_int(stat),
+                   stat_sum_int(stat));
+    }
+    stat_free(stat);
+    SLOG_DEBUG_RAW("\n");
+
+    stat = stat_init(STAT_TYPE_DOUBLE, 3);
+    for (int i = 1; i < 10; i++) {
+        stat_push_double(stat, i);
+        SLOG_DEBUG("min = %lf, max = %lf, avg = %lf, sum = %lf",
+                   stat_min_double(stat),
+                   stat_max_double(stat),
+                   stat_avg_double(stat),
+                   stat_sum_double(stat));
+    }
+    stat_free(stat);
+    SLOG_DEBUG_RAW("\n");
+
+    stat = stat_init(STAT_TYPE_DOUBLE, 0);
+    for (int i = 1; i < 10; i++) {
+        if (i == 5)
+            stat_restart(stat);
+
+        stat_push_double(stat, i);
+        SLOG_DEBUG("min = %lf, max = %lf, avg = %lf, sum = %lf",
+                   stat_min_double(stat),
+                   stat_max_double(stat),
+                   stat_avg_double(stat),
+                   stat_sum_double(stat));
+    }
+    stat_free(stat);
+    SLOG_DEBUG_RAW("\n");
+
+    SLOG_INFO("--- stat test done ---\n");
+
+    return 0;
+}
+
+
 int math_test()
 {
     SLOG_INFO("-- math test start --\n");
 
     shiftDecimalPoint_test();
     randNum_test();
+    stat_test();
 
     SLOG_INFO("-- math test done --\n");
 
