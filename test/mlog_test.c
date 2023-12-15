@@ -3,7 +3,7 @@
 
 int mlog_test()
 {
-    slog_init("../../../log/test/test", "mlog.log", M_TRACE);
+    SLOG_INIT(M_TRACE, "./test/log", "mlog.log");
 
     SLOG_ERROR("SLOG ERROR TEST");
     SLOG_WARN("SLOG WARN TEST");
@@ -16,8 +16,8 @@ int mlog_test()
     SLOG_DEBUG_RAW("SLOG DEBUG RAW TEST\n");
     SLOG_TRACE_RAW("SLOG TRACE RAW TEST\n");
 
-    mlog_init(1, "../../../log/test/test", "mlog1.log", M_TRACE);
-    mlog_init(2, "../../../log/test/test", "mlog2.log", M_TRACE);
+    mlog_init(M_TRACE, 1, "./test/log", "mlog1.log");
+    mlog_init(M_TRACE, 2, "./test/log", "mlog2.log");
     MLOG_ERROR(1, "MLOG ERROR TEST 111");
     MLOG_WARN(1, "MLOG WARN TEST 111");
     MLOG_INFO(1, "MLOG INFO TEST 111");

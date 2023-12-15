@@ -88,14 +88,14 @@ typedef void* MLogMutex_t;
 static const char* _szLevel[] = {"[TRACE]", "[DEBUG]", "[INFO ]", "[WARN ]", "[ERROR]"};
 
 typedef struct _LoggerCfg_ {
-    char        dir[128]; /* file path */
-    char        name[64]; /* file name */
-    FILE*       fp;       /* log file pointer */
-    MLogMutex_t mtx;      /* mutex for safety */
-    MLogLevel_t level;    /* output levle control*/
-    int         inited;   /* initial flag*/
-    int         maxSize;  /* file max size */
-    int         maxCnt;   /* max rotate file count */
+    char         dir[128]; /* file path */
+    char         name[64]; /* file name */
+    FILE*        fp;       /* log file pointer */
+    MLogMutex_t  mtx;      /* mutex for safety */
+    E_MLOG_LEVEL level;    /* output levle control*/
+    int          inited;   /* initial flag*/
+    int          maxSize;  /* file max size */
+    int          maxCnt;   /* max rotate file count */
 } MLogger_t;
 
 
@@ -269,7 +269,7 @@ static int _mkdir_m_(const char* dir)
  * \brief   1. non thread-safe function
  *          2. can be repeatedly called to change the log level
  */
-int mlog_init(int logNo, const char* logDir, const char* fileName, MLogLevel_t level)
+int mlog_init(E_MLOG_LEVEL level, int logNo, const char* logDir, const char* fileName)
 {
     if (logNo < 0 || logNo >= MAX_LOG_NUM) {
         printf("mlogInit_: logNo[%d] is invalid\n", logNo);
@@ -317,12 +317,6 @@ int mlog_init(int logNo, const char* logDir, const char* fileName, MLogLevel_t l
 }
 
 
-int slog_init(const char* logDir, const char* fileName, MLogLevel_t level)
-{
-    return mlog_init(0, logDir, fileName, level);
-}
-
-
 int mlog_set_level(int log_no, int level)
 {
     if (log_no < 0 || log_no >= MAX_LOG_NUM) {
@@ -331,17 +325,11 @@ int mlog_set_level(int log_no, int level)
     }
 
     if (_loggers[log_no] == NULL)
-        mlog_init(log_no, NULL, NULL, M_DEBUG);
+        mlog_init(log_no, M_DEBUG, NULL, NULL);
 
-    _loggers[log_no]->level = (MLogLevel_t)level;
+    _loggers[log_no]->level = (E_MLOG_LEVEL)level;
 
     return 0;
-}
-
-
-int slog_set_level(int level)
-{
-    return mlog_set_level(0, level);
 }
 
 
@@ -350,7 +338,7 @@ int slog_set_level(int level)
  * and exceeding the length will result in truncation.
  * Through MAX_LOG_LINE macro can modify maximum length
  */
-void mlog_write(int logNo, int level, bool isRaw, const char* szFunc, int line, const char* fmt, ...)
+void mlog_write(int level, int logNo, bool isRaw, const char* szFunc, int line, const char* fmt, ...)
 {
     static char logContent[MAX_LOG_LINE]     = {0};
     static char logOutput[MAX_LOG_LINE + 64] = {0};
@@ -361,7 +349,7 @@ void mlog_write(int logNo, int level, bool isRaw, const char* szFunc, int line, 
     }
 
     if (_loggers[logNo] == NULL)
-        mlog_init(logNo, NULL, NULL, M_DEBUG);
+        mlog_init(M_DEBUG, logNo, NULL, NULL);
 
     if (_loggers[logNo]->level > level)
         return;
