@@ -20,78 +20,21 @@ int rand_num(int min, int max)
 }
 
 
-static void** _mallocArray2(uint16_t rows, uint16_t cols, uint8_t typeSize)
+int swap_bytes(void* a, void* b, int size)
 {
-    uint16_t i = 0;
+    void* tmp = malloc(size);
 
-    void** arr = (void**)malloc(rows * cols * sizeof(void*));
-    if (arr == NULL) {
-        printf("_mallocArray2: malloc failed!\n");
-        return NULL;
-    }
+    memcpy(tmp, a, size);
+    memcpy(a, b, size);
+    memcpy(b, tmp, size);
 
-    for (i = 0; i < rows; i++) {
-        arr[i] = malloc(cols * typeSize);
-        if (arr[i] == NULL) {
-            printf("_mallocArray2: malloc failed!\n");
-            return NULL;
-        }
-        memset(arr[i], 0, cols * typeSize);
-    }
-
-    return arr;
-}
-
-
-/* ¶¯Ì¬´´½¨¶şÎ¬Êı×é,ArrayTypr:0-char 1-int 2-float */
-void** createArray2_(uint16_t rows, uint16_t cols, ArrayType_e type)
-{
-    void** arr = NULL;
-
-    switch (type) {
-    case TYPE_CHAR:
-        arr = _mallocArray2(rows, cols, sizeof(char));
-        break;
-    case TYPE_INT:
-        arr = _mallocArray2(rows, cols, sizeof(int));
-        break;
-    case TYPE_FLOAT:
-        arr = _mallocArray2(rows, cols, sizeof(float));
-        break;
-    default:
-        break;
-    }
-
-    return arr;
-}
-
-
-/* ÊÍ·Å¶¯Ì¬¶şÎ¬Êı×é */
-int freeArray2_(void** arr, uint16_t rows)
-{
-    uint16_t i;
-
-    for (i = 0; i < rows; i++)
-        free(arr[i]);
-
-    free(arr);
+    free(tmp);
 
     return 0;
 }
 
 
-int swapInt8_(int8_t* a, int8_t* b)
-{
-    int8_t tmp = *a;
-    *a         = *b;
-    *b         = tmp;
-
-    return 0;
-}
-
-
-/* ×Ö·û´®Êı×ÖµÄ±¶ÂÊ×ª»» */
-int shiftDecimalPoint_(char* szNum, int scaler)
+int shift_decimal_point(char* szNum, int scaler)
 {
     if (scaler == 0)
         return 0;
@@ -122,7 +65,7 @@ int shiftDecimalPoint_(char* szNum, int scaler)
             pos += nbZero;
         }
         for (int i = 0; i < scaler; i++) {
-            swapInt8_((int8_t*)&szNum[pos], (int8_t*)&szNum[pos - 1]);
+            swap_bytes(&szNum[pos], &szNum[pos - 1], sizeof(char));
             pos--;
         }
     }
@@ -132,7 +75,7 @@ int shiftDecimalPoint_(char* szNum, int scaler)
                 szNum[pos + 1] = '0';
                 szNum[pos + 2] = '\0';
             }
-            swapInt8_((int8_t*)&szNum[pos], (int8_t*)&szNum[pos + 1]);
+            swap_bytes(&szNum[pos], &szNum[pos + 1], sizeof(char));
             pos++;
         }
     }
@@ -150,17 +93,17 @@ int shiftDecimalPoint_(char* szNum, int scaler)
 }
 
 
-/* Ï£¶ûÅÅĞò */
+/* å¸Œå°”æ’åº */
 int shellSort_(int* arr, int len)
 {
-    for (int gap = len / 2; gap > 0; gap /= 2) { /* ²½³¤³õÊ¼»¯ÎªÊı×é³¤¶ÈµÄÒ»°ë£¬Ã¿´Î±éÀúºó²½³¤¼õ°ë */
-        for (int i = 0; i < gap; ++i) {          /* ±äÁ¿iÎªÃ¿´Î·Ö×éµÄµÚÒ»¸öÔªËØÏÂ±ê */
+    for (int gap = len / 2; gap > 0; gap /= 2) { /* æ­¥é•¿åˆå§‹åŒ–ä¸ºæ•°ç»„é•¿åº¦çš„ä¸€åŠï¼Œæ¯æ¬¡éå†åæ­¥é•¿å‡åŠ */
+        for (int i = 0; i < gap; ++i) {          /* å˜é‡iä¸ºæ¯æ¬¡åˆ†ç»„çš„ç¬¬ä¸€ä¸ªå…ƒç´ ä¸‹æ ‡ */
             for (int j = i + gap; j < len; j += gap) {
-                /* ¶Ô²½³¤ÎªgapµÄÔªËØ½øĞĞÖ±²åÅÅĞò£¬µ±gapÎª1Ê±£¬¾ÍÊÇÖ±²åÅÅĞò */
+                /* å¯¹æ­¥é•¿ä¸ºgapçš„å…ƒç´ è¿›è¡Œç›´æ’æ’åºï¼Œå½“gapä¸º1æ—¶ï¼Œå°±æ˜¯ç›´æ’æ’åº */
                 int tmp = arr[j];
-                int k   = j - gap; /* k³õÊ¼»¯ÎªjµÄÇ°Ò»¸öÔªËØ£¨ÓëjÏà²îgap³¤¶È£© */
+                int k   = j - gap; /* kåˆå§‹åŒ–ä¸ºjçš„å‰ä¸€ä¸ªå…ƒç´ ï¼ˆä¸jç›¸å·®gapé•¿åº¦ï¼‰ */
                 while (k >= 0 && arr[k] > tmp) {
-                    arr[k + gap] = arr[k]; /* ½«ÔÚa[i]Ç°ÇÒ±ÈtmpµÄÖµ´óµÄÔªËØÏòºóÒÆ¶¯Ò»Î» */
+                    arr[k + gap] = arr[k]; /* å°†åœ¨a[i]å‰ä¸”æ¯”tmpçš„å€¼å¤§çš„å…ƒç´ å‘åç§»åŠ¨ä¸€ä½ */
                     k -= gap;
                 }
                 arr[k + gap] = tmp;
