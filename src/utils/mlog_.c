@@ -488,7 +488,7 @@ int print_buf(int logLevel, uint8_t* pBuf, uint16_t bufLen)
 }
 
 
-static int _makeStarStr(char* str, uint8_t nb)
+static int _make_star_str(char* str, uint8_t nb)
 {
     for (uint8_t i = 0; i < nb; i++)
         str[i] = '*';
@@ -497,7 +497,7 @@ static int _makeStarStr(char* str, uint8_t nb)
 }
 
 
-static int _makeInfoStr(char* str, uint8_t nb)
+static int _make_info_str(char* str, uint8_t nb)
 {
     for (uint8_t i = (uint8_t)strlen(str); i < nb - 1; i++)
         str[i] = ' ';
@@ -525,10 +525,10 @@ int print_app_info(const char* szName, const char* szVersion, const char* szDate
     if (strlen(szAppDate) > maxLen)
         maxLen = strlen(szAppDate);
 
-    _makeStarStr(szStars, maxLen + 2);
-    _makeInfoStr(szAppInfo, maxLen + 2);
-    _makeInfoStr(szAppVer, maxLen + 2);
-    _makeInfoStr(szAppDate, maxLen + 2);
+    _make_star_str(szStars, maxLen + 2);
+    _make_info_str(szAppInfo, maxLen + 2);
+    _make_info_str(szAppVer, maxLen + 2);
+    _make_info_str(szAppDate, maxLen + 2);
 
     SLOG_INFO_RAW("\n");
     SLOG_INFO("%s", szStars);

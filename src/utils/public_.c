@@ -10,8 +10,7 @@
 #include "public_.h"
 
 
-/* 获取日志文件内容 */
-const char* getLogFilePath_(const char* strAppName)
+const char* log_file_path(const char* strAppName)
 {
     static char strBuffer[256];
 
@@ -44,8 +43,7 @@ const char* getLogFilePath_(const char* strAppName)
 }
 
 
-/* 获取配置文件路径 */
-const char* getConfigFilePath_(const char* strAppName, const char* strFileName)
+const char* config_file_path(const char* strAppName, const char* strFileName)
 {
     static char strBuffer[256];
 
@@ -96,8 +94,7 @@ const char* getConfigFilePath_(const char* strAppName, const char* strFileName)
 }
 
 
-/* 获取历史文件路径(放APP单路径) */
-const char* getHistoryFilePath_(const char* strAppName)
+const char* history_file_path(const char* strAppName)
 {
     static char strBuffer[256];
 

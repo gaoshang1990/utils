@@ -111,7 +111,7 @@ void App_Fsm_init(void)
  ******************************************************************************/
 void App_Fsm_process(void)
 {
-    delayMs_(3000);
+    delay_ms(3000);
 
     /* 每1000ms调度状态机，发送SAY_HELLO信号 */
     fsmDispatch_(_fsm, SAY_HELLO);

@@ -14,16 +14,7 @@
 const uint8_t MONTH_TAB[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 
-struct tm second2struct_(time_t sec)
-{
-    struct tm tms;
-    LOCAL_TIME(&sec, &tms);
-
-    return tms;
-}
-
-
-time_t timestr2second_(const char* str)
+time_t timestr2second(const char* str)
 {
     if (str == NULL)
         return 0;
@@ -52,14 +43,16 @@ time_t timestr2second_(const char* str)
 }
 
 
-int second2timestr_(char* timestr, time_t sec)
+int second2timestr(char* timestr, time_t sec)
 {
     if (timestr == NULL)
         return -1;
 
     memset(timestr, 0, TIME_STR_LEN + 1);
 
-    struct tm now_tm = second2struct_(sec);
+    struct tm now_tm;
+    LOCAL_TIME(&sec, &now_tm);
+
     sprintf(timestr,
             "%04d-%02d-%02d %02d:%02d:%02d",
             now_tm.tm_year + 1900,
@@ -73,7 +66,7 @@ int second2timestr_(char* timestr, time_t sec)
 }
 
 
-int delayMs_(int ms)
+int delay_ms(int ms)
 {
 #ifdef _WIN32
     Sleep(ms);
@@ -88,7 +81,7 @@ int delayMs_(int ms)
  * \brief   基姆拉尔森计算星期公式
  * \retval  0-6：星期日~六
  */
-int getWeekDay_(int year, int month, int day)
+int get_weekday(int year, int month, int day)
 {
     if (month == 1 || month == 2) {
         month += 12;
@@ -103,7 +96,7 @@ int getWeekDay_(int year, int month, int day)
  * \brief   判定一个时间的合法性，注意该检测包含非法日期检测
  * \retval  0-正确；-1-错误
  */
-int checkTime_(struct tm* pdate)
+int check_time(struct tm* pdate)
 {
     int c[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
@@ -124,9 +117,8 @@ int checkTime_(struct tm* pdate)
     int month = pdate->tm_mon + 1;
     int day   = pdate->tm_mday;
 
-    /* ==0xffff 不判断 */
     if ((pdate->tm_wday != 0xffff) &&
-        (((pdate->tm_wday > 0) ? (pdate->tm_wday - 1) : 6) != getWeekDay_(year, month, day)))
+        (((pdate->tm_wday > 0) ? (pdate->tm_wday - 1) : 6) != get_weekday(year, month, day)))
     {
         return 0;
     }
@@ -134,13 +126,13 @@ int checkTime_(struct tm* pdate)
     c[1] = 28 + IS_LEAP_YEAR(year);
     if (day <= c[month - 1])
         return 0;
-    else
-        return -1;
+
+    return -1;
 }
 
 
-/* 从UTC1970-1-1 0:0:0开始的毫秒数 */
-uint64_t timeMs_(void)
+/* since UTC1970-01-01 00:00:00 */
+uint64_t time_ms(void)
 {
     uint64_t ret = 0;
 
@@ -162,15 +154,15 @@ uint64_t timeMs_(void)
 }
 
 
-/* 从系统启动开始的毫秒数 */
-uint64_t cpuMs_(void)
+/* since system start */
+uint64_t cpu_ms(void)
 {
     uint64_t nowMs = 0;
 
 #ifdef _WIN32
     long nowTick = clock();
     if (nowTick < 0) {
-        nowMs = timeMs_();
+        nowMs = time_ms();
     }
     else {
         nowMs = (uint64_t)((nowTick * 1000) / CLOCKS_PER_SEC);
@@ -185,19 +177,19 @@ uint64_t cpuMs_(void)
 }
 
 
-#define TMR_SEC_FLAG  0x01 /* 过秒标志 */
-#define TMR_MIN_FLAG  0x02 /* 过分标志 */
-#define TMR_HOUR_FLAG 0x04 /* 过时标志 */
-#define TMR_DAY_FLAG  0x08 /* 过日标志 */
-#define TMR_MON_FLAG  0x10 /* 过月标志 */
-#define TMR_WEEK_FLAG 0x20 /* 过星期标志 */
-#define TMR_YEAR_FLAG 0x40 /* 过年标志 */
-#define TMR_USER_FLAG 0x80 /* 自定义标志 */
+#define TMR_SEC_FLAG  0x01
+#define TMR_MIN_FLAG  0x02
+#define TMR_HOUR_FLAG 0x04
+#define TMR_DAY_FLAG  0x08
+#define TMR_MON_FLAG  0x10
+#define TMR_WEEK_FLAG 0x20
+#define TMR_YEAR_FLAG 0x40
+#define TMR_USER_FLAG 0x80
 
 
 struct _Timer_t_ {
-    uint8_t   flag; /* bit: 0-过秒 1-过分 2-过时 3-过日 4-过月 5-过星期 6-过年 7-过自定义时间 */
-    uint64_t  settedMs; /* unit: ms, if > 0, TMR_USER_FLAG can be used */
+    uint8_t   flag;
+    uint64_t  settedMs; /* if > 0, TMR_USER_FLAG can be used */
     uint64_t  lastMs;
     struct tm lastTm;
     struct tm nowTm;
@@ -207,7 +199,7 @@ struct _Timer_t_ {
 /**
  * \param   settedMs: unit: ms, if > 0, TMR_USER_FLAG can be used
  */
-Timer_t timerInit_(uint64_t settedMs)
+Timer_t timer_init(uint64_t settedMs)
 {
     Timer_t timer = (Timer_t)malloc(sizeof(struct _Timer_t_));
     if (timer != NULL) {
@@ -216,7 +208,7 @@ Timer_t timerInit_(uint64_t settedMs)
 
         if (settedMs > 0) {
             timer->settedMs = settedMs;
-            timer->lastMs   = cpuMs_();
+            timer->lastMs   = cpu_ms();
         }
     }
 
@@ -224,14 +216,14 @@ Timer_t timerInit_(uint64_t settedMs)
 }
 
 
-void timerSetMs_(Timer_t timer, uint64_t settedMs)
+void timer_set_ms(Timer_t timer, uint64_t settedMs)
 {
     timer->settedMs = settedMs;
-    timer->lastMs   = cpuMs_();
+    timer->lastMs   = cpu_ms();
 }
 
 
-void timerDestroy_(Timer_t timer)
+void timer_destroy(Timer_t timer)
 {
     if (timer != NULL) {
         free(timer);
@@ -243,7 +235,7 @@ void timerDestroy_(Timer_t timer)
 /**
  * \brief   call this function in the start of loop
  */
-int timerRunning_(Timer_t timer)
+int timer_running(Timer_t timer)
 {
     timer->flag = 0; /* clear timer flag */
 
@@ -251,7 +243,7 @@ int timerRunning_(Timer_t timer)
     LOCAL_TIME(&nowSec, &timer->nowTm);
 
     if (timer->settedMs > 0) {
-        uint64_t nowMs = cpuMs_();
+        uint64_t nowMs = cpu_ms();
         if (nowMs - timer->lastMs > timer->settedMs) {
             timer->lastMs = nowMs;
             timer->flag |= TMR_USER_FLAG;
@@ -290,49 +282,49 @@ int timerRunning_(Timer_t timer)
 }
 
 
-bool pastSettedMs_(Timer_t timer)
+bool past_setted_ms(Timer_t timer)
 {
     return timer->flag & TMR_USER_FLAG;
 }
 
 
-bool pastSecond_(Timer_t timer)
+bool past_second(Timer_t timer)
 {
     return timer->flag & TMR_SEC_FLAG;
 }
 
 
-bool pastMinute_(Timer_t timer)
+bool past_minute(Timer_t timer)
 {
     return timer->flag & TMR_MIN_FLAG;
 }
 
 
-bool pastHour_(Timer_t timer)
+bool past_hour(Timer_t timer)
 {
     return timer->flag & TMR_HOUR_FLAG;
 }
 
 
-bool pastDay_(Timer_t timer)
+bool past_day(Timer_t timer)
 {
     return timer->flag & TMR_DAY_FLAG;
 }
 
 
-bool pastMonth_(Timer_t timer)
+bool past_month(Timer_t timer)
 {
     return timer->flag & TMR_MON_FLAG;
 }
 
 
-bool pastWeek_(Timer_t timer)
+bool past_week(Timer_t timer)
 {
     return timer->flag & TMR_WEEK_FLAG;
 }
 
 
-bool pastYear_(Timer_t timer)
+bool past_year(Timer_t timer)
 {
     return timer->flag & TMR_YEAR_FLAG;
 }

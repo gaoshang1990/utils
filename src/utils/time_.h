@@ -23,51 +23,48 @@ typedef struct _Timer_t_* Timer_t;
 
 extern const uint8_t MONTH_TAB[];
 
-time_t    timestr2second_(const char* str);
-int       second2timestr_(char* timestr, time_t sec);
-struct tm second2struct_(time_t sec);
-int       getWeekDay_(int year, int month, int day);
-int       checkTime_(struct tm* pdate);
-int       delayMs_(int ms);
-uint64_t  timeMs_(void);
-uint64_t  cpuMs_(void);
+time_t   timestr2second(const char* str);
+int      second2timestr(char* timestr, time_t sec);
+int      get_weekday(int year, int month, int day);
+int      check_time(struct tm* pdate);
+int      delay_ms(int ms);
+uint64_t time_ms(void);
+uint64_t cpu_ms(void);
 
 /* timer demo:
-    Timer_t timer = timerInit_(100);
+    Timer_t timer = timer_init(100);
     while (1) {
-        timerRunning_(timer);
+        timer_running(timer);
 
-        if (pastSecond_(timer))
+        if (past_second(timer))
             printf("past second\n");
 
-        if (pastSettedMs_(timer))
+        if (past_setted_ms(timer))
             printf("past 100ms\n");
 
-        delayMs_(10);
+        delay_ms(10);
     }
  */
 
 /**
  * \param   settedMs: unit: ms, if > 0, TMR_USER_FLAG can be used
  */
-Timer_t timerInit_(uint64_t settedMs);
+Timer_t timer_init(uint64_t settedMs);
 
-void timerDestroy_(Timer_t timer);
-void timerSetMs_(Timer_t timer, uint64_t settedMs);
+void timer_destroy(Timer_t timer);
+void timer_set_ms(Timer_t timer, uint64_t settedMs);
 
-/**
- * \brief   call this function in the start of loop
- */
-int timerRunning_(Timer_t timer);
+/* call this function in the start of loop */
+int timer_running(Timer_t timer);
 
-bool pastSettedMs_(Timer_t timer);
-bool pastSecond_(Timer_t timer);
-bool pastMinute_(Timer_t timer);
-bool pastHour_(Timer_t timer);
-bool pastDay_(Timer_t timer);
-bool pastWeek_(Timer_t timer);
-bool pastMonth_(Timer_t timer);
-bool pastYear_(Timer_t timer);
+bool past_setted_ms(Timer_t timer);
+bool past_second(Timer_t timer);
+bool past_minute(Timer_t timer);
+bool past_hour(Timer_t timer);
+bool past_day(Timer_t timer);
+bool past_week(Timer_t timer);
+bool past_month(Timer_t timer);
+bool past_year(Timer_t timer);
 
 
 #ifdef __cplusplus

@@ -52,9 +52,9 @@ extern "C" {
     } while (0)
 
 
-const char* getLogFilePath_(const char* strAppName);
-const char* getConfigFilePath_(const char* strAppName, const char* strFileName);
-const char* getHistoryFilePath_(const char* strAppName);
+const char* log_file_path(const char* strAppName);
+const char* config_file_path(const char* strAppName, const char* strFileName);
+const char* history_file_path(const char* strAppName);
 
 
 #ifdef __cplusplus
