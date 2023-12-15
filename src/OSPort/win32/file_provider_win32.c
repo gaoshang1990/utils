@@ -1,6 +1,3 @@
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 #include <windows.h>
 #include <sys/stat.h>
@@ -29,25 +26,30 @@ FileHandle FileSystem_openFile(char* fileName, bool readWrite)
     return newHandle;
 }
 
+
 int FileSystem_readFile(FileHandle handle, uint8_t* buffer, int maxSize)
 {
     return fread(buffer, maxSize, 1, (FILE*)handle);
 }
+
 
 int FileSystem_writeFile(FileHandle handle, uint8_t* buffer, int size)
 {
     return fwrite(buffer, size, 1, (FILE*)handle);
 }
 
+
 int FileSystem_fflushFile(FileHandle handle)
 {
     return fflush(handle);
 }
 
+
 void FileSystem_closeFile(FileHandle handle)
 {
     fclose((FILE*)handle);
 }
+
 
 bool FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp)
 {
@@ -56,8 +58,7 @@ bool FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastMo
     if (GetFileAttributesEx(filename, GetFileExInfoStandard, &fad) == 0)
         return false;
 
-    if (lastModificationTimestamp != NULL)
-    {
+    if (lastModificationTimestamp != NULL) {
         FILETIME lastModTime = fad.ftLastWriteTime;
 
         uint64_t now;
@@ -75,6 +76,7 @@ bool FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastMo
     return true;
 }
 
+
 DirectoryHandle FileSystem_openDirectory(char* directoryName)
 {
     DirectoryHandle dirHandle = (DirectoryHandle)calloc(1, sizeof(struct sDirectoryHandle));
@@ -91,8 +93,7 @@ DirectoryHandle FileSystem_openDirectory(char* directoryName)
 
     dirHandle->handle = FindFirstFileW(unicodeFullPath, &(dirHandle->findData));
 
-    if (dirHandle->handle != NULL)
-    {
+    if (dirHandle->handle != NULL) {
         dirHandle->available = true;
 
         /* convert WCHAR to UTF-8 */
@@ -100,19 +101,18 @@ DirectoryHandle FileSystem_openDirectory(char* directoryName)
             CP_UTF8, 0, dirHandle->findData.cFileName, -1, dirHandle->utf8Filename, (MAX_PATH * 3) + 1, NULL, NULL);
     }
 
-    if (dirHandle->handle == INVALID_HANDLE_VALUE)
-    {
+    if (dirHandle->handle == INVALID_HANDLE_VALUE) {
         free(dirHandle);
         return NULL;
     }
-    else
-        return dirHandle;
+
+    return dirHandle;
 }
 
-static char* getNextDirectoryEntry(DirectoryHandle directory, bool* isDirectory)
+
+static char* _next_directory_entry(DirectoryHandle directory, bool* isDirectory)
 {
-    if (directory->available == true)
-    {
+    if (directory->available == true) {
         directory->available = false;
 
         if (directory->findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
@@ -122,10 +122,8 @@ static char* getNextDirectoryEntry(DirectoryHandle directory, bool* isDirectory)
 
         return directory->utf8Filename;
     }
-    else
-    {
-        if (FindNextFileW(directory->handle, &(directory->findData)) != 0)
-        {
+    else {
+        if (FindNextFileW(directory->handle, &(directory->findData)) != 0) {
             if (directory->findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
                 *isDirectory = true;
             else
@@ -137,8 +135,8 @@ static char* getNextDirectoryEntry(DirectoryHandle directory, bool* isDirectory)
 
             return directory->utf8Filename;
         }
-        else
-            return NULL;
+
+        return NULL;
     }
 }
 
@@ -147,29 +145,29 @@ bool FileSystem_deleteFile(char* filename)
 {
     if (remove(filename) == 0)
         return true;
-    else
-        return false;
+
+    return false;
 }
+
 
 bool FileSystem_renameFile(char* oldFilename, char* newFilename)
 {
     if (rename(oldFilename, newFilename) == 0)
         return true;
-    else
-        return false;
+
+    return false;
 }
 
 
 char* FileSystem_readDirectory(DirectoryHandle directory, bool* isDirectory)
 {
-    char* fileName = getNextDirectoryEntry(directory, isDirectory);
+    char* fileName = _next_directory_entry(directory, isDirectory);
 
-    if (fileName != NULL)
-    {
-        if (fileName[0] == '.')
+    if (fileName != NULL) {
+        if (strcmp(fileName, ".") == 0 || strcmp(fileName, "..") == 0)
             return FileSystem_readDirectory(directory, isDirectory);
-        else
-            return fileName;
+
+        return fileName;
     }
 
     return NULL;

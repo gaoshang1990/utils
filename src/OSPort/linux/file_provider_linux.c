@@ -1,7 +1,6 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -26,25 +25,30 @@ FileHandle FileSystem_openFile(char* fileName, bool readWrite)
     return newHandle;
 }
 
+
 int FileSystem_readFile(FileHandle handle, uint8_t* buffer, int maxSize)
 {
     return fread(buffer, maxSize, 1, (FILE*)handle);
 }
+
 
 int FileSystem_writeFile(FileHandle handle, uint8_t* buffer, int size)
 {
     return fwrite(buffer, size, 1, (FILE*)handle);
 }
 
+
 int FileSystem_fflushFile(FileHandle handle)
 {
     return fflush(handle);
 }
 
+
 void FileSystem_closeFile(FileHandle handle)
 {
     fclose((FILE*)handle);
 }
+
 
 bool FileSystem_deleteFile(char* filename)
 {
@@ -53,6 +57,7 @@ bool FileSystem_deleteFile(char* filename)
     else
         return false;
 }
+
 
 bool FileSystem_renameFile(char* oldFilename, char* newFilename)
 {
@@ -80,14 +85,14 @@ bool FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastMo
     return true;
 }
 
+
 DirectoryHandle FileSystem_openDirectory(char* directoryName)
 {
     DIR* dirHandle = opendir(directoryName);
 
     DirectoryHandle handle = NULL;
 
-    if (dirHandle != NULL)
-    {
+    if (dirHandle != NULL) {
         handle         = (struct sDirectoryHandle*)malloc(sizeof(struct sDirectoryHandle));
         handle->handle = dirHandle;
     }
@@ -95,20 +100,16 @@ DirectoryHandle FileSystem_openDirectory(char* directoryName)
     return handle;
 }
 
+
 char* FileSystem_readDirectory(DirectoryHandle directory, bool* isDirectory)
 {
-    struct dirent* dir;
+    struct dirent* dir = readdir(directory->handle);
 
-    dir = readdir(directory->handle);
-
-    if (dir != NULL)
-    {
-        if (dir->d_name[0] == '.')
+    if (dir != NULL) {
+        if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
             return FileSystem_readDirectory(directory, isDirectory);
-        else
-        {
-            if (isDirectory != NULL)
-            {
+        else {
+            if (isDirectory != NULL) {
                 if (dir->d_type == DT_DIR)
                     *isDirectory = true;
                 else
@@ -118,9 +119,10 @@ char* FileSystem_readDirectory(DirectoryHandle directory, bool* isDirectory)
             return dir->d_name;
         }
     }
-    else
-        return NULL;
+
+    return NULL;
 }
+
 
 void FileSystem_closeDirectory(DirectoryHandle directory)
 {
