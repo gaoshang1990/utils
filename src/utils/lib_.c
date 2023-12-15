@@ -58,7 +58,7 @@ int memrev_(uint8_t* buf, int len)
 
 
 /* mode: 0-little endian, 1-big endian */
-int64_t bytes2int(uint8_t* buf, int* offset, int len, int mode)
+int64_t byte2int(uint8_t* buf, int* offset, int len, int mode)
 {
     if (offset)
         buf += *offset;
@@ -81,18 +81,9 @@ int64_t bytes2int(uint8_t* buf, int* offset, int len, int mode)
 }
 
 
-float bytes2float(uint8_t* buf, int* offset, int mode)
+double byte2fp(uint8_t* buf, int* offset, int len, int mode)
 {
-    int32_t ret = (int32_t)bytes2int(buf, offset, sizeof(float), mode);
-    float*  p   = (float*)&ret;
-
-    return *p;
-}
-
-
-double bytes2double(uint8_t* buf, int* offset, int mode)
-{
-    int64_t ret = bytes2int(buf, offset, sizeof(double), mode);
+    int64_t ret = byte2int(buf, offset, len, mode);
     double* p   = (double*)&ret;
 
     return *p;
@@ -126,7 +117,7 @@ int atox_(const char* str, int len)
  * \brief   string turn to uint8 array:
  *          "680100" -> [0x68, 0x01, 0x00]
  */
-int str2hex(uint8_t* buf, int bufSize, const char* str)
+int str2byte(uint8_t* buf, int bufSize, const char* str)
 {
     if (buf == NULL || str == NULL) {
         printf("buf or str is NULL!\n");
@@ -159,7 +150,7 @@ int str2hex(uint8_t* buf, int bufSize, const char* str)
  * \brief   uint8 array turn to string:
  *          [0x68, 0x01, 0x00] -> "680100"
  */
-int hex2str(char* str, uint8_t* buf, int bufLen)
+int byte2str(char* str, uint8_t* buf, int bufLen)
 {
     if (buf == NULL || str == NULL || bufLen <= 0) {
         printf("buf/str is NULL, or bufLen <= 0\n");
@@ -173,7 +164,7 @@ int hex2str(char* str, uint8_t* buf, int bufLen)
 }
 
 
-int reduceGap_(uint8_t* data, int len, uint8_t gap)
+int reduce_gap(uint8_t* data, int len, uint8_t gap)
 {
     if (len <= 0 || data == NULL) {
         printf("len[%d] <= 0 or data is null", len);
@@ -187,7 +178,7 @@ int reduceGap_(uint8_t* data, int len, uint8_t gap)
 }
 
 
-int addGap_(uint8_t* data, int len, uint8_t gap)
+int add_gap(uint8_t* data, int len, uint8_t gap)
 {
     if (len <= 0 || data == NULL) {
         printf("len[%d] <= 0 or data is null", len);
