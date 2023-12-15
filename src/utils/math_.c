@@ -123,7 +123,7 @@ typedef union {
 
 struct _StatUnit_ {
     struct {
-        int count;
+        int size;
         int type;
     } setting;
 
@@ -152,7 +152,7 @@ static bool _is_sliding_window(StatUnit stat)
     if (stat == NULL)
         return false;
 
-    return stat->setting.count > 0;
+    return stat->setting.size > 0;
 }
 
 
@@ -161,22 +161,7 @@ static bool _has_started_sliding(StatUnit stat)
     if (stat == NULL)
         return false;
 
-    return stat->priv.count >= stat->setting.count;
-}
-
-
-int stat_restart(StatUnit stat)
-{
-    if (stat == NULL)
-        return -1;
-
-    stat->output.min        = stat->input.value;
-    stat->output.max        = stat->input.value;
-    stat->output.sum.int64_ = 0;
-    stat->priv.head         = 0;
-    stat->priv.count        = 0;
-
-    return 0;
+    return stat->priv.count >= stat->setting.size;
 }
 
 
@@ -329,7 +314,7 @@ static int _update_min_max(StatUnit stat)
             for (int i = 0; i < stat->priv.head; i++)
                 stat->output.min = _cmp_min(stat->setting.type, stat->output.min, stat->priv.his[i]);
 
-            for (int i = stat->priv.head + 1; i < stat->setting.count; i++)
+            for (int i = stat->priv.head + 1; i < stat->setting.size; i++)
                 stat->output.min = _cmp_min(stat->setting.type, stat->output.min, stat->priv.his[i]);
         }
         else
@@ -341,7 +326,7 @@ static int _update_min_max(StatUnit stat)
             for (int i = 0; i < stat->priv.head; i++)
                 stat->output.max = _cmp_max(stat->setting.type, stat->output.max, stat->priv.his[i]);
 
-            for (int i = stat->priv.head + 1; i < stat->setting.count; i++)
+            for (int i = stat->priv.head + 1; i < stat->setting.size; i++)
                 stat->output.max = _cmp_max(stat->setting.type, stat->output.max, stat->priv.his[i]);
         }
         else
@@ -364,7 +349,7 @@ static int _update_his(StatUnit stat)
     if (_is_sliding_window(stat)) {
         stat->priv.his[stat->priv.head++] = stat->input.value;
 
-        if (stat->priv.head >= stat->setting.count)
+        if (stat->priv.head >= stat->setting.size)
             stat->priv.head = 0;
     }
 
@@ -535,12 +520,12 @@ StatUnit stat_init(int type, int count)
     StatUnit stat = (StatUnit)malloc(sizeof(struct _StatUnit_));
 
     stat->setting.type  = type;
-    stat->setting.count = count;
+    stat->setting.size  = count;
     stat->priv.is_first = true;
     stat->priv.his      = NULL;
 
     if (count > 0)
-        stat->priv.his = (StatVar*)malloc(stat->setting.count * sizeof(StatVar));
+        stat->priv.his = (StatVar*)malloc(stat->setting.size * sizeof(StatVar));
 
     return stat;
 }
