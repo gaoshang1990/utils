@@ -93,17 +93,15 @@ int shift_decimal_point(char* szNum, int scaler)
 }
 
 
-/* 希尔排序 */
-int shellSort_(int* arr, int len)
+int shell_sort(int* arr, int len)
 {
-    for (int gap = len / 2; gap > 0; gap /= 2) { /* 步长初始化为数组长度的一半，每次遍历后步长减半 */
-        for (int i = 0; i < gap; ++i) {          /* 变量i为每次分组的第一个元素下标 */
+    for (int gap = len / 2; gap > 0; gap /= 2) {
+        for (int i = 0; i < gap; ++i) {
             for (int j = i + gap; j < len; j += gap) {
-                /* 对步长为gap的元素进行直插排序，当gap为1时，就是直插排序 */
                 int tmp = arr[j];
-                int k   = j - gap; /* k初始化为j的前一个元素（与j相差gap长度） */
+                int k   = j - gap;
                 while (k >= 0 && arr[k] > tmp) {
-                    arr[k + gap] = arr[k]; /* 将在a[i]前且比tmp的值大的元素向后移动一位 */
+                    arr[k + gap] = arr[k];
                     k -= gap;
                 }
                 arr[k + gap] = tmp;
@@ -115,7 +113,7 @@ int shellSort_(int* arr, int len)
 }
 
 
-/* stat unit */
+/* --- stat unit --- */
 
 
 typedef union {
@@ -401,6 +399,21 @@ static int _stat_unit(StatUnit stat)
 }
 
 
+int stat_restart(StatUnit stat)
+{
+    if (stat == NULL)
+        return -1;
+
+    stat->output.min        = stat->input.value;
+    stat->output.max        = stat->input.value;
+    stat->output.sum.int64_ = 0;
+    stat->priv.head         = 0;
+    stat->priv.count        = 0;
+
+    return 0;
+}
+
+
 int stat_push_int(StatUnit stat, int64_t item)
 {
     stat->input.value.int64_ = item;
@@ -414,7 +427,7 @@ int stat_push_int(StatUnit stat, int64_t item)
 }
 
 
-int stat_push_double(StatUnit stat, double item)
+int stat_push_fp(StatUnit stat, double item)
 {
     stat->input.value.double_ = item;
 
@@ -472,7 +485,7 @@ int64_t stat_cur_int(StatUnit stat)
 }
 
 
-double stat_min_double(StatUnit stat)
+double stat_min_fp(StatUnit stat)
 {
     if (stat == NULL)
         return 0;
@@ -481,7 +494,7 @@ double stat_min_double(StatUnit stat)
 }
 
 
-double stat_max_double(StatUnit stat)
+double stat_max_fp(StatUnit stat)
 {
     if (stat == NULL)
         return 0;
@@ -490,7 +503,7 @@ double stat_max_double(StatUnit stat)
 }
 
 
-double stat_avg_double(StatUnit stat)
+double stat_avg_fp(StatUnit stat)
 {
     if (stat == NULL)
         return 0;
@@ -499,7 +512,7 @@ double stat_avg_double(StatUnit stat)
 }
 
 
-double stat_sum_double(StatUnit stat)
+double stat_sum_fp(StatUnit stat)
 {
     if (stat == NULL)
         return 0;
@@ -508,7 +521,7 @@ double stat_sum_double(StatUnit stat)
 }
 
 
-double stat_cur_double(StatUnit stat)
+double stat_cur_fp(StatUnit stat)
 {
     if (stat == NULL)
         return 0;

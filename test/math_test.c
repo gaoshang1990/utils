@@ -8,7 +8,7 @@ static int _userShift(const char* src, int scaler)
     char szNum[32];
 
     sprintf(szNum, "%s", src);
-    shiftDecimalPoint_(szNum, scaler);
+    shift_decimal_point(szNum, scaler);
     SLOG_DEBUG("%s -> %d: %s", src, scaler, szNum);
 
     return 0;
@@ -123,12 +123,12 @@ int stat_test()
 
     stat = stat_init(STAT_TYPE_DOUBLE, 3);
     for (int i = 1; i < 10; i++) {
-        stat_push_double(stat, i);
+        stat_push_fp(stat, i);
         SLOG_DEBUG("min = %lf, max = %lf, avg = %lf, sum = %lf",
-                   stat_min_double(stat),
-                   stat_max_double(stat),
-                   stat_avg_double(stat),
-                   stat_sum_double(stat));
+                   stat_min_fp(stat),
+                   stat_max_fp(stat),
+                   stat_avg_fp(stat),
+                   stat_sum_fp(stat));
     }
     stat_free(stat);
     SLOG_DEBUG_RAW("\n");
@@ -138,12 +138,12 @@ int stat_test()
         if (i == 5)
             stat_restart(stat);
 
-        stat_push_double(stat, i);
+        stat_push_fp(stat, i);
         SLOG_DEBUG("min = %lf, max = %lf, avg = %lf, sum = %lf",
-                   stat_min_double(stat),
-                   stat_max_double(stat),
-                   stat_avg_double(stat),
-                   stat_sum_double(stat));
+                   stat_min_fp(stat),
+                   stat_max_fp(stat),
+                   stat_avg_fp(stat),
+                   stat_sum_fp(stat));
     }
     stat_free(stat);
     SLOG_DEBUG_RAW("\n");
