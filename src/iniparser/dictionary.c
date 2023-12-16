@@ -13,11 +13,11 @@
 /*---------------------------------------------------------------------------
                                 Includes
  ---------------------------------------------------------------------------*/
-#include "dictionary.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "dictionary.h"
 
 
 /** Maximum value size for integers and doubles. */
@@ -57,6 +57,7 @@ static char* xstrdup(const char* s)
     }
     return t;
 }
+
 
 /*-------------------------------------------------------------------------*/
 /**
@@ -100,6 +101,7 @@ static int dictionary_grow(dictionary* d)
     return 0;
 }
 
+
 /*---------------------------------------------------------------------------
                             Function codes
  ---------------------------------------------------------------------------*/
@@ -136,6 +138,7 @@ unsigned dictionary_hash(const char* key)
     return hash;
 }
 
+
 /*-------------------------------------------------------------------------*/
 /**
   @brief    Create a new dictionary object.
@@ -166,6 +169,7 @@ dictionary* dictionary_new(size_t size)
     return d;
 }
 
+
 /*-------------------------------------------------------------------------*/
 /**
   @brief    Delete a dictionary object
@@ -193,6 +197,7 @@ void dictionary_del(dictionary* d)
     free(d);
     return;
 }
+
 
 /*-------------------------------------------------------------------------*/
 /**
@@ -227,6 +232,7 @@ const char* dictionary_get(const dictionary* d, const char* key, const char* def
     }
     return def;
 }
+
 
 /*-------------------------------------------------------------------------*/
 /**
@@ -304,6 +310,7 @@ int dictionary_set(dictionary* d, const char* key, const char* val)
     return 0;
 }
 
+
 /*-------------------------------------------------------------------------*/
 /**
   @brief    Delete a key in a dictionary
@@ -351,6 +358,7 @@ void dictionary_unset(dictionary* d, const char* key)
     d->n--;
     return;
 }
+
 
 /*-------------------------------------------------------------------------*/
 /**
