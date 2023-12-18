@@ -20,15 +20,17 @@ int rand_num(int min, int max)
 }
 
 
-int swap_bytes(void* a, void* b, int size)
+int swap_mem(void* a, void* b, int size)
 {
-    void* tmp = malloc(size);
+    uint8_t  tmp;
+    uint8_t* p1 = (uint8_t*)a;
+    uint8_t* p2 = (uint8_t*)b;
 
-    memcpy(tmp, a, size);
-    memcpy(a, b, size);
-    memcpy(b, tmp, size);
-
-    free(tmp);
+    for (int i = 0; i < size; i++) {
+        tmp   = p1[i];
+        p1[i] = p2[i];
+        p2[i] = tmp;
+    }
 
     return 0;
 }
@@ -65,7 +67,7 @@ int shift_decimal_point(char* szNum, int scaler)
             pos += nbZero;
         }
         for (int i = 0; i < scaler; i++) {
-            swap_bytes(&szNum[pos], &szNum[pos - 1], sizeof(char));
+            swap_mem(&szNum[pos], &szNum[pos - 1], sizeof(char));
             pos--;
         }
     }
@@ -75,7 +77,7 @@ int shift_decimal_point(char* szNum, int scaler)
                 szNum[pos + 1] = '0';
                 szNum[pos + 2] = '\0';
             }
-            swap_bytes(&szNum[pos], &szNum[pos + 1], sizeof(char));
+            swap_mem(&szNum[pos], &szNum[pos + 1], sizeof(char));
             pos++;
         }
     }

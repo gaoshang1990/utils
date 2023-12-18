@@ -22,7 +22,7 @@ extern "C" {
 /* return a random nuber: [min, max] */
 int rand_num(int min, int max);
 
-int swap_bytes(void* a, void* b, int size);
+int swap_mem(void* a, void* b, int size);
 int shift_decimal_point(char* szNum, int scaler);
 int shell_sort(int* arr, int len);
 

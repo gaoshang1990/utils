@@ -97,11 +97,12 @@ int stat_test()
     StatUnit stat = stat_init(STAT_TYPE_INT, 3);
     for (int i = 1; i < 10; i++) {
         stat_push_int(stat, i);
+        int64_t m = *((int64_t*)stat_min(stat));
         SLOG_DEBUG("min = %lld, max = %lld, avg = %lld, sum = %lld",
-                   stat_min_int(stat),
-                   stat_max_int(stat),
-                   stat_avg_int(stat),
-                   stat_sum_int(stat));
+                   STAT_MIN_INT(stat),
+                   STAT_MAX_INT(stat),
+                   STAT_AVG_INT(stat),
+                   STAT_SUM_INT(stat));
     }
     stat_free(stat);
     SLOG_DEBUG_RAW("\n");
@@ -113,10 +114,10 @@ int stat_test()
 
         stat_push_int(stat, i);
         SLOG_DEBUG("min = %lld, max = %lld, avg = %lld, sum = %lld",
-                   stat_min_int(stat),
-                   stat_max_int(stat),
-                   stat_avg_int(stat),
-                   stat_sum_int(stat));
+                   STAT_MIN_INT(stat),
+                   STAT_MAX_INT(stat),
+                   STAT_AVG_INT(stat),
+                   STAT_SUM_INT(stat));
     }
     stat_free(stat);
     SLOG_DEBUG_RAW("\n");
@@ -125,10 +126,10 @@ int stat_test()
     for (int i = 1; i < 10; i++) {
         stat_push_fp(stat, i);
         SLOG_DEBUG("min = %lf, max = %lf, avg = %lf, sum = %lf",
-                   stat_min_fp(stat),
-                   stat_max_fp(stat),
-                   stat_avg_fp(stat),
-                   stat_sum_fp(stat));
+                   STAT_MIN_FP(stat),
+                   STAT_MAX_FP(stat),
+                   STAT_AVG_FP(stat),
+                   STAT_SUM_FP(stat));
     }
     stat_free(stat);
     SLOG_DEBUG_RAW("\n");
@@ -140,10 +141,10 @@ int stat_test()
 
         stat_push_fp(stat, i);
         SLOG_DEBUG("min = %lf, max = %lf, avg = %lf, sum = %lf",
-                   stat_min_fp(stat),
-                   stat_max_fp(stat),
-                   stat_avg_fp(stat),
-                   stat_sum_fp(stat));
+                   STAT_MIN_FP(stat),
+                   STAT_MAX_FP(stat),
+                   STAT_AVG_FP(stat),
+                   STAT_SUM_FP(stat));
     }
     stat_free(stat);
     SLOG_DEBUG_RAW("\n");
