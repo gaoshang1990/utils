@@ -39,17 +39,22 @@ int      stat_free(StatUnit stat);
 int      stat_restart(StatUnit stat);
 int      stat_push_int(StatUnit stat, int64_t item);
 int      stat_push_fp(StatUnit stat, double item);
-int64_t  stat_min_int(StatUnit stat);
-int64_t  stat_max_int(StatUnit stat);
-int64_t  stat_avg_int(StatUnit stat);
-int64_t  stat_sum_int(StatUnit stat);
-int64_t  stat_cur_int(StatUnit stat);
-double   stat_min_fp(StatUnit stat);
-double   stat_max_fp(StatUnit stat);
-double   stat_avg_fp(StatUnit stat);
-double   stat_sum_fp(StatUnit stat);
-double   stat_cur_fp(StatUnit stat);
+void*    stat_min(StatUnit stat);
+void*    stat_max(StatUnit stat);
+void*    stat_avg(StatUnit stat);
+void*    stat_sum(StatUnit stat);
+void*    stat_cur(StatUnit stat);
 
+#define STAT_MIN_INT(stat) (*((int64_t*)stat_min(stat)))
+#define STAT_MAX_INT(stat) (*((int64_t*)stat_max(stat)))
+#define STAT_AVG_INT(stat) (*((int64_t*)stat_avg(stat)))
+#define STAT_SUM_INT(stat) (*((int64_t*)stat_sum(stat)))
+#define STAT_CUR_INT(stat) (*((int64_t*)stat_cur(stat)))
+#define STAT_MIN_FP(stat)  (*((double*)stat_min(stat)))
+#define STAT_MAX_FP(stat)  (*((double*)stat_max(stat)))
+#define STAT_AVG_FP(stat)  (*((double*)stat_avg(stat)))
+#define STAT_SUM_FP(stat)  (*((double*)stat_sum(stat)))
+#define STAT_CUR_FP(stat)  (*((double*)stat_cur(stat)))
 
 #ifdef __cplusplus
 }

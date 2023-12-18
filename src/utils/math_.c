@@ -271,6 +271,25 @@ static StatVar _calc_div(int type, StatVar var1, StatVar var2)
 }
 
 
+static StatVar _int2statvar(int type, int64_t value)
+{
+    StatVar ret;
+
+    switch (type) {
+    case STAT_TYPE_DOUBLE:
+        ret.double_ = (double)value;
+        break;
+
+    case STAT_TYPE_INT:
+    default:
+        ret.int64_ = value;
+        break;
+    }
+
+    return ret;
+}
+
+
 static int _update_sum_avg(StatUnit stat)
 {
     if (stat == NULL)
@@ -278,27 +297,13 @@ static int _update_sum_avg(StatUnit stat)
 
     stat->output.sum = _calc_plus(stat->setting.type, stat->output.sum, stat->input.value);
 
-    int flag = _is_sliding_window(stat) && _has_started_sliding(stat);
+    int     flag = _is_sliding_window(stat) && _has_started_sliding(stat);
+    StatVar cnt  = _int2statvar(stat->setting.type, stat->priv.count + !flag);
 
-    StatVar tmp;
-    switch (stat->setting.type) {
-    case STAT_TYPE_DOUBLE:
-        tmp.double_ = stat->priv.count + !flag;
-        break;
-
-    case STAT_TYPE_INT:
-    default:
-        tmp.int64_ = stat->priv.count + !flag;
-        break;
-    }
-
-    if (flag) {
+    if (flag)
         stat->output.sum = _calc_minus(stat->setting.type, stat->output.sum, stat->priv.his[stat->priv.head]);
-        stat->output.avg = _calc_div(stat->setting.type, stat->output.sum, tmp);
-    }
-    else {
-        stat->output.avg = _calc_div(stat->setting.type, stat->output.sum, tmp);
-    }
+
+    stat->output.avg = _calc_div(stat->setting.type, stat->output.sum, cnt);
 
     return 0;
 }
@@ -368,13 +373,13 @@ static int _stat_count_next(StatUnit stat)
         stat->priv.count++;
 
     if (stat->priv.count >= INT32_MAX)
-        stat->priv.count /= 2;
+        stat_restart(stat);
 
     return 0;
 }
 
 
-static int _stat_unit(StatUnit stat)
+static int _stat_exec(StatUnit stat)
 {
     _update_sum_avg(stat);
     _update_min_max(stat);
@@ -410,7 +415,7 @@ int stat_push_int(StatUnit stat, int64_t item)
         stat->priv.is_first = false;
     }
 
-    return _stat_unit(stat);
+    return _stat_exec(stat);
 }
 
 
@@ -423,97 +428,37 @@ int stat_push_fp(StatUnit stat, double item)
         stat->priv.is_first = false;
     }
 
-    return _stat_unit(stat);
+    return _stat_exec(stat);
 }
 
 
-int64_t stat_min_int(StatUnit stat)
+void* stat_min(StatUnit stat)
 {
-    if (stat == NULL)
-        return 0;
-
-    return stat->output.min.int64_;
+    return &stat->output.min;
 }
 
 
-int64_t stat_max_int(StatUnit stat)
+void* stat_max(StatUnit stat)
 {
-    if (stat == NULL)
-        return 0;
-
-    return stat->output.max.int64_;
+    return &stat->output.max;
 }
 
 
-int64_t stat_avg_int(StatUnit stat)
+void* stat_avg(StatUnit stat)
 {
-    if (stat == NULL)
-        return 0;
-
-    return stat->output.avg.int64_;
+    return &stat->output.avg;
 }
 
 
-int64_t stat_sum_int(StatUnit stat)
+void* stat_sum(StatUnit stat)
 {
-    if (stat == NULL)
-        return 0;
-
-    return stat->output.sum.int64_;
+    return &stat->output.sum;
 }
 
 
-int64_t stat_cur_int(StatUnit stat)
+void* stat_cur(StatUnit stat)
 {
-    if (stat == NULL)
-        return 0;
-
-    return stat->input.value.int64_;
-}
-
-
-double stat_min_fp(StatUnit stat)
-{
-    if (stat == NULL)
-        return 0;
-
-    return stat->output.min.double_;
-}
-
-
-double stat_max_fp(StatUnit stat)
-{
-    if (stat == NULL)
-        return 0;
-
-    return stat->output.max.double_;
-}
-
-
-double stat_avg_fp(StatUnit stat)
-{
-    if (stat == NULL)
-        return 0;
-
-    return stat->output.avg.double_;
-}
-
-
-double stat_sum_fp(StatUnit stat)
-{
-    if (stat == NULL)
-        return 0;
-
-    return stat->output.sum.double_;
-}
-
-
-double stat_cur_fp(StatUnit stat)
-{
-    if (stat == NULL)
-        return 0;
-
-    return stat->input.value.double_;
+    return &stat->input.value;
 }
 
 
