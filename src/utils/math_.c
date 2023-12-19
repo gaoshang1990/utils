@@ -462,7 +462,7 @@ void* stat_cur(StatUnit stat)
 }
 
 
-StatUnit stat_init(int type, int count)
+StatUnit stat_new(int type, int count)
 {
     StatUnit stat = (StatUnit)malloc(sizeof(struct _StatUnit_));
 
@@ -478,7 +478,7 @@ StatUnit stat_init(int type, int count)
 }
 
 
-int stat_free(StatUnit stat)
+int stat_del(StatUnit stat)
 {
     if (stat == NULL)
         return -1;

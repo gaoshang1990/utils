@@ -34,8 +34,8 @@ enum E_STAT_TYPE {
 
 typedef struct _StatUnit_* StatUnit;
 
-StatUnit stat_init(int type, int count);
-int      stat_free(StatUnit stat);
+StatUnit stat_new(int type, int count);
+int      stat_del(StatUnit stat);
 int      stat_restart(StatUnit stat);
 int      stat_push_int(StatUnit stat, int64_t item);
 int      stat_push_fp(StatUnit stat, double item);
