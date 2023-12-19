@@ -379,18 +379,6 @@ static int _stat_count_next(StatUnit stat)
 }
 
 
-static int _stat_exec(StatUnit stat)
-{
-    _update_sum_avg(stat);
-    _update_min_max(stat);
-    _update_his(stat);
-
-    _stat_count_next(stat);
-
-    return 0;
-}
-
-
 int stat_restart(StatUnit stat)
 {
     if (stat == NULL)
@@ -406,14 +394,25 @@ int stat_restart(StatUnit stat)
 }
 
 
-int stat_push_int(StatUnit stat, int64_t item)
+static int _stat_exec(StatUnit stat)
 {
-    stat->input.value.int64_ = item;
-
     if (stat->priv.is_first) {
         stat_restart(stat);
         stat->priv.is_first = false;
     }
+
+    _update_sum_avg(stat);
+    _update_min_max(stat);
+    _update_his(stat);
+
+    _stat_count_next(stat);
+
+    return 0;
+}
+
+int stat_push_int(StatUnit stat, int64_t item)
+{
+    stat->input.value.int64_ = item;
 
     return _stat_exec(stat);
 }
@@ -422,11 +421,6 @@ int stat_push_int(StatUnit stat, int64_t item)
 int stat_push_fp(StatUnit stat, double item)
 {
     stat->input.value.double_ = item;
-
-    if (stat->priv.is_first) {
-        stat_restart(stat);
-        stat->priv.is_first = false;
-    }
 
     return _stat_exec(stat);
 }
