@@ -18,8 +18,8 @@ void mlog_write(int level, int logNo, bool isRaw, const char* szFunc, int line, 
 int  print_buf(int logLevel, uint8_t* pBuf, uint16_t bufLen);
 int  print_app_info(const char* szName, const char* szVersion, const char* szDate, const char* szTime);
 
-#define SLOG_INIT(level, dir, file)      mlog_init(0, level, dir, file)
-#define SLOG_SET_LEVEL(level)            mlog_set_level(0, level)
+#define SLOG_INIT(level, dir, file)      mlog_init(level, 0, dir, file)
+#define SLOG_SET_LEVEL(level)            mlog_set_level(level, 0)
 #define PRINT_APP_INFO(name, version)    print_app_info(name, version, __DATE__, __TIME__)
 
 

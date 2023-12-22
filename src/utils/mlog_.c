@@ -317,7 +317,7 @@ int mlog_init(E_MLOG_LEVEL level, int logNo, const char* logDir, const char* fil
 }
 
 
-int mlog_set_level(int log_no, int level)
+int mlog_set_level(int level, int log_no)
 {
     if (log_no < 0 || log_no >= MAX_LOG_NUM) {
         printf("mlog_set_level_: log_no[%d] is invalid\n", log_no);
