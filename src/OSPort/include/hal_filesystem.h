@@ -10,25 +10,22 @@ extern "C" {
 #endif
 
 
-#ifndef CONFIG_SYSTEM_FILE_SEPARATOR
-#  define CONFIG_SYSTEM_FILE_SEPARATOR '/'
-#endif
-
 typedef FILE*                    FileHandle;
-typedef struct sDirectoryHandle* DirectoryHandle;
+typedef struct sDirectoryHandle* DirHandle;
 
 
-FileHandle      FileSystem_openFile(char* pathName, bool readWrite);
-int             FileSystem_readFile(FileHandle handle, uint8_t* buffer, int maxSize);
-int             FileSystem_writeFile(FileHandle handle, uint8_t* buffer, int size);
-int             FileSystem_fflushFile(FileHandle handle);
-void            FileSystem_closeFile(FileHandle handle);
-bool            FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp);
-bool            FileSystem_deleteFile(char* filename);
-bool            FileSystem_renameFile(char* oldFilename, char* newFilename);
-DirectoryHandle FileSystem_openDirectory(char* directoryName);
-char*           FileSystem_readDirectory(DirectoryHandle directory, bool* isDirectory);
-void            FileSystem_closeDirectory(DirectoryHandle directory);
+FileHandle file_open(char* pathName, bool readWrite);
+int        file_read(FileHandle handle, uint8_t* buffer, int maxSize);
+int        file_write(FileHandle handle, uint8_t* buffer, int size);
+int        file_flush(FileHandle handle);
+void       file_close(FileHandle handle);
+bool       file_info(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp);
+bool       file_delete(const char* filename);
+bool       file_rename(char* oldFilename, char* newFilename);
+
+DirHandle file_open_dir(char* directoryName);
+char*     file_read_dir(DirHandle directory, bool* isDirectory);
+void      file_close_dir(DirHandle directory);
 
 
 #ifdef __cplusplus

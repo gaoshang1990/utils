@@ -13,7 +13,7 @@ struct sDirectoryHandle {
 };
 
 
-FileHandle FileSystem_openFile(char* fileName, bool readWrite)
+FileHandle file_open(char* fileName, bool readWrite)
 {
     FileHandle newHandle = NULL;
 
@@ -26,31 +26,31 @@ FileHandle FileSystem_openFile(char* fileName, bool readWrite)
 }
 
 
-int FileSystem_readFile(FileHandle handle, uint8_t* buffer, int maxSize)
+int file_read(FileHandle handle, uint8_t* buffer, int maxSize)
 {
     return fread(buffer, maxSize, 1, (FILE*)handle);
 }
 
 
-int FileSystem_writeFile(FileHandle handle, uint8_t* buffer, int size)
+int file_write(FileHandle handle, uint8_t* buffer, int size)
 {
     return fwrite(buffer, size, 1, (FILE*)handle);
 }
 
 
-int FileSystem_fflushFile(FileHandle handle)
+int file_flush(FileHandle handle)
 {
     return fflush(handle);
 }
 
 
-void FileSystem_closeFile(FileHandle handle)
+void file_close(FileHandle handle)
 {
     fclose((FILE*)handle);
 }
 
 
-bool FileSystem_deleteFile(char* filename)
+bool file_delete(const char* filename)
 {
     if (remove(filename) == 0)
         return true;
@@ -59,7 +59,7 @@ bool FileSystem_deleteFile(char* filename)
 }
 
 
-bool FileSystem_renameFile(char* oldFilename, char* newFilename)
+bool file_rename(char* oldFilename, char* newFilename)
 {
     if (rename(oldFilename, newFilename) == 0)
         return true;
@@ -68,7 +68,7 @@ bool FileSystem_renameFile(char* oldFilename, char* newFilename)
 }
 
 
-bool FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp)
+bool file_info(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp)
 {
     struct stat fileStats;
 
@@ -86,11 +86,11 @@ bool FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastMo
 }
 
 
-DirectoryHandle FileSystem_openDirectory(char* directoryName)
+DirHandle file_open_dir(char* directoryName)
 {
     DIR* dirHandle = opendir(directoryName);
 
-    DirectoryHandle handle = NULL;
+    DirHandle handle = NULL;
 
     if (dirHandle != NULL) {
         handle         = (struct sDirectoryHandle*)malloc(sizeof(struct sDirectoryHandle));
@@ -101,13 +101,13 @@ DirectoryHandle FileSystem_openDirectory(char* directoryName)
 }
 
 
-char* FileSystem_readDirectory(DirectoryHandle directory, bool* isDirectory)
+char* file_read_dir(DirHandle directory, bool* isDirectory)
 {
     struct dirent* dir = readdir(directory->handle);
 
     if (dir != NULL) {
         if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
-            return FileSystem_readDirectory(directory, isDirectory);
+            return file_read_dir(directory, isDirectory);
         else {
             if (isDirectory != NULL) {
                 if (dir->d_type == DT_DIR)
@@ -124,7 +124,7 @@ char* FileSystem_readDirectory(DirectoryHandle directory, bool* isDirectory)
 }
 
 
-void FileSystem_closeDirectory(DirectoryHandle directory)
+void file_close_dir(DirHandle directory)
 {
     closedir(directory->handle);
     free(directory);

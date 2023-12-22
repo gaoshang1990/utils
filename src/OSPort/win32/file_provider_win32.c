@@ -14,7 +14,7 @@ struct sDirectoryHandle {
 };
 
 
-FileHandle FileSystem_openFile(char* fileName, bool readWrite)
+FileHandle file_open(char* fileName, bool readWrite)
 {
     FileHandle newHandle = NULL;
 
@@ -27,31 +27,31 @@ FileHandle FileSystem_openFile(char* fileName, bool readWrite)
 }
 
 
-int FileSystem_readFile(FileHandle handle, uint8_t* buffer, int maxSize)
+int file_read(FileHandle handle, uint8_t* buffer, int maxSize)
 {
     return fread(buffer, maxSize, 1, (FILE*)handle);
 }
 
 
-int FileSystem_writeFile(FileHandle handle, uint8_t* buffer, int size)
+int file_write(FileHandle handle, uint8_t* buffer, int size)
 {
     return fwrite(buffer, size, 1, (FILE*)handle);
 }
 
 
-int FileSystem_fflushFile(FileHandle handle)
+int file_flush(FileHandle handle)
 {
     return fflush(handle);
 }
 
 
-void FileSystem_closeFile(FileHandle handle)
+void file_close(FileHandle handle)
 {
     fclose((FILE*)handle);
 }
 
 
-bool FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp)
+bool file_info(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp)
 {
     WIN32_FILE_ATTRIBUTE_DATA fad;
 
@@ -77,9 +77,9 @@ bool FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastMo
 }
 
 
-DirectoryHandle FileSystem_openDirectory(char* directoryName)
+DirHandle file_open_dir(char* directoryName)
 {
-    DirectoryHandle dirHandle = (DirectoryHandle)calloc(1, sizeof(struct sDirectoryHandle));
+    DirHandle dirHandle = (DirHandle)calloc(1, sizeof(struct sDirectoryHandle));
 
     char  fullPath[MAX_PATH + 1];
     WCHAR unicodeFullPath[MAX_PATH + 1];
@@ -110,7 +110,7 @@ DirectoryHandle FileSystem_openDirectory(char* directoryName)
 }
 
 
-static char* _next_directory_entry(DirectoryHandle directory, bool* isDirectory)
+static char* _next_directory_entry(DirHandle directory, bool* isDirectory)
 {
     if (directory->available == true) {
         directory->available = false;
@@ -141,7 +141,7 @@ static char* _next_directory_entry(DirectoryHandle directory, bool* isDirectory)
 }
 
 
-bool FileSystem_deleteFile(char* filename)
+bool file_delete(const char* filename)
 {
     if (remove(filename) == 0)
         return true;
@@ -150,7 +150,7 @@ bool FileSystem_deleteFile(char* filename)
 }
 
 
-bool FileSystem_renameFile(char* oldFilename, char* newFilename)
+bool file_rename(char* oldFilename, char* newFilename)
 {
     if (rename(oldFilename, newFilename) == 0)
         return true;
@@ -159,13 +159,13 @@ bool FileSystem_renameFile(char* oldFilename, char* newFilename)
 }
 
 
-char* FileSystem_readDirectory(DirectoryHandle directory, bool* isDirectory)
+char* file_read_dir(DirHandle directory, bool* isDirectory)
 {
     char* fileName = _next_directory_entry(directory, isDirectory);
 
     if (fileName != NULL) {
         if (strcmp(fileName, ".") == 0 || strcmp(fileName, "..") == 0)
-            return FileSystem_readDirectory(directory, isDirectory);
+            return file_read_dir(directory, isDirectory);
 
         return fileName;
     }
@@ -173,7 +173,7 @@ char* FileSystem_readDirectory(DirectoryHandle directory, bool* isDirectory)
     return NULL;
 }
 
-void FileSystem_closeDirectory(DirectoryHandle directory)
+void file_close_dir(DirHandle directory)
 {
     FindClose(directory->handle);
     free(directory);
