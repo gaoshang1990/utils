@@ -14,7 +14,7 @@ struct sDirectoryHandle {
 };
 
 
-FileHandle file_open(char* fileName, bool readWrite)
+FileHandle file_open(const char* fileName, bool readWrite)
 {
     FileHandle newHandle = NULL;
 
@@ -51,7 +51,7 @@ void file_close(FileHandle handle)
 }
 
 
-bool file_info(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp)
+bool file_info(const char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp)
 {
     WIN32_FILE_ATTRIBUTE_DATA fad;
 
@@ -77,7 +77,7 @@ bool file_info(char* filename, uint32_t* fileSize, uint64_t* lastModificationTim
 }
 
 
-DirHandle file_open_dir(char* directoryName)
+DirHandle file_open_dir(const char* directoryName)
 {
     DirHandle dirHandle = (DirHandle)calloc(1, sizeof(struct sDirectoryHandle));
 
@@ -150,7 +150,7 @@ bool file_delete(const char* filename)
 }
 
 
-bool file_rename(char* oldFilename, char* newFilename)
+bool file_rename(const char* oldFilename, const char* newFilename)
 {
     if (rename(oldFilename, newFilename) == 0)
         return true;
@@ -172,6 +172,7 @@ char* file_read_dir(DirHandle directory, bool* isDirectory)
 
     return NULL;
 }
+
 
 void file_close_dir(DirHandle directory)
 {

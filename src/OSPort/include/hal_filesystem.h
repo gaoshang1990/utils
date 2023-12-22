@@ -14,16 +14,16 @@ typedef FILE*                    FileHandle;
 typedef struct sDirectoryHandle* DirHandle;
 
 
-FileHandle file_open(char* pathName, bool readWrite);
+FileHandle file_open(const char* pathName, bool readWrite);
 int        file_read(FileHandle handle, uint8_t* buffer, int maxSize);
 int        file_write(FileHandle handle, uint8_t* buffer, int size);
 int        file_flush(FileHandle handle);
 void       file_close(FileHandle handle);
-bool       file_info(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp);
+bool       file_info(const char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp);
 bool       file_delete(const char* filename);
-bool       file_rename(char* oldFilename, char* newFilename);
+bool       file_rename(const char* oldFilename, const char* newFilename);
 
-DirHandle file_open_dir(char* directoryName);
+DirHandle file_open_dir(const char* directoryName);
 char*     file_read_dir(DirHandle directory, bool* isDirectory);
 void      file_close_dir(DirHandle directory);
 

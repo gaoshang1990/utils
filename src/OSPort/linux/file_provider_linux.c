@@ -13,7 +13,7 @@ struct sDirectoryHandle {
 };
 
 
-FileHandle file_open(char* fileName, bool readWrite)
+FileHandle file_open(const char* fileName, bool readWrite)
 {
     FileHandle newHandle = NULL;
 
@@ -59,7 +59,7 @@ bool file_delete(const char* filename)
 }
 
 
-bool file_rename(char* oldFilename, char* newFilename)
+bool file_rename(const char* oldFilename, const char* newFilename)
 {
     if (rename(oldFilename, newFilename) == 0)
         return true;
@@ -68,7 +68,7 @@ bool file_rename(char* oldFilename, char* newFilename)
 }
 
 
-bool file_info(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp)
+bool file_info(const char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp)
 {
     struct stat fileStats;
 
@@ -86,7 +86,7 @@ bool file_info(char* filename, uint32_t* fileSize, uint64_t* lastModificationTim
 }
 
 
-DirHandle file_open_dir(char* directoryName)
+DirHandle file_open_dir(const char* directoryName)
 {
     DIR* dirHandle = opendir(directoryName);
 
