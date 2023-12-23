@@ -32,24 +32,24 @@ typedef struct _FifoNode_t_ {
 
 struct _Fifo_t_ {
     FifoMutex lock;
-    size_t    size;
-    size_t    write;
-    size_t    read;
+    size_t    fifo_size;
+    size_t    head;
+    size_t    tail;
 
-    size_t      data_len;
+    size_t      node_size;
     FifoNode*   nodes;
     FreeNode_cb free_cb;
     CopyNode_cb copy_cb;
 };
 
 
-static FifoMutex _semaphore_new(int initialValue)
+static FifoMutex _semaphore_new(int init_value)
 {
 #ifdef _WIN32
-    HANDLE self = CreateSemaphore(NULL, initialValue, 1, NULL);
+    HANDLE self = CreateSemaphore(NULL, init_value, 1, NULL);
 #else
     sem_t* self = (sem_t*)malloc(sizeof(sem_t));
-    sem_init((sem_t*)self, 0, initialValue);
+    sem_init((sem_t*)self, 0, init_value);
 #endif
 
     return (FifoMutex)self;
@@ -96,7 +96,7 @@ static void _semaphore_del(FifoMutex self)
 }
 
 
-Fifo_t fifo_new(size_t fifo_size, size_t data_len, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool need_lock)
+Fifo_t fifo_new(size_t fifo_size, size_t node_size, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool need_lock)
 {
     Fifo_t fifo = (Fifo_t)calloc(1, sizeof(struct _Fifo_t_));
     if (fifo == NULL)
@@ -104,11 +104,11 @@ Fifo_t fifo_new(size_t fifo_size, size_t data_len, FreeNode_cb free_cb, CopyNode
 
     fifo->nodes = (FifoNode*)calloc(fifo_size, sizeof(FifoNode));
     if (fifo->nodes) {
-        fifo->lock     = need_lock ? _semaphore_new(1) : NULL;
-        fifo->size     = fifo_size;
-        fifo->data_len = data_len;
-        fifo->free_cb  = free_cb ? free_cb : free;
-        fifo->copy_cb  = copy_cb ? copy_cb : memcpy;
+        fifo->lock      = need_lock ? _semaphore_new(1) : NULL;
+        fifo->fifo_size = fifo_size;
+        fifo->node_size = node_size;
+        fifo->free_cb   = free_cb ? free_cb : free;
+        fifo->copy_cb   = copy_cb ? copy_cb : memcpy;
     }
     else
         _ffree(fifo);
@@ -124,12 +124,12 @@ bool fifo_full(Fifo_t fifo)
 
     _semaphore_wait(fifo->lock);
 
-    if (fifo->write < fifo->read) {
-        fifo->write += fifo->size;
-        fifo->read = fifo->read % fifo->size;
+    if (fifo->head < fifo->tail) {
+        fifo->head += fifo->fifo_size;
+        fifo->tail = fifo->tail % fifo->fifo_size;
     }
 
-    bool ret = (fifo->size == fifo->write - fifo->read); /* if write - read == size, fifo is full */
+    bool ret = (fifo->fifo_size == fifo->head - fifo->tail); /* if head - tail == size, fifo is full */
 
     _semaphore_post(fifo->lock);
 
@@ -144,7 +144,7 @@ bool fifo_empty(Fifo_t fifo)
 
     _semaphore_wait(fifo->lock);
 
-    bool ret = (fifo->write == fifo->read); /* if write == read, fifo is empty */
+    bool ret = (fifo->head == fifo->tail); /* if head == tail, fifo is empty */
 
     _semaphore_post(fifo->lock);
 
@@ -158,18 +158,18 @@ int fifo_write(Fifo_t fifo, void* src, bool external_allocated)
         return -FIFO_NULL;
 
     if (fifo_full(fifo))
-        return -FIFO_FULL; /* caller decide to free data or write again */
+        return -FIFO_FULL; /* caller decide to free data or head again */
 
     _semaphore_wait(fifo->lock);
 
-    int pos = fifo->write++ % fifo->size;
+    int pos = fifo->head++ % fifo->fifo_size;
 
     if (external_allocated) { /* data is malloc by caller */
         fifo->nodes[pos].data = src;
     }
     else {
-        fifo->nodes[pos].data = malloc(fifo->data_len);
-        fifo->copy_cb(fifo->nodes[pos].data, src, fifo->data_len);
+        fifo->nodes[pos].data = malloc(fifo->node_size);
+        fifo->copy_cb(fifo->nodes[pos].data, src, fifo->node_size);
     }
 
     _semaphore_post(fifo->lock);
@@ -203,11 +203,11 @@ void* fifo_read(Fifo_t fifo, void* dst)
 
     _semaphore_wait(fifo->lock);
 
-    int       pos  = fifo->read++ % fifo->size;
+    int       pos  = fifo->tail++ % fifo->fifo_size;
     FifoNode* node = &fifo->nodes[pos];
 
     if (dst) {
-        fifo->copy_cb(dst, node->data, fifo->data_len);
+        fifo->copy_cb(dst, node->data, fifo->node_size);
         fifo->free_cb(node->data);
     }
     else {

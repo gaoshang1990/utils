@@ -22,7 +22,7 @@ enum {
 };
 
 
-Fifo_t fifo_new(size_t fifo_size, size_t data_len, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool need_lock);
+Fifo_t fifo_new(size_t fifo_size, size_t node_size, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool need_lock);
 bool   fifo_full(Fifo_t fifo);
 bool   fifo_empty(Fifo_t fifo);
 int    fifo_free_data(Fifo_t fifo, void* data);
