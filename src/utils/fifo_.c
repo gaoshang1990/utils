@@ -43,7 +43,7 @@ struct _Fifo_t_ {
 };
 
 
-static FifoMutex _semaphore_create(int initialValue)
+static FifoMutex _semaphore_new(int initialValue)
 {
 #ifdef _WIN32
     HANDLE self = CreateSemaphore(NULL, initialValue, 1, NULL);
@@ -58,6 +58,9 @@ static FifoMutex _semaphore_create(int initialValue)
 
 static void _semaphore_wait(FifoMutex self)
 {
+    if (self == NULL)
+        return;
+
 #ifdef _WIN32
     WaitForSingleObject((HANDLE)self, INFINITE);
 #else
@@ -68,6 +71,9 @@ static void _semaphore_wait(FifoMutex self)
 
 static void _semaphore_post(FifoMutex self)
 {
+    if (self == NULL)
+        return;
+
 #ifdef _WIN32
     ReleaseSemaphore((HANDLE)self, 1, NULL);
 #else
@@ -76,8 +82,11 @@ static void _semaphore_post(FifoMutex self)
 }
 
 
-static void _semaphore_destroy(FifoMutex self)
+static void _semaphore_del(FifoMutex self)
 {
+    if (self == NULL)
+        return;
+
 #ifdef _WIN32
     CloseHandle((HANDLE)self);
 #else
@@ -87,7 +96,7 @@ static void _semaphore_destroy(FifoMutex self)
 }
 
 
-Fifo_t fifo_init(size_t fifo_size, size_t data_len, FreeNode_cb free_cb, CopyNode_cb copy_cb)
+Fifo_t fifo_new(size_t fifo_size, size_t data_len, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool need_lock)
 {
     Fifo_t fifo = (Fifo_t)calloc(1, sizeof(struct _Fifo_t_));
     if (fifo == NULL)
@@ -95,16 +104,14 @@ Fifo_t fifo_init(size_t fifo_size, size_t data_len, FreeNode_cb free_cb, CopyNod
 
     fifo->nodes = (FifoNode*)calloc(fifo_size, sizeof(FifoNode));
     if (fifo->nodes) {
-        fifo->lock     = _semaphore_create(1);
+        fifo->lock     = need_lock ? _semaphore_new(1) : NULL;
         fifo->size     = fifo_size;
         fifo->data_len = data_len;
         fifo->free_cb  = free_cb ? free_cb : free;
         fifo->copy_cb  = copy_cb ? copy_cb : memcpy;
     }
-    else {
-        free(fifo);
-        fifo = NULL;
-    }
+    else
+        _ffree(fifo);
 
     return fifo;
 }
@@ -227,14 +234,14 @@ int fifo_clear(Fifo_t fifo)
 }
 
 
-int fifo_destroy(Fifo_t fifo)
+int fifo_del(Fifo_t fifo)
 {
     if (fifo == NULL)
         return -FIFO_NULL;
 
     fifo_clear(fifo);
 
-    _semaphore_destroy(fifo->lock);
+    _semaphore_del(fifo->lock);
 
     _ffree(fifo->nodes);
     _ffree(fifo);

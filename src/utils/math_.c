@@ -410,6 +410,7 @@ static int _stat_exec(StatUnit stat)
     return 0;
 }
 
+
 int stat_push_int(StatUnit stat, int64_t item)
 {
     stat->input.value.int64_ = item;

@@ -39,11 +39,12 @@ int fifo_test()
 {
     SLOG_INFO("-- fifo test start --\n");
 
-    Fifo_t fifo = fifo_init(10,
-                            sizeof(FifoTest),
-                            FifoTest_free,  // FifoTest_copy can be NULL, equal to free()
-                            FifoTest_copy); // FifoTest_free can be NULL, equal to memcpy()
-    ASSERT_(fifo, "fifo_init failed");
+    Fifo_t fifo = fifo_new(10,
+                           sizeof(FifoTest),
+                           FifoTest_free, // FifoTest_copy can be NULL, equal to free()
+                           FifoTest_copy, // FifoTest_free can be NULL, equal to memcpy()
+                           false);
+    ASSERT_(fifo, "fifo_new failed");
 
     FifoTest test1;
     test1.len    = 2;
@@ -69,7 +70,7 @@ int fifo_test()
     SLOG_DEBUG("test4.len = %d, test4.arr[0] = %d, test4.arr[1] = %d\n", test4->len, test4->arr[0], test4->arr[1]);
     FifoTest_free(test4); // we should free it here
 
-    fifo_destroy(fifo);
+    fifo_del(fifo);
 
     SLOG_INFO("-- fifo test done --\n");
 
