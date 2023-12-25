@@ -9,6 +9,9 @@ extern "C" {
 #endif
 
 
+#define FIFO_SIZE_MAX (256)
+#define FIFO_SIZE_MIN (4)
+
 typedef void (*FreeNode_cb)(void* data);
 typedef void* (*CopyNode_cb)(void* dst, const void* src, size_t len);
 typedef struct _Fifo_t_* Fifo_t;
@@ -22,7 +25,7 @@ enum {
 };
 
 
-Fifo_t fifo_new(size_t fifo_size, size_t node_size, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool need_lock);
+Fifo_t fifo_new(size_t node_size, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool need_lock);
 bool   fifo_full(Fifo_t fifo);
 bool   fifo_empty(Fifo_t fifo);
 int    fifo_free_data(Fifo_t fifo, void* data);
