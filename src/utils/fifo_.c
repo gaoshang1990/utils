@@ -96,7 +96,7 @@ static void _semaphore_del(FifoMutex self)
 }
 
 
-Fifo_t fifo_new(size_t node_size, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool need_lock)
+Fifo_t fifo_new(size_t node_size, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool thread_safe)
 {
     Fifo_t fifo = (Fifo_t)calloc(1, sizeof(struct _Fifo_t_));
     if (fifo == NULL)
@@ -104,7 +104,7 @@ Fifo_t fifo_new(size_t node_size, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool
 
     fifo->nodes = (FifoNode*)calloc(FIFO_SIZE_MIN, sizeof(FifoNode));
     if (fifo->nodes) {
-        fifo->lock      = need_lock ? _semaphore_new(1) : NULL;
+        fifo->lock      = thread_safe ? _semaphore_new(1) : NULL;
         fifo->fifo_size = FIFO_SIZE_MIN;
         fifo->node_size = node_size;
         fifo->free_cb   = free_cb ? free_cb : free;
@@ -169,7 +169,7 @@ static int _fifo_grow(Fifo_t fifo)
 }
 
 
-int fifo_write(Fifo_t fifo, void* src, bool external_allocated)
+int fifo_write(Fifo_t fifo, void* src, bool dynamic)
 {
     if (fifo_full(fifo) && _fifo_grow(fifo) < 0)
         return -FIFO_FULL; /* caller decide to free data or head again */
@@ -178,7 +178,7 @@ int fifo_write(Fifo_t fifo, void* src, bool external_allocated)
 
     int pos = fifo->head++ % fifo->fifo_size;
 
-    if (external_allocated) { /* data is malloc by caller */
+    if (dynamic) { /* data is malloc by caller */
         fifo->nodes[pos].data = src;
     }
     else {
@@ -187,14 +187,6 @@ int fifo_write(Fifo_t fifo, void* src, bool external_allocated)
     }
 
     _semaphore_post(fifo->lock);
-
-    return FIFO_OK;
-}
-
-
-int fifo_free_data(Fifo_t fifo, void* data)
-{
-    fifo->free_cb(data);
 
     return FIFO_OK;
 }

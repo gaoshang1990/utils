@@ -25,11 +25,10 @@ enum {
 };
 
 
-Fifo_t fifo_new(size_t node_size, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool need_lock);
+Fifo_t fifo_new(size_t node_size, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool thread_safe);
 bool   fifo_full(Fifo_t fifo);
 bool   fifo_empty(Fifo_t fifo);
-int    fifo_free_data(Fifo_t fifo, void* data);
-int    fifo_write(Fifo_t fifo, void* src, bool caller_owned);
+int    fifo_write(Fifo_t fifo, void* src, bool dynamic);
 void*  fifo_read(Fifo_t fifo, void* dst);
 int    fifo_clear(Fifo_t fifo);
 int    fifo_del(Fifo_t fifo);
