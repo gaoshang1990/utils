@@ -64,16 +64,16 @@ enum { LOG_LEVEL_DEBUG, LOG_LEVEL_INFO, LOG_LEVEL_WARN, LOG_LEVEL_OFF };
 
 
 #if USER_ASSERT_ON
-#  define ASSERT_(expression_, szInfo) \
-      do {                             \
-          if (!(expression_)) {        \
-              LOG_WARN(szInfo);        \
-              while (1)                \
-                  ;                    \
-          }                            \
+#  define ASSERT_(expression_, fmt, ...)    \
+      do {                                  \
+          if (!(expression_)) {             \
+              LOG_WARN(fmt, ##__VA_ARGS__); \
+              while (1)                     \
+                  ;                         \
+          }                                 \
       } while (0)
 #else
-#  define ASSERT_(expression_, szInfo)
+#  define ASSERT_(expression_, fmt, ...)
 #endif
 
 
