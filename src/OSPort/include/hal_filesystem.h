@@ -27,6 +27,13 @@ DirHandle file_open_dir(const char* directoryName);
 char*     file_read_dir(DirHandle directory, bool* isDirectory);
 void      file_close_dir(DirHandle directory);
 
+const char* file_content(const char* path);
+bool        file_exist(const char* path);
+int         file_size(const char* path);
+int         file_size_fd(int fd);
+int         file_size_fp(FILE* fp);
+int         mkdir_m(const char* dir);
+
 
 #ifdef __cplusplus
 }
