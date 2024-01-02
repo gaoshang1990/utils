@@ -61,10 +61,16 @@ void memcpy_r(uint8_t* dst, uint8_t* src, int len)
     LOOP_UNROLLING(i, len, dst[i] = src[len - i - 1]);
 }
 
-    for (int i = 0; i < len; i++)
-        dst[i] = src[len - i - 1];
 
-    return 0;
+void mem_swap(void* a, void* b, int size)
+{
+    uint8_t tmp;
+
+    for (int i = 0; i < size; i++) {
+        tmp                = *((uint8_t*)a + i);
+        *((uint8_t*)a + i) = *((uint8_t*)b + i);
+        *((uint8_t*)b + i) = tmp;
+    }
 }
 
 

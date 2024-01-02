@@ -23,7 +23,7 @@ uint8_t hex2bcd(uint8_t hex);
 int memcpy_r(uint8_t* dst, uint8_t* src, int len);
 
 /* memory data inversion of specified length */
-int memrev_(uint8_t* buf, int len);
+void mem_swap(void* a, void* b, int size);
 
 /* mode: 0-little endian, 1-big endian */
 int64_t byte2int(uint8_t* buf, int* offset, int len, int mode);

@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #include "math_.h"
+#include "lib_.h"
 
 
 /* return a random nuber: [min, max]  */
@@ -17,22 +18,6 @@ int rand_num(int min, int max)
     }
 
     return min + rand() % (max + 1 - min);
-}
-
-
-int swap_mem(void* a, void* b, int size)
-{
-    uint8_t  tmp;
-    uint8_t* p1 = (uint8_t*)a;
-    uint8_t* p2 = (uint8_t*)b;
-
-    for (int i = 0; i < size; i++) {
-        tmp   = p1[i];
-        p1[i] = p2[i];
-        p2[i] = tmp;
-    }
-
-    return 0;
 }
 
 
@@ -67,7 +52,7 @@ int shift_decimal_point(char* szNum, int scaler)
             pos += nbZero;
         }
         for (int i = 0; i < scaler; i++) {
-            swap_mem(&szNum[pos], &szNum[pos - 1], sizeof(char));
+            mem_swap(&szNum[pos], &szNum[pos - 1], sizeof(char));
             pos--;
         }
     }
@@ -77,7 +62,7 @@ int shift_decimal_point(char* szNum, int scaler)
                 szNum[pos + 1] = '0';
                 szNum[pos + 2] = '\0';
             }
-            swap_mem(&szNum[pos], &szNum[pos + 1], sizeof(char));
+            mem_swap(&szNum[pos], &szNum[pos + 1], sizeof(char));
             pos++;
         }
     }
