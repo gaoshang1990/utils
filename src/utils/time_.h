@@ -32,7 +32,7 @@ uint64_t time_ms(void);
 uint64_t cpu_ms(void);
 
 /* timer demo:
-    Timer_t timer = timer_init(100);
+    Timer_t timer = timer_new(100);
     while (1) {
         timer_running(timer);
 
@@ -47,11 +47,11 @@ uint64_t cpu_ms(void);
  */
 
 /**
- * \param   settedMs: unit: ms, if > 0, TMR_USER_FLAG can be used
+ * \param   setted_ms: unit: ms, if > 0, TMR_USER_FLAG can be used
  */
-Timer_t timer_init(uint64_t settedMs);
+Timer_t timer_new(uint64_t setted_ms);
 
-void timer_destroy(Timer_t timer);
+void timer_del(Timer_t timer);
 void timer_set_ms(Timer_t timer, uint64_t settedMs);
 
 /* call this function in the start of loop */

@@ -157,23 +157,21 @@ uint64_t time_ms(void)
 /* since system start */
 uint64_t cpu_ms(void)
 {
-    uint64_t nowMs = 0;
+    uint64_t now_ms = 0;
 
 #ifdef _WIN32
-    long nowTick = clock();
-    if (nowTick < 0) {
-        nowMs = time_ms();
-    }
-    else {
-        nowMs = (uint64_t)((nowTick * 1000) / CLOCKS_PER_SEC);
-    }
+    long now_tick = clock();
+    if (now_tick < 0)
+        now_ms = time_ms();
+    else
+        now_ms = (uint64_t)((now_tick * 1000) / CLOCKS_PER_SEC);
 #else
     struct timespec tp;
     clock_gettime(CLOCK_MONOTONIC, &tp);
     nowMs = ((uint64_t)tp.tv_sec) * 1000LL + (tp.tv_nsec / 1000000);
 #endif
 
-    return nowMs;
+    return now_ms;
 }
 
 
@@ -189,26 +187,26 @@ uint64_t cpu_ms(void)
 
 struct _Timer_t_ {
     uint8_t   flag;
-    uint64_t  settedMs; /* if > 0, TMR_USER_FLAG can be used */
-    uint64_t  lastMs;
-    struct tm lastTm;
-    struct tm nowTm;
+    uint64_t  setted_ms; /* if > 0, TMR_USER_FLAG can be used */
+    uint64_t  last_ms;
+    struct tm last_tm;
+    struct tm curr_m;
 };
 
 
 /**
- * \param   settedMs: unit: ms, if > 0, TMR_USER_FLAG can be used
+ * \param   setted_ms: unit: ms, if > 0, TMR_USER_FLAG can be used
  */
-Timer_t timer_init(uint64_t settedMs)
+Timer_t timer_new(uint64_t setted_ms)
 {
     Timer_t timer = (Timer_t)malloc(sizeof(struct _Timer_t_));
     if (timer != NULL) {
         time_t nowSec = time(NULL);
-        LOCAL_TIME(&nowSec, &timer->lastTm);
+        LOCAL_TIME(&nowSec, &timer->last_tm);
 
-        if (settedMs > 0) {
-            timer->settedMs = settedMs;
-            timer->lastMs   = cpu_ms();
+        if (setted_ms > 0) {
+            timer->setted_ms = setted_ms;
+            timer->last_ms   = cpu_ms();
         }
     }
 
@@ -216,19 +214,19 @@ Timer_t timer_init(uint64_t settedMs)
 }
 
 
-void timer_set_ms(Timer_t timer, uint64_t settedMs)
-{
-    timer->settedMs = settedMs;
-    timer->lastMs   = cpu_ms();
-}
-
-
-void timer_destroy(Timer_t timer)
+void timer_del(Timer_t timer)
 {
     if (timer != NULL) {
         free(timer);
         timer = NULL;
     }
+}
+
+
+void timer_set_ms(Timer_t timer, uint64_t setted_ms)
+{
+    timer->setted_ms = setted_ms;
+    timer->last_ms   = cpu_ms();
 }
 
 
@@ -240,41 +238,41 @@ int timer_running(Timer_t timer)
     timer->flag = 0; /* clear timer flag */
 
     time_t nowSec = time(NULL);
-    LOCAL_TIME(&nowSec, &timer->nowTm);
+    LOCAL_TIME(&nowSec, &timer->curr_m);
 
-    if (timer->settedMs > 0) {
+    if (timer->setted_ms > 0) {
         uint64_t nowMs = cpu_ms();
-        if (nowMs - timer->lastMs > timer->settedMs) {
-            timer->lastMs = nowMs;
+        if (nowMs - timer->last_ms > timer->setted_ms) {
+            timer->last_ms = nowMs;
             timer->flag |= TMR_USER_FLAG;
         }
     }
-    if (timer->nowTm.tm_sec != timer->lastTm.tm_sec) {
-        timer->lastTm.tm_sec = timer->nowTm.tm_sec;
+    if (timer->curr_m.tm_sec != timer->last_tm.tm_sec) {
+        timer->last_tm.tm_sec = timer->curr_m.tm_sec;
         timer->flag |= TMR_SEC_FLAG;
     }
-    if (timer->nowTm.tm_min != timer->lastTm.tm_min) {
-        timer->lastTm.tm_min = timer->nowTm.tm_min;
+    if (timer->curr_m.tm_min != timer->last_tm.tm_min) {
+        timer->last_tm.tm_min = timer->curr_m.tm_min;
         timer->flag |= TMR_MIN_FLAG;
     }
-    if (timer->nowTm.tm_hour != timer->lastTm.tm_hour) {
-        timer->lastTm.tm_hour = timer->nowTm.tm_hour;
+    if (timer->curr_m.tm_hour != timer->last_tm.tm_hour) {
+        timer->last_tm.tm_hour = timer->curr_m.tm_hour;
         timer->flag |= TMR_HOUR_FLAG;
     }
-    if (timer->nowTm.tm_mday != timer->lastTm.tm_mday) {
-        timer->lastTm.tm_mday = timer->nowTm.tm_mday;
+    if (timer->curr_m.tm_mday != timer->last_tm.tm_mday) {
+        timer->last_tm.tm_mday = timer->curr_m.tm_mday;
         timer->flag |= TMR_DAY_FLAG;
     }
-    if (timer->nowTm.tm_mon != timer->lastTm.tm_mon) {
-        timer->lastTm.tm_mon = timer->nowTm.tm_mon;
+    if (timer->curr_m.tm_mon != timer->last_tm.tm_mon) {
+        timer->last_tm.tm_mon = timer->curr_m.tm_mon;
         timer->flag |= TMR_MON_FLAG;
     }
-    if (timer->nowTm.tm_year != timer->lastTm.tm_year) {
-        timer->lastTm.tm_year = timer->nowTm.tm_year;
+    if (timer->curr_m.tm_year != timer->last_tm.tm_year) {
+        timer->last_tm.tm_year = timer->curr_m.tm_year;
         timer->flag |= TMR_YEAR_FLAG;
     }
-    if (timer->nowTm.tm_min != timer->lastTm.tm_min) {
-        timer->lastTm.tm_min = timer->nowTm.tm_min;
+    if (timer->curr_m.tm_min != timer->last_tm.tm_min) {
+        timer->last_tm.tm_min = timer->curr_m.tm_min;
         timer->flag |= TMR_MIN_FLAG;
     }
 
