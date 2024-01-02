@@ -31,11 +31,35 @@ uint8_t hex2bcd(uint8_t hex)
 }
 
 
+/* clang-format off */
+
+#define LOOP_UNROLLING(counter, loop_num, exp) \
+    {                                          \
+        counter = (loop_num + 7) / 8;          \
+        switch (loop_num % 8) {                \
+        case 0: do { exp;                      \
+        case 7:      exp;                      \
+        case 6:      exp;                      \
+        case 5:      exp;                      \
+        case 4:      exp;                      \
+        case 3:      exp;                      \
+        case 2:      exp;                      \
+        case 1:      exp;                      \
+                } while (--counter > 0);       \
+        }                                      \
+    }
+
+/* clang-format on */
+
+
 /* memcpy in an opposite direction */
-int memcpy_r(uint8_t* dst, uint8_t* src, int len)
+void memcpy_r(uint8_t* dst, uint8_t* src, int len)
 {
-    if (dst == NULL || src == NULL)
-        return -1;
+    // for (int i = 0; i < len; i++)
+    //     dst[i] = src[len - i - 1];
+    int i;
+    LOOP_UNROLLING(i, len, dst[i] = src[len - i - 1]);
+}
 
     for (int i = 0; i < len; i++)
         dst[i] = src[len - i - 1];
