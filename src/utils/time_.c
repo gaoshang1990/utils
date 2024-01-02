@@ -190,7 +190,7 @@ struct _Timer_t_ {
     uint64_t  setted_ms; /* if > 0, TMR_USER_FLAG can be used */
     uint64_t  last_ms;
     struct tm last_tm;
-    struct tm curr_m;
+    struct tm curr_tm;
 };
 
 
@@ -238,7 +238,7 @@ int timer_running(Timer_t timer)
     timer->flag = 0; /* clear timer flag */
 
     time_t nowSec = time(NULL);
-    LOCAL_TIME(&nowSec, &timer->curr_m);
+    LOCAL_TIME(&nowSec, &timer->curr_tm);
 
     if (timer->setted_ms > 0) {
         uint64_t nowMs = cpu_ms();
@@ -247,32 +247,32 @@ int timer_running(Timer_t timer)
             timer->flag |= TMR_USER_FLAG;
         }
     }
-    if (timer->curr_m.tm_sec != timer->last_tm.tm_sec) {
-        timer->last_tm.tm_sec = timer->curr_m.tm_sec;
+    if (timer->curr_tm.tm_sec != timer->last_tm.tm_sec) {
+        timer->last_tm.tm_sec = timer->curr_tm.tm_sec;
         timer->flag |= TMR_SEC_FLAG;
     }
-    if (timer->curr_m.tm_min != timer->last_tm.tm_min) {
-        timer->last_tm.tm_min = timer->curr_m.tm_min;
+    if (timer->curr_tm.tm_min != timer->last_tm.tm_min) {
+        timer->last_tm.tm_min = timer->curr_tm.tm_min;
         timer->flag |= TMR_MIN_FLAG;
     }
-    if (timer->curr_m.tm_hour != timer->last_tm.tm_hour) {
-        timer->last_tm.tm_hour = timer->curr_m.tm_hour;
+    if (timer->curr_tm.tm_hour != timer->last_tm.tm_hour) {
+        timer->last_tm.tm_hour = timer->curr_tm.tm_hour;
         timer->flag |= TMR_HOUR_FLAG;
     }
-    if (timer->curr_m.tm_mday != timer->last_tm.tm_mday) {
-        timer->last_tm.tm_mday = timer->curr_m.tm_mday;
+    if (timer->curr_tm.tm_mday != timer->last_tm.tm_mday) {
+        timer->last_tm.tm_mday = timer->curr_tm.tm_mday;
         timer->flag |= TMR_DAY_FLAG;
     }
-    if (timer->curr_m.tm_mon != timer->last_tm.tm_mon) {
-        timer->last_tm.tm_mon = timer->curr_m.tm_mon;
+    if (timer->curr_tm.tm_mon != timer->last_tm.tm_mon) {
+        timer->last_tm.tm_mon = timer->curr_tm.tm_mon;
         timer->flag |= TMR_MON_FLAG;
     }
-    if (timer->curr_m.tm_year != timer->last_tm.tm_year) {
-        timer->last_tm.tm_year = timer->curr_m.tm_year;
+    if (timer->curr_tm.tm_year != timer->last_tm.tm_year) {
+        timer->last_tm.tm_year = timer->curr_tm.tm_year;
         timer->flag |= TMR_YEAR_FLAG;
     }
-    if (timer->curr_m.tm_min != timer->last_tm.tm_min) {
-        timer->last_tm.tm_min = timer->curr_m.tm_min;
+    if (timer->curr_tm.tm_min != timer->last_tm.tm_min) {
+        timer->last_tm.tm_min = timer->curr_tm.tm_min;
         timer->flag |= TMR_MIN_FLAG;
     }
 

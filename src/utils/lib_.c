@@ -21,13 +21,13 @@ uint8_t bcd2hex(uint8_t bcd)
 /* hex to bcd: 0x10(16) -> 0x16 */
 uint8_t hex2bcd(uint8_t hex)
 {
-    if (hex > 99)
+    if (hex >= 99)
         return 0x99;
 
-    uint8_t lowerNibble = hex % 10;
-    uint8_t upperNibble = (hex / 10) % 10;
+    uint8_t lower_nibble = hex % 10;
+    uint8_t upper_nibble = (hex / 10) % 10;
 
-    return (upperNibble << 4) | lowerNibble;
+    return (upper_nibble << 4) | lower_nibble;
 }
 
 
@@ -75,7 +75,7 @@ void mem_swap(void* a, void* b, int size)
 
 
 /* memory data inversion of specified length */
-int memrev_(uint8_t* buf, int len)
+int mem_rev(uint8_t* buf, int len)
 {
     for (int i = 0; i < len / 2; i++) {
         uint8_t tmp      = buf[i];
@@ -126,7 +126,7 @@ int atox_(const char* str, int len)
     if (len > 8)
         len = 8;
 
-    int hex = 0;
+    int hex = -1;
 
     for (uint8_t i = 0; i < len; i++) {
         if (str[i] >= '0' && str[i] <= '9')
@@ -135,8 +135,6 @@ int atox_(const char* str, int len)
             hex = hex * 16 + str[i] - 'a' + 10;
         else if (str[i] >= 'A' && str[i] <= 'F')
             hex = hex * 16 + str[i] - 'A' + 10;
-        else
-            return -1;
     }
 
     return hex;

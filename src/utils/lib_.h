@@ -20,9 +20,11 @@ uint8_t bcd2hex(uint8_t bcd);
 uint8_t hex2bcd(uint8_t hex);
 
 /* memcpy in an opposite direction */
-int memcpy_r(uint8_t* dst, uint8_t* src, int len);
+void memcpy_r(uint8_t* dst, uint8_t* src, int len);
 
 /* memory data inversion of specified length */
+int mem_rev(uint8_t* buf, int len);
+
 void mem_swap(void* a, void* b, int size);
 
 /* mode: 0-little endian, 1-big endian */
