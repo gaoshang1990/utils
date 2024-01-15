@@ -85,14 +85,14 @@ typedef void* MLogMutex_t;
 static const char* _szlevel[] = {"[TRACE]", "[DEBUG]", "[INFO ]", "[WARN ]", "[ERROR]"};
 
 typedef struct _LoggerCfg_ {
-    int          id;
-    char         dir[128];
-    char         name[64];
-    FILE*        fp;
-    MLogMutex_t  mtx;
-    E_MLOG_LEVEL level;
-    int          max_size; /* file max size */
-    int          max_num;  /* max rotate file count */
+    int         id;
+    char        dir[128];
+    char        name[64];
+    FILE*       fp;
+    MLogMutex_t mtx;
+    int         level;
+    int         max_size; /* file max size */
+    int         max_num;  /* max rotate file count */
 
     char line_prefix[LINE_PREFIX_MAX_LEN];  /* prefix of log */
     char line_content[LINE_PREFIX_MAX_LEN]; /* content of log */
@@ -305,7 +305,7 @@ static MLogger_t* _get_logger(int log_id)
  * \brief   1. non thread-safe function
  *          2. can be repeatedly called to change the log level
  */
-int mlog_init(E_MLOG_LEVEL level, int log_no, const char* file_dir, const char* file_name)
+int mlog_init(int level, int log_no, const char* file_dir, const char* file_name)
 {
     MLogger_t* logger = _get_logger(log_no);
 
@@ -334,7 +334,7 @@ int mlog_set_level(int level, int log_no)
 {
     MLogger_t* logger = _get_logger(log_no);
 
-    logger->level = (E_MLOG_LEVEL)level;
+    logger->level = level;
 
     return 0;
 }
@@ -518,16 +518,16 @@ static int _make_info_str(char* str, uint8_t nb)
 }
 
 
-int print_app_info(const char* szName, const char* szVersion, const char* szDate, const char* szTime)
+int print_app_info(const char* name, const char* version, const char* date, const char* time)
 {
     char szStars[128]   = {0};
     char szAppInfo[128] = {0};
     char szAppVer[128]  = {0};
     char szAppDate[128] = {0};
 
-    snprintf(szAppInfo, sizeof(szAppInfo), "* This is \"%s\" App", szName);
-    snprintf(szAppVer, sizeof(szAppVer), "* Version: %s", szVersion);
-    snprintf(szAppDate, sizeof(szAppDate), "* Build time: %s, %s", szDate, szTime);
+    snprintf(szAppInfo, sizeof(szAppInfo), "* This is \"%s\" App", name);
+    snprintf(szAppVer, sizeof(szAppVer), "* Version: %s", version);
+    snprintf(szAppDate, sizeof(szAppDate), "* Build time: %s, %s", date, time);
 
     int maxLen = strlen(szAppInfo);
     if (strlen(szAppVer) > maxLen)
