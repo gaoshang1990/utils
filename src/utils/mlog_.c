@@ -22,7 +22,7 @@
 #  define access                _access
 #  define snprintf              _snprintf
 #  define LOCAL_TIME(pSec, pTm) localtime_s(pTm, pSec)
-#  define MLOG_COLOR_ENABLE     (1) /* enalbe print color. support on linux/unix platform */
+#  define MLOG_COLOR_ENABLE     (1)
 #else
 #  define LOCAL_TIME(pSec, pTm) localtime_r(pSec, pTm)
 #  define MLOG_COLOR_ENABLE     (1) /* enalbe print color. support on linux/unix platform */
@@ -101,20 +101,6 @@ typedef struct _LoggerCfg_ {
 static MLogger_t* _loggers[MAX_LOG_NUM] = {NULL};
 
 
-static MLogger_t* _get_logger(int logNo)
-{
-    if (logNo < 0 || logNo >= MAX_LOG_NUM) {
-        printf("_get_logger: logNo[%d] is invalid\n", logNo);
-        return NULL;
-    }
-
-    if (_loggers[logNo] == NULL)
-        mlog_init(M_DEBUG, logNo, NULL, NULL);
-
-    return _loggers[logNo];
-}
-
-
 static MLogMutex_t _mlog_lock_init(int initialValue)
 {
 #ifdef _WIN32
@@ -152,11 +138,11 @@ static char* _process_info(void)
 {
     static char cur_process_info[10] = {0};
 
-    int pid = 0;
+    int pid =
 #ifdef _WIN32
-    pid = (int)GetCurrentProcessId();
+        (int)GetCurrentProcessId();
 #else
-    pid = (int)getpid();
+        (int)getpid();
 #endif
     snprintf(cur_process_info, 10, "pid: %04d", pid);
 
@@ -168,11 +154,11 @@ static char* _thread_info(void)
 {
     static char cur_thread_info[10] = {0};
 
-    int tid = 0;
+    int tid =
 #ifdef _WIN32
-    tid = (uint32_t)GetCurrentThreadId();
+        (int)GetCurrentThreadId();
 #else
-    tid = (uint32_t)pthread_self();
+        (int)pthread_self();
 #endif
     snprintf(cur_thread_info, 10, "tid: %04d", tid);
 
@@ -180,7 +166,7 @@ static char* _thread_info(void)
 }
 
 
-static void _curr_time(int timestr_size, char timestr[])
+static void _make_curr_timestr(int timestr_size, char timestr[])
 {
     struct tm nowTm;
     time_t    nowSec = time(NULL);
@@ -275,13 +261,29 @@ static int _mkdir_m_(const char* dir)
 // }
 
 
-static void _log_file_open(MLogger_t* logger)
+static void _mlog_new(int log_no)
 {
-    if (logger->fp == NULL) {
-        char file_path[256] = {0};
-        snprintf(file_path, sizeof(file_path) - 1, "%s/%s", logger->dir, logger->name);
-        logger->fp = fopen(file_path, "a+");
+    if (_loggers[log_no] == NULL) {
+        _loggers[log_no]  = (MLogger_t*)malloc(sizeof(MLogger_t));
+        *_loggers[log_no] = (MLogger_t){{0}, {0}, NULL, NULL, M_TRACE, MLOG_FILE_MAX_SIZE, MLOG_FILE_MAX_ROTATE};
     }
+
+    if (_loggers[log_no]->mtx == NULL)
+        _loggers[log_no]->mtx = _mlog_lock_init(1);
+}
+
+
+static MLogger_t* _get_logger(int log_no)
+{
+    if (log_no < 0 || log_no >= MAX_LOG_NUM) {
+        printf("_get_logger: log_no[%d] is invalid\n", log_no);
+        return NULL;
+    }
+
+    if (_loggers[log_no] == NULL)
+        _mlog_new(log_no);
+
+    return _loggers[log_no];
 }
 
 
@@ -289,39 +291,26 @@ static void _log_file_open(MLogger_t* logger)
  * \brief   1. non thread-safe function
  *          2. can be repeatedly called to change the log level
  */
-int mlog_init(E_MLOG_LEVEL level, int logNo, const char* logDir, const char* fileName)
+int mlog_init(E_MLOG_LEVEL level, int log_no, const char* file_dir, const char* file_name)
 {
-    if (logNo < 0 || logNo >= MAX_LOG_NUM) {
-        printf("mlogInit_: logNo[%d] is invalid\n", logNo);
-        return -1;
-    }
+    MLogger_t* logger = _get_logger(log_no);
 
-    if (_loggers[logNo] == NULL) {
-        _loggers[logNo]  = (MLogger_t*)malloc(sizeof(MLogger_t));
-        *_loggers[logNo] = (MLogger_t){{0}, {0}, NULL, NULL, M_TRACE, MLOG_FILE_MAX_SIZE, MLOG_FILE_MAX_ROTATE};
-    }
-
-    _loggers[logNo]->level = level;
-
-    if (_loggers[logNo]->mtx == NULL)
-        _loggers[logNo]->mtx = _mlog_lock_init(1);
+    logger->level = level;
 
     // int version = _windows_version();
 
-    if (logDir == NULL || fileName == NULL) {
+    if (file_dir == NULL || file_name == NULL) {
         printf("mlog_init: log_dir or file_name is NULL\n");
         return -1;
     }
 
-    if (_mkdir_m_(logDir) < 0) {
-        printf("mlog_init: mkdir[%s] failed\n", logDir);
+    if (_mkdir_m_(file_dir) < 0) {
+        printf("mlog_init: mkdir[%s] failed\n", file_dir);
         return -1;
     }
 
-    snprintf(_loggers[logNo]->dir, sizeof(_loggers[logNo]->dir) - 1, "%s", logDir);
-    snprintf(_loggers[logNo]->name, sizeof(_loggers[logNo]->name) - 1, "%s", fileName);
-
-    _log_file_open(_loggers[logNo]);
+    snprintf(logger->dir, sizeof(logger->dir) - 1, "%s", file_dir);
+    snprintf(logger->name, sizeof(logger->name) - 1, "%s", file_name);
 
     return 0;
 }
@@ -340,7 +329,7 @@ int mlog_set_level(int level, int log_no)
 static int _make_line_prefix(char* prefix, int level, const char* szFunc, int line)
 {
     char timestr[MAX_TIME_STR] = {0};
-    _curr_time(sizeof(timestr), timestr); /* time */
+    _make_curr_timestr(sizeof(timestr), timestr); /* time */
 
     /* log format for different level please modify below */
     switch (level) {
@@ -398,12 +387,10 @@ static void _print_in_console(bool en_print, bool en_color, int level, const cha
     else {
         printf("%s%s", prefix, content);
     }
-
-    return;
 }
 
 
-static void _log_file_rotate(MLogger_t* logger)
+static void _mlog_file_rotate(MLogger_t* logger)
 {
     if (logger->fp == NULL)
         return;
@@ -421,9 +408,19 @@ static void _log_file_rotate(MLogger_t* logger)
 }
 
 
-static void _log_file_write(MLogger_t* logger, const char* prefix, const char* content)
+static void _mlog_file_open(MLogger_t* logger)
 {
-    _log_file_open(logger);
+    if (logger->fp == NULL) {
+        char file_path[256] = {0};
+        snprintf(file_path, sizeof(file_path) - 1, "%s/%s", logger->dir, logger->name);
+        logger->fp = fopen(file_path, "a+");
+    }
+}
+
+
+static void _mlog_file_write(MLogger_t* logger, const char* prefix, const char* content)
+{
+    _mlog_file_open(logger);
 
     if (logger->fp) {
         fwrite(prefix, sizeof(char), strlen(prefix), logger->fp);
@@ -467,8 +464,8 @@ void mlog_write(int level, int logNo, bool isRaw, const char* szFunc, int line, 
 
     _print_in_console(MLOG_PRINT_ENABLE, MLOG_COLOR_ENABLE, level, line_prefix, line_content);
 
-    _log_file_rotate(logger);
-    _log_file_write(logger, line_prefix, line_content);
+    _mlog_file_rotate(logger);
+    _mlog_file_write(logger, line_prefix, line_content);
 
     _mlog_unlock(logger->mtx);
 }
