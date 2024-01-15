@@ -168,7 +168,7 @@ uint64_t cpu_ms(void)
 #else
     struct timespec tp;
     clock_gettime(CLOCK_MONOTONIC, &tp);
-    nowMs = ((uint64_t)tp.tv_sec) * 1000LL + (tp.tv_nsec / 1000000);
+    now_ms = ((uint64_t)tp.tv_sec) * 1000LL + (tp.tv_nsec / 1000000);
 #endif
 
     return now_ms;

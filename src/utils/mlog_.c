@@ -22,23 +22,24 @@
 #  define access                _access
 #  define snprintf              _snprintf
 #  define LOCAL_TIME(pSec, pTm) localtime_s(pTm, pSec)
-#  define MLOG_COLOR_ENABLE     /* enalbe print color. support on linux/unix platform */
+#  define MLOG_COLOR_ENABLE     (1) /* enalbe print color. support on linux/unix platform */
 #else
 #  define LOCAL_TIME(pSec, pTm) localtime_r(pSec, pTm)
-#  define MLOG_COLOR_ENABLE     /* enalbe print color. support on linux/unix platform */
+#  define MLOG_COLOR_ENABLE     (1) /* enalbe print color. support on linux/unix platform */
 #endif
 
-#define MLOG_PRINT_ENABLE                      /* enalbe print output to console fd=stdout */
+#define MLOG_PRINT_ENABLE    (1)               /* enalbe print output to console fd=stdout */
 #define MLOG_FILE_MAX_SIZE   (5 * 1024 * 1024) /* max size of logfile */
 #define MLOG_FILE_MAX_ROTATE (5)               /* rotate file max num */
 #define MAX_TIME_STR         (20)
 #define TIME_STR_FMT         "%04u-%02u-%02u %02u:%02u:%02u"
 #define MAX_FILE_PATH_LEN    (256)
-#define MAX_LOG_LINE         (10 * 1024)
+#define LINE_CONTENT_MAX_LEN (10 * 1024)
+#define LINE_PREFIX_MAX_LEN  (256)
 #define MAX_LOG_NUM          (16)
 
 
-#ifdef MLOG_COLOR_ENABLE
+#if MLOG_COLOR_ENABLE
 /**
  * CSI(Control Sequence Introducer/Initiator) sign
  * more information on https://en.wikipedia.org/wiki/ANSI_escape_code
@@ -70,11 +71,7 @@
 #  define STYLE_BLINK      "5m"
 #  define STYLE_NORMAL     "22m"
 
-/*---------------------------------------------------------------------------*/
-/* enable log color */
-
 /* change the some level logs to not default color if you want */
-// #define MLOG_COLOR_ASSERT							 F_MAGENTA B_NULL STYLE_NORMAL
 #  define MLOG_COLOR_ERROR F_RED B_NULL STYLE_NORMAL
 #  define MLOG_COLOR_WARN  F_YELLOW B_NULL STYLE_NORMAL
 #  define MLOG_COLOR_INFO  F_CYAN B_NULL STYLE_NORMAL
@@ -85,7 +82,7 @@
 
 typedef void* MLogMutex_t;
 
-static const char* _szLevel[] = {"[TRACE]", "[DEBUG]", "[INFO ]", "[WARN ]", "[ERROR]"};
+static const char* _szlevel[] = {"[TRACE]", "[DEBUG]", "[INFO ]", "[WARN ]", "[ERROR]"};
 
 typedef struct _LoggerCfg_ {
     char         dir[128]; /* file path */
@@ -93,16 +90,32 @@ typedef struct _LoggerCfg_ {
     FILE*        fp;       /* log file pointer */
     MLogMutex_t  mtx;      /* mutex for safety */
     E_MLOG_LEVEL level;    /* output levle control*/
-    int          inited;   /* initial flag*/
-    int          maxSize;  /* file max size */
-    int          maxCnt;   /* max rotate file count */
+    int          max_size; /* file max size */
+    int          max_num;  /* max rotate file count */
+
+    char line_prefix[LINE_PREFIX_MAX_LEN];  /* prefix of log */
+    char line_content[LINE_PREFIX_MAX_LEN]; /* content of log */
 } MLogger_t;
 
 
 static MLogger_t* _loggers[MAX_LOG_NUM] = {NULL};
 
 
-static MLogMutex_t _mlogInitMutex(int initialValue)
+static MLogger_t* _get_logger(int logNo)
+{
+    if (logNo < 0 || logNo >= MAX_LOG_NUM) {
+        printf("_get_logger: logNo[%d] is invalid\n", logNo);
+        return NULL;
+    }
+
+    if (_loggers[logNo] == NULL)
+        mlog_init(M_DEBUG, logNo, NULL, NULL);
+
+    return _loggers[logNo];
+}
+
+
+static MLogMutex_t _mlog_lock_init(int initialValue)
 {
 #ifdef _WIN32
     HANDLE self = CreateSemaphore(NULL, initialValue, 1, NULL);
@@ -115,7 +128,7 @@ static MLogMutex_t _mlogInitMutex(int initialValue)
 }
 
 
-static void _mlogLock(MLogMutex_t self)
+static void _mlog_lock(MLogMutex_t self)
 {
 #ifdef _WIN32
     WaitForSingleObject((HANDLE)self, INFINITE);
@@ -125,7 +138,7 @@ static void _mlogLock(MLogMutex_t self)
 }
 
 
-static void _mlogUnlock(MLogMutex_t self)
+static void _mlog_unlock(MLogMutex_t self)
 {
 #ifdef _WIN32
     ReleaseSemaphore((HANDLE)self, 1, NULL);
@@ -135,7 +148,7 @@ static void _mlogUnlock(MLogMutex_t self)
 }
 
 
-static char* _getProcessInfo(void)
+static char* _process_info(void)
 {
     static char cur_process_info[10] = {0};
 
@@ -151,7 +164,7 @@ static char* _getProcessInfo(void)
 }
 
 
-static char* _getThreadInfo(void)
+static char* _thread_info(void)
 {
     static char cur_thread_info[10] = {0};
 
@@ -167,7 +180,7 @@ static char* _getThreadInfo(void)
 }
 
 
-static void _getCurrTime(int timestr_size, char timestr[])
+static void _curr_time(int timestr_size, char timestr[])
 {
     struct tm nowTm;
     time_t    nowSec = time(NULL);
@@ -186,27 +199,26 @@ static void _getCurrTime(int timestr_size, char timestr[])
 
 
 /* move xxx_1.log => xxx_n.log, and xxx.log => xxx_0.log */
-static void _rotateFile(int logNo)
+static void _rotate_file(MLogger_t* logger)
 {
     char fileName[256] = {0}; /* file name without suffix */
     char suffix[16]    = {0}; /* file suffix */
-    sscanf(_loggers[logNo]->name, "%[^.]%s", fileName, suffix);
+    sscanf(logger->name, "%[^.]%s", fileName, suffix);
 
     char oldPath[256] = {0};
     char newPath[256] = {0};
 
-    snprintf(oldPath, sizeof(oldPath) - 1, "%s/%s", _loggers[logNo]->dir, fileName);
+    snprintf(oldPath, sizeof(oldPath) - 1, "%s/%s", logger->dir, fileName);
     size_t baseLen = strlen(oldPath);
     snprintf(newPath, baseLen + 1, "%s", oldPath);
 
     const uint8_t suffixLen = 32;
-    for (int n = _loggers[logNo]->maxCnt - 1; n >= 0; --n) {
-        if (n == 0) {
+    for (int n = logger->max_num - 1; n >= 0; --n) {
+        if (n == 0)
             snprintf(oldPath + baseLen, suffixLen, "%s", suffix);
-        }
-        else {
+        else
             snprintf(oldPath + baseLen, suffixLen, "_%d%s", n - 1, suffix);
-        }
+
         snprintf(newPath + baseLen, suffixLen, "_%d%s", n, suffix);
         remove(newPath);
         rename(oldPath, newPath);
@@ -263,7 +275,15 @@ static int _mkdir_m_(const char* dir)
 // }
 
 
-/* external function */
+static void _log_file_open(MLogger_t* logger)
+{
+    if (logger->fp == NULL) {
+        char file_path[256] = {0};
+        snprintf(file_path, sizeof(file_path) - 1, "%s/%s", logger->dir, logger->name);
+        logger->fp = fopen(file_path, "a+");
+    }
+}
+
 
 /**
  * \brief   1. non thread-safe function
@@ -278,40 +298,30 @@ int mlog_init(E_MLOG_LEVEL level, int logNo, const char* logDir, const char* fil
 
     if (_loggers[logNo] == NULL) {
         _loggers[logNo]  = (MLogger_t*)malloc(sizeof(MLogger_t));
-        *_loggers[logNo] = (MLogger_t){{0}, {0}, NULL, NULL, M_TRACE, false, MLOG_FILE_MAX_SIZE, MLOG_FILE_MAX_ROTATE};
+        *_loggers[logNo] = (MLogger_t){{0}, {0}, NULL, NULL, M_TRACE, MLOG_FILE_MAX_SIZE, MLOG_FILE_MAX_ROTATE};
     }
 
     _loggers[logNo]->level = level;
 
-    if (true == _loggers[logNo]->inited)
-        return 0;
+    if (_loggers[logNo]->mtx == NULL)
+        _loggers[logNo]->mtx = _mlog_lock_init(1);
 
     // int version = _windows_version();
 
     if (logDir == NULL || fileName == NULL) {
-        printf("mlogInit_: log_dir or file_name is NULL\n");
+        printf("mlog_init: log_dir or file_name is NULL\n");
         return -1;
     }
 
     if (_mkdir_m_(logDir) < 0) {
-        printf("mlogInit_: mkdir[%s] failed\n", logDir);
+        printf("mlog_init: mkdir[%s] failed\n", logDir);
         return -1;
     }
-
-    char logFilePath[MAX_FILE_PATH_LEN] = {0};
 
     snprintf(_loggers[logNo]->dir, sizeof(_loggers[logNo]->dir) - 1, "%s", logDir);
     snprintf(_loggers[logNo]->name, sizeof(_loggers[logNo]->name) - 1, "%s", fileName);
-    snprintf(logFilePath, sizeof(logFilePath) - 1, "%s/%s", logDir, _loggers[logNo]->name);
 
-    _loggers[logNo]->fp = fopen(logFilePath, "a+");
-    if (NULL == _loggers[logNo]->fp) {
-        printf("open log file[%s] failed\n", logFilePath);
-        return -1;
-    }
-
-    _loggers[logNo]->mtx    = _mlogInitMutex(1);
-    _loggers[logNo]->inited = true;
+    _log_file_open(_loggers[logNo]);
 
     return 0;
 }
@@ -319,17 +329,107 @@ int mlog_init(E_MLOG_LEVEL level, int logNo, const char* logDir, const char* fil
 
 int mlog_set_level(int level, int log_no)
 {
-    if (log_no < 0 || log_no >= MAX_LOG_NUM) {
-        printf("mlog_set_level_: log_no[%d] is invalid\n", log_no);
-        return -1;
-    }
+    MLogger_t* logger = _get_logger(log_no);
 
-    if (_loggers[log_no] == NULL)
-        mlog_init(log_no, M_DEBUG, NULL, NULL);
-
-    _loggers[log_no]->level = (E_MLOG_LEVEL)level;
+    logger->level = (E_MLOG_LEVEL)level;
 
     return 0;
+}
+
+
+static int _make_line_prefix(char* prefix, int level, const char* szFunc, int line)
+{
+    char timestr[MAX_TIME_STR] = {0};
+    _curr_time(sizeof(timestr), timestr); /* time */
+
+    /* log format for different level please modify below */
+    switch (level) {
+    case M_WARN:
+    case M_ERROR:
+        snprintf(prefix, LINE_PREFIX_MAX_LEN - 1, "%s %s- %s: %d | ", _szlevel[level], timestr, szFunc, line);
+        break;
+    case M_TRACE:
+        snprintf(prefix,
+                 LINE_PREFIX_MAX_LEN - 1,
+                 "%s %s [%s %s] - %s: %d | ",
+                 _szlevel[level],
+                 timestr,
+                 _process_info(),
+                 _thread_info(),
+                 szFunc,
+                 line);
+        break;
+    case M_DEBUG:
+    case M_INFO:
+    default:
+        snprintf(prefix, LINE_PREFIX_MAX_LEN - 1, "%s %s | ", _szlevel[level], timestr);
+        break;
+    }
+
+    return 0;
+}
+
+
+static void _print_in_console(bool en_print, bool en_color, int level, const char* prefix, const char* content)
+{
+    if (!en_print)
+        return;
+
+    if (en_color) {
+        switch (level) {
+        default:
+        case M_TRACE:
+            printf(CSI_START MLOG_COLOR_TRACE "%s%s" CSI_END, prefix, content);
+            break;
+        case M_DEBUG:
+            printf(CSI_START MLOG_COLOR_DEBUG "%s%s" CSI_END, prefix, content);
+            break;
+        case M_INFO:
+            printf(CSI_START MLOG_COLOR_INFO "%s%s" CSI_END, prefix, content);
+            break;
+        case M_WARN:
+            printf(CSI_START MLOG_COLOR_WARN "%s%s" CSI_END, prefix, content);
+            break;
+        case M_ERROR:
+            printf(CSI_START MLOG_COLOR_ERROR "%s%s" CSI_END, prefix, content);
+            break;
+        }
+    }
+    else {
+        printf("%s%s", prefix, content);
+    }
+
+    return;
+}
+
+
+static void _log_file_rotate(MLogger_t* logger)
+{
+    if (logger->fp == NULL)
+        return;
+
+    int         fd = fileno(logger->fp);
+    struct stat statbuf;
+    fstat(fd, &statbuf);
+
+    int fileSize = statbuf.st_size;
+    if (fileSize >= logger->max_size) {
+        fclose(logger->fp);
+        logger->fp = NULL;
+        _rotate_file(logger);
+    }
+}
+
+
+static void _log_file_write(MLogger_t* logger, const char* prefix, const char* content)
+{
+    _log_file_open(logger);
+
+    if (logger->fp) {
+        fwrite(prefix, sizeof(char), strlen(prefix), logger->fp);
+        fwrite(content, sizeof(char), strlen(content), logger->fp);
+        fflush(logger->fp);
+    }
 }
 
 
@@ -340,126 +440,37 @@ int mlog_set_level(int level, int log_no)
  */
 void mlog_write(int level, int logNo, bool isRaw, const char* szFunc, int line, const char* fmt, ...)
 {
-    static char logContent[MAX_LOG_LINE]     = {0};
-    static char logOutput[MAX_LOG_LINE + 64] = {0};
+    MLogger_t* logger = _get_logger(logNo);
 
-    if (logNo < 0 || logNo >= MAX_LOG_NUM) {
-        printf("mlog_write: logNo[%d] is invalid\n", logNo);
-        return;
-    }
-
-    if (_loggers[logNo] == NULL)
-        mlog_init(M_DEBUG, logNo, NULL, NULL);
-
-    if (_loggers[logNo]->level > level)
+    if (logger->level > level)
         return;
 
     if (level > M_ERROR)
-        level = M_TRACE;
+        level = M_ERROR;
 
-    _mlogLock(_loggers[logNo]->mtx);
+    _mlog_lock(logger->mtx);
+
+    char* line_content = logger->line_content;
+    char* line_prefix  = logger->line_prefix;
+    line_content[0]    = '\0';
+    line_prefix[0]     = '\0';
 
     va_list args;
     va_start(args, fmt);
-    vsnprintf(logContent, sizeof(logContent) - 1, fmt, args);
+    vsnprintf(line_content, LINE_CONTENT_MAX_LEN - 1, fmt, args);
     va_end(args);
 
     if (!isRaw) {
-        char timestr[MAX_TIME_STR] = {0};
-        _getCurrTime(sizeof(timestr), timestr); /* time */
-        char* process_info = _getProcessInfo(); /* pid */
-        char* thread_info  = _getThreadInfo();  /* tid */
-
-        /* log format for different level please modify below */
-        switch (level) {
-        case M_WARN:
-        case M_ERROR:
-            snprintf(logOutput,
-                     sizeof(logOutput) - 1,
-                     "%s %s- %s: %d | %s\n",
-                     _szLevel[level],
-                     timestr,
-                     szFunc,
-                     line,
-                     logContent);
-            break;
-        case M_TRACE:
-            snprintf(logOutput,
-                     sizeof(logOutput) - 1,
-                     "%s %s [%s %s] - %s: %d | %s\n",
-                     _szLevel[level],
-                     timestr,
-                     process_info,
-                     thread_info,
-                     szFunc,
-                     line,
-                     logContent);
-            break;
-        case M_DEBUG:
-        case M_INFO:
-        default:
-            snprintf(logOutput, sizeof(logOutput) - 1, "%s %s | %s\n", _szLevel[level], timestr, logContent);
-            break;
-        }
-    }
-    else {
-        snprintf(logOutput, sizeof(logOutput) - 1, "%s", logContent); /* output raw data */
+        _make_line_prefix(line_prefix, level, szFunc, line);
+        snprintf(line_content + strlen(line_content), LINE_CONTENT_MAX_LEN - strlen(line_content) - 1, "\n");
     }
 
-#ifdef MLOG_PRINT_ENABLE   /* console print enable */
-#  ifdef MLOG_COLOR_ENABLE /* console print with color */
-    switch (level) {
-    case M_TRACE:
-        printf(CSI_START MLOG_COLOR_TRACE "%s" CSI_END, logOutput);
-        break;
-    case M_DEBUG:
-        printf(CSI_START MLOG_COLOR_DEBUG "%s" CSI_END, logOutput);
-        break;
-    case M_INFO:
-        printf(CSI_START MLOG_COLOR_INFO "%s" CSI_END, logOutput);
-        break;
-    case M_WARN:
-        printf(CSI_START MLOG_COLOR_WARN "%s" CSI_END, logOutput);
-        break;
-    case M_ERROR:
-        printf(CSI_START MLOG_COLOR_ERROR "%s" CSI_END, logOutput);
-        break;
-    default:
-        printf("%s", logOutput);
-    }
-#  else
-    printf("%s", logOutput);
-#  endif /* MLOG_COLOR_ENABLE */
-#endif   /* MLOG_PRINT_ENABLE */
+    _print_in_console(MLOG_PRINT_ENABLE, MLOG_COLOR_ENABLE, level, line_prefix, line_content);
 
-    if (_loggers[logNo]->inited == false) {
-        _mlogUnlock(_loggers[logNo]->mtx);
-        return;
-    }
+    _log_file_rotate(logger);
+    _log_file_write(logger, line_prefix, line_content);
 
-    /* log_file_rotate_check */
-    int         fd = fileno(_loggers[logNo]->fp);
-    struct stat statbuf;
-    fstat(fd, &statbuf);
-    int fileSize = statbuf.st_size;
-    if (fileSize >= _loggers[logNo]->maxSize) {
-        fclose(_loggers[logNo]->fp);
-        _loggers[logNo]->fp = NULL;
-        _rotateFile(logNo);
-    }
-    /* reopen the log file */
-    if (_loggers[logNo]->fp == NULL) {
-        char full_file_name[256] = {0};
-        snprintf(full_file_name, sizeof(full_file_name) - 1, "%s/%s", _loggers[logNo]->dir, _loggers[logNo]->name);
-        _loggers[logNo]->fp = fopen(full_file_name, "a+");
-    }
-
-    if (_loggers[logNo]->fp) {
-        fwrite(logOutput, sizeof(char), strlen(logOutput), _loggers[logNo]->fp);
-        fflush(_loggers[logNo]->fp);
-    }
-
-    _mlogUnlock(_loggers[logNo]->mtx);
+    _mlog_unlock(logger->mtx);
 }
 
 
