@@ -19,7 +19,7 @@ extern "C" {
 int  mlog_init(int level, int log_id, const char* file_dir, const char* file_name);
 int  mlog_set_level(int log_no, int level);
 void mlog_write(int level, int log_id, bool is_raw, const char* szfunc, int line, const char* fmt, ...);
-int  print_buf(int logLevel, uint8_t* pBuf, uint16_t bufLen);
+int  print_buf(int log_level, uint8_t* buf, uint16_t buf_len);
 int  print_app_info(const char* name, const char* version, const char* date, const char* time);
 
 #define SLOG_INIT(level, dir, file)       mlog_init(level, 0, dir, file)

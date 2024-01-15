@@ -32,11 +32,9 @@
 #define MLOG_FILE_MAX_SIZE   (5 * 1024 * 1024) /* max size of logfile */
 #define MLOG_FILE_MAX_ROTATE (5)               /* rotate file max num */
 #define MAX_TIME_STR         (20)
-#define TIME_STR_FMT         "%04u-%02u-%02u %02u:%02u:%02u"
 #define MAX_FILE_PATH_LEN    (256)
 #define LINE_CONTENT_MAX_LEN (10 * 1024)
 #define LINE_PREFIX_MAX_LEN  (256)
-#define MAX_LOG_NUM          (16)
 
 
 #if MLOG_COLOR_ENABLE
@@ -82,8 +80,6 @@
 
 typedef void* MLogMutex_t;
 
-static const char* _szlevel[] = {"[TRACE]", "[DEBUG]", "[INFO ]", "[WARN ]", "[ERROR]"};
-
 typedef struct _LoggerCfg_ {
     int         id;
     char        dir[128];
@@ -105,13 +101,13 @@ static struct {
 } _mlog = {0};
 
 
-static MLogMutex_t _mlog_lock_init(int initialValue)
+static MLogMutex_t _mlog_lock_init(int init_value)
 {
 #ifdef _WIN32
-    HANDLE self = CreateSemaphore(NULL, initialValue, 1, NULL);
+    HANDLE self = CreateSemaphore(NULL, init_value, 1, NULL);
 #else
     MLogMutex_t self = malloc(sizeof(sem_t));
-    sem_init((sem_t*)self, 0, initialValue);
+    sem_init((sem_t*)self, 0, init_value);
 #endif
 
     return self;
@@ -170,48 +166,48 @@ static char* _thread_info(void)
 }
 
 
-static void _make_curr_timestr(int timestr_size, char timestr[])
+static void _make_curr_timestr(char* timestr, int size)
 {
-    struct tm nowTm;
-    time_t    nowSec = time(NULL);
-    LOCAL_TIME(&nowSec, &nowTm);
+    struct tm now_tm;
+    time_t    now_sec = time(NULL);
+    LOCAL_TIME(&now_sec, &now_tm);
 
     snprintf(timestr,
-             timestr_size,
-             TIME_STR_FMT,
-             nowTm.tm_year + 1900,
-             nowTm.tm_mon + 1,
-             nowTm.tm_mday,
-             nowTm.tm_hour,
-             nowTm.tm_min,
-             nowTm.tm_sec);
+             size,
+             "%04u-%02u-%02u %02u:%02u:%02u",
+             now_tm.tm_year + 1900,
+             now_tm.tm_mon + 1,
+             now_tm.tm_mday,
+             now_tm.tm_hour,
+             now_tm.tm_min,
+             now_tm.tm_sec);
 }
 
 
 /* move xxx_1.log => xxx_n.log, and xxx.log => xxx_0.log */
 static void _rotate_file(MLogger_t* logger)
 {
-    char fileName[256] = {0}; /* file name without suffix */
-    char suffix[16]    = {0}; /* file suffix */
-    sscanf(logger->name, "%[^.]%s", fileName, suffix);
+    char file_name[256] = {0}; /* file name without suffix */
+    char suffix[16]     = {0}; /* file suffix */
+    sscanf(logger->name, "%[^.]%s", file_name, suffix);
 
-    char oldPath[256] = {0};
-    char newPath[256] = {0};
+    char old_path[256] = {0};
+    char new_path[256] = {0};
 
-    snprintf(oldPath, sizeof(oldPath) - 1, "%s/%s", logger->dir, fileName);
-    size_t baseLen = strlen(oldPath);
-    snprintf(newPath, baseLen + 1, "%s", oldPath);
+    snprintf(old_path, sizeof(old_path) - 1, "%s/%s", logger->dir, file_name);
+    size_t base_len = strlen(old_path);
+    snprintf(new_path, base_len + 1, "%s", old_path);
 
-    const uint8_t suffixLen = 32;
+    const uint8_t suffix_len = 32;
     for (int n = logger->max_num - 1; n >= 0; --n) {
         if (n == 0)
-            snprintf(oldPath + baseLen, suffixLen, "%s", suffix);
+            snprintf(old_path + base_len, suffix_len, "%s", suffix);
         else
-            snprintf(oldPath + baseLen, suffixLen, "_%d%s", n - 1, suffix);
+            snprintf(old_path + base_len, suffix_len, "_%d%s", n - 1, suffix);
 
-        snprintf(newPath + baseLen, suffixLen, "_%d%s", n, suffix);
-        remove(newPath);
-        rename(oldPath, newPath);
+        snprintf(new_path + base_len, suffix_len, "_%d%s", n, suffix);
+        remove(new_path);
+        rename(old_path, new_path);
     }
 }
 
@@ -340,32 +336,52 @@ int mlog_set_level(int level, int log_no)
 }
 
 
-static int _make_line_prefix(char* prefix, int level, const char* szFunc, int line)
+static const char* _level_str(int level)
+{
+    switch (level) {
+    default:
+    case M_TRACE:
+        return "[TRACE]";
+    case M_DEBUG:
+        return "[DEBUG]";
+    case M_INFO:
+        return "[INFO ]";
+    case M_WARN:
+        return "[WARN ]";
+    case M_ERROR:
+        return "[ERROR]";
+    }
+}
+
+
+static int _make_line_prefix(char* prefix, int level, const char* func, int line)
 {
     char timestr[MAX_TIME_STR] = {0};
-    _make_curr_timestr(sizeof(timestr), timestr); /* time */
+    _make_curr_timestr(timestr, sizeof(timestr)); /* time */
+
+    const char* szlevel = _level_str(level);
 
     /* log format for different level please modify below */
     switch (level) {
     case M_WARN:
     case M_ERROR:
-        snprintf(prefix, LINE_PREFIX_MAX_LEN - 1, "%s %s- %s: %d | ", _szlevel[level], timestr, szFunc, line);
+        snprintf(prefix, LINE_PREFIX_MAX_LEN - 1, "%s %s- %s: %d | ", szlevel, timestr, func, line);
         break;
     case M_TRACE:
         snprintf(prefix,
                  LINE_PREFIX_MAX_LEN - 1,
                  "%s %s [%s %s] - %s: %d | ",
-                 _szlevel[level],
+                 szlevel,
                  timestr,
                  _process_info(),
                  _thread_info(),
-                 szFunc,
+                 func,
                  line);
         break;
     case M_DEBUG:
     case M_INFO:
     default:
-        snprintf(prefix, LINE_PREFIX_MAX_LEN - 1, "%s %s | ", _szlevel[level], timestr);
+        snprintf(prefix, LINE_PREFIX_MAX_LEN - 1, "%s %s | ", szlevel, timestr);
         break;
     }
 
@@ -449,9 +465,9 @@ static void _mlog_file_write(MLogger_t* logger, const char* prefix, const char* 
  * and exceeding the length will result in truncation.
  * Through MAX_LOG_LINE macro can modify maximum length
  */
-void mlog_write(int level, int logNo, bool isRaw, const char* szFunc, int line, const char* fmt, ...)
+void mlog_write(int level, int log_id, bool is_raw, const char* func, int line, const char* fmt, ...)
 {
-    MLogger_t* logger = _get_logger(logNo);
+    MLogger_t* logger = _get_logger(log_id);
 
     if (logger->level > level)
         return;
@@ -471,8 +487,8 @@ void mlog_write(int level, int logNo, bool isRaw, const char* szFunc, int line, 
     vsnprintf(line_content, LINE_CONTENT_MAX_LEN - 1, fmt, args);
     va_end(args);
 
-    if (!isRaw) {
-        _make_line_prefix(line_prefix, level, szFunc, line);
+    if (!is_raw) {
+        _make_line_prefix(line_prefix, level, func, line);
         snprintf(line_content + strlen(line_content), LINE_CONTENT_MAX_LEN - strlen(line_content) - 1, "\n");
     }
 
@@ -485,14 +501,14 @@ void mlog_write(int level, int logNo, bool isRaw, const char* szFunc, int line, 
 }
 
 
-int print_buf(int logLevel, uint8_t* pBuf, uint16_t bufLen)
+int print_buf(int log_level, uint8_t* buf, uint16_t buf_len)
 {
-    if (pBuf == NULL && bufLen == 0)
+    if (buf == NULL && buf_len == 0)
         return -1;
 
-    for (int i = 0; i < bufLen; i++)
-        SLOG_RAW(logLevel, "%02x ", pBuf[i]);
-    SLOG_RAW(logLevel, "\n");
+    for (int i = 0; i < buf_len; i++)
+        SLOG_RAW(log_level, "%02x ", buf[i]);
+    SLOG_RAW(log_level, "\n");
 
     return 0;
 }
@@ -520,32 +536,32 @@ static int _make_info_str(char* str, uint8_t nb)
 
 int print_app_info(const char* name, const char* version, const char* date, const char* time)
 {
-    char szStars[128]   = {0};
-    char szAppInfo[128] = {0};
-    char szAppVer[128]  = {0};
-    char szAppDate[128] = {0};
+    char stars[128]    = {0};
+    char app_info[128] = {0};
+    char app_ver[128]  = {0};
+    char app_date[128] = {0};
 
-    snprintf(szAppInfo, sizeof(szAppInfo), "* This is \"%s\" App", name);
-    snprintf(szAppVer, sizeof(szAppVer), "* Version: %s", version);
-    snprintf(szAppDate, sizeof(szAppDate), "* Build time: %s, %s", date, time);
+    snprintf(app_info, sizeof(app_info), "* This is \"%s\" App", name);
+    snprintf(app_ver, sizeof(app_ver), "* Version: %s", version);
+    snprintf(app_date, sizeof(app_date), "* Build time: %s, %s", date, time);
 
-    int maxLen = strlen(szAppInfo);
-    if (strlen(szAppVer) > maxLen)
-        maxLen = strlen(szAppVer);
-    if (strlen(szAppDate) > maxLen)
-        maxLen = strlen(szAppDate);
+    int max_len = strlen(app_info);
+    if (strlen(app_ver) > max_len)
+        max_len = strlen(app_ver);
+    if (strlen(app_date) > max_len)
+        max_len = strlen(app_date);
 
-    _make_star_str(szStars, maxLen + 2);
-    _make_info_str(szAppInfo, maxLen + 2);
-    _make_info_str(szAppVer, maxLen + 2);
-    _make_info_str(szAppDate, maxLen + 2);
+    _make_star_str(stars, max_len + 2);
+    _make_info_str(app_info, max_len + 2);
+    _make_info_str(app_ver, max_len + 2);
+    _make_info_str(app_date, max_len + 2);
 
     SLOG_INFO_RAW("\n");
-    SLOG_INFO("%s", szStars);
-    SLOG_INFO("%s", szAppInfo);
-    SLOG_INFO("%s", szAppVer);
-    SLOG_INFO("%s", szAppDate);
-    SLOG_INFO("%s", szStars);
+    SLOG_INFO("%s", stars);
+    SLOG_INFO("%s", app_info);
+    SLOG_INFO("%s", app_ver);
+    SLOG_INFO("%s", app_date);
+    SLOG_INFO("%s", stars);
     SLOG_INFO_RAW("\n");
 
     return 0;
