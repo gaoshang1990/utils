@@ -3,6 +3,8 @@
 
 int mlog_test()
 {
+    SLOG_INFO("- mlog test start -\n");
+
     SLOG_INIT(M_TRACE, "./test/log", "mlog.log");
 
     SLOG_ERROR("SLOG ERROR TEST");
@@ -39,6 +41,8 @@ int mlog_test()
     MLOG_INFO_RAW(2, "MLOG INFO RAW TEST 222\n");
     MLOG_DEBUG_RAW(2, "MLOG DEBUG RAW TEST 222\n");
     MLOG_TRACE_RAW(2, "MLOG TRACE RAW TEST 222\n");
+
+    SLOG_INFO("- mlog test done -\n");
 
     return 0;
 }

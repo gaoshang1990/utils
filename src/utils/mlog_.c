@@ -85,11 +85,12 @@ typedef void* MLogMutex_t;
 static const char* _szlevel[] = {"[TRACE]", "[DEBUG]", "[INFO ]", "[WARN ]", "[ERROR]"};
 
 typedef struct _LoggerCfg_ {
-    char         dir[128]; /* file path */
-    char         name[64]; /* file name */
-    FILE*        fp;       /* log file pointer */
-    MLogMutex_t  mtx;      /* mutex for safety */
-    E_MLOG_LEVEL level;    /* output levle control*/
+    int          id;
+    char         dir[128];
+    char         name[64];
+    FILE*        fp;
+    MLogMutex_t  mtx;
+    E_MLOG_LEVEL level;
     int          max_size; /* file max size */
     int          max_num;  /* max rotate file count */
 
@@ -98,7 +99,10 @@ typedef struct _LoggerCfg_ {
 } MLogger_t;
 
 
-static MLogger_t* _loggers[MAX_LOG_NUM] = {NULL};
+static struct {
+    int         num;
+    MLogger_t** loggers;
+} _mlog = {0};
 
 
 static MLogMutex_t _mlog_lock_init(int initialValue)
@@ -261,29 +265,39 @@ static int _mkdir_m_(const char* dir)
 // }
 
 
-static void _mlog_new(int log_no)
+static MLogger_t* _mlog_new(int log_id)
 {
-    if (_loggers[log_no] == NULL) {
-        _loggers[log_no]  = (MLogger_t*)malloc(sizeof(MLogger_t));
-        *_loggers[log_no] = (MLogger_t){{0}, {0}, NULL, NULL, M_TRACE, MLOG_FILE_MAX_SIZE, MLOG_FILE_MAX_ROTATE};
-    }
+    MLogger_t* logger = (MLogger_t*)malloc(sizeof(MLogger_t));
 
-    if (_loggers[log_no]->mtx == NULL)
-        _loggers[log_no]->mtx = _mlog_lock_init(1);
+    *logger     = (MLogger_t){log_id, {0}, {0}, NULL, NULL, M_TRACE, MLOG_FILE_MAX_SIZE, MLOG_FILE_MAX_ROTATE};
+    logger->mtx = _mlog_lock_init(1);
+
+    return logger;
 }
 
 
-static MLogger_t* _get_logger(int log_no)
+static void _mlog_grow(void)
 {
-    if (log_no < 0 || log_no >= MAX_LOG_NUM) {
-        printf("_get_logger: log_no[%d] is invalid\n", log_no);
-        return NULL;
+    MLogger_t** loggers = (MLogger_t**)malloc(sizeof(MLogger_t*) * (_mlog.num + 1));
+
+    memcpy(loggers, _mlog.loggers, sizeof(MLogger_t*) * _mlog.num);
+    free(_mlog.loggers);
+
+    _mlog.loggers = loggers;
+}
+
+
+static MLogger_t* _get_logger(int log_id)
+{
+    for (int i = 0; i < _mlog.num; i++) {
+        if (_mlog.loggers[i]->id == log_id)
+            return _mlog.loggers[i];
     }
 
-    if (_loggers[log_no] == NULL)
-        _mlog_new(log_no);
+    _mlog_grow();
+    _mlog.loggers[_mlog.num] = _mlog_new(log_id);
 
-    return _loggers[log_no];
+    return _mlog.loggers[_mlog.num++];
 }
 
 
