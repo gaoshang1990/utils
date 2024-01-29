@@ -18,6 +18,11 @@ int mlog_test()
     SLOG_DEBUG_RAW("SLOG DEBUG RAW TEST\n");
     SLOG_TRACE_RAW("SLOG TRACE RAW TEST\n");
 
+    SLOG_SET_LEVEL(M_INFO);
+    SLOG_ERROR("SLOG ERROR TEST");
+    SLOG_DEBUG("SLOG DEBUG TEST");
+    SLOG_TRACE("SLOG TRACE TEST");
+
     mlog_init(M_TRACE, 1, "./test/log", "mlog1.log");
     mlog_init(M_TRACE, 2, "./test/log", "mlog2.log");
     MLOG_ERROR(1, "MLOG ERROR TEST 111");

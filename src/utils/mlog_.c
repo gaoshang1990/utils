@@ -90,8 +90,8 @@ typedef struct _LoggerCfg_ {
     int         max_size; /* file max size */
     int         max_num;  /* max rotate file count */
 
-    char line_prefix[LINE_PREFIX_MAX_LEN];  /* prefix of log */
-    char line_content[LINE_PREFIX_MAX_LEN]; /* content of log */
+    char line_prefix[LINE_PREFIX_MAX_LEN];   /* prefix of log */
+    char line_content[LINE_CONTENT_MAX_LEN]; /* content of log */
 } MLogger_t;
 
 
