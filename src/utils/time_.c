@@ -201,8 +201,9 @@ Timer_t timer_new(uint64_t setted_ms)
 {
     Timer_t timer = (Timer_t)malloc(sizeof(struct _Timer_t_));
     if (timer != NULL) {
-        time_t nowSec = time(NULL);
-        LOCAL_TIME(&nowSec, &timer->last_tm);
+        // time_t nowSec = time(NULL);
+        // LOCAL_TIME(&nowSec, &timer->last_tm);
+        memset(&timer->last_tm, 0xff, sizeof(struct tm)); /* 首次所有标识将置1 */
 
         if (setted_ms > 0) {
             timer->setted_ms = setted_ms;
