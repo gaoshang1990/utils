@@ -18,12 +18,16 @@ extern "C" {
 
 int  mlog_init(int level, int log_id, const char* file_dir, const char* file_name);
 int  mlog_set_level(int log_no, int level);
+void mlog_set_print_color(int log_no, bool enable);
+void mlog_set_print_console(int log_no, bool enable);
 void mlog_write(int level, int log_id, bool is_raw, const char* szfunc, int line, const char* fmt, ...);
 int  print_buf(int log_level, uint8_t* buf, uint16_t buf_len);
 int  print_app_info(const char* name, const char* version, const char* date, const char* time);
 
 #define SLOG_INIT(level, dir, file)       mlog_init(level, 0, dir, file)
 #define SLOG_SET_LEVEL(level)             mlog_set_level(level, 0)
+#define SLOG_SET_PRINT_COLOR(enable)      mlog_set_print_color(0, enable)
+#define SLOG_SET_PRINT_CONSOLE(enable)    mlog_set_print_console(0, enable)
 #define PRINT_APP_INFO(name, version)     print_app_info(name, version, __DATE__, __TIME__)
 
 

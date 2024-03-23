@@ -90,6 +90,9 @@ typedef struct _LoggerCfg_ {
     int         max_size; /* file max size */
     int         max_num;  /* max rotate file count */
 
+    bool en_print; /* enable print output to console fd=stdout */
+    bool en_color; /* enalbe print color. support on linux/unix platform */
+
     char line_prefix[LINE_PREFIX_MAX_LEN];   /* prefix of log */
     char line_content[LINE_CONTENT_MAX_LEN]; /* content of log */
 } MLogger_t;
@@ -265,7 +268,8 @@ static MLogger_t* _mlog_new(int log_id)
 {
     MLogger_t* logger = (MLogger_t*)malloc(sizeof(MLogger_t));
 
-    *logger     = (MLogger_t){log_id, {0}, {0}, NULL, NULL, M_TRACE, MLOG_FILE_MAX_SIZE, MLOG_FILE_MAX_ROTATE};
+    *logger = (MLogger_t){
+        log_id, {0}, {0}, NULL, NULL, M_TRACE, MLOG_FILE_MAX_SIZE, MLOG_FILE_MAX_ROTATE, true, true, {0}, {0}};
     logger->mtx = _mlog_lock_init(1);
 
     return logger;
@@ -333,6 +337,20 @@ int mlog_set_level(int level, int log_no)
     logger->level = level;
 
     return 0;
+}
+
+
+void mlog_set_print_console(int log_no, bool enable)
+{
+    MLogger_t* logger = _get_logger(log_no);
+    logger->en_print  = enable;
+}
+
+
+void mlog_set_print_color(int log_no, bool enable)
+{
+    MLogger_t* logger = _get_logger(log_no);
+    logger->en_color  = enable;
 }
 
 
@@ -492,7 +510,7 @@ void mlog_write(int level, int log_id, bool is_raw, const char* func, int line, 
         snprintf(line_content + strlen(line_content), LINE_CONTENT_MAX_LEN - strlen(line_content) - 1, "\n");
     }
 
-    _print_in_console(MLOG_PRINT_ENABLE, MLOG_COLOR_ENABLE, level, line_prefix, line_content);
+    _print_in_console(logger->en_print, logger->en_color, level, line_prefix, line_content);
 
     _mlog_file_rotate(logger);
     _mlog_file_write(logger, line_prefix, line_content);
