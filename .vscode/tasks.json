@@ -13,7 +13,7 @@
                 "../..",
                 "-G",
                 "Visual Studio 16 2019",
-                // "-A Win32",
+                "-A Win32",
                 "-DUSE_ENC=1",
                 // "-DUSE_INI=1",
                 "-DUSE_OSP=1",

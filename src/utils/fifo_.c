@@ -27,6 +27,7 @@ typedef void* FifoMutex;
 
 typedef struct _FifoNode_t_ {
     void* data;
+    bool  auto_free;
 } FifoNode;
 
 
@@ -96,6 +97,18 @@ static void _semaphore_del(FifoMutex self)
 }
 
 
+void fifo_lock(Fifo_t fifo)
+{
+    _semaphore_wait(fifo->lock);
+}
+
+
+void fifo_unlock(Fifo_t fifo)
+{
+    _semaphore_post(fifo->lock);
+}
+
+
 Fifo_t fifo_new(size_t node_size, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool thread_safe)
 {
     Fifo_t fifo = (Fifo_t)calloc(1, sizeof(struct _Fifo_t_));
@@ -119,15 +132,17 @@ Fifo_t fifo_new(size_t node_size, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool
 
 bool fifo_full(Fifo_t fifo)
 {
+    bool ret;
+
     _semaphore_wait(fifo->lock);
+    {
+        if (fifo->head < fifo->tail) {
+            fifo->head += fifo->fifo_size;
+            fifo->tail = fifo->tail % fifo->fifo_size;
+        }
 
-    if (fifo->head < fifo->tail) {
-        fifo->head += fifo->fifo_size;
-        fifo->tail = fifo->tail % fifo->fifo_size;
+        ret = (fifo->fifo_size == fifo->head - fifo->tail); /* if head - tail == size, fifo is full */
     }
-
-    bool ret = (fifo->fifo_size == fifo->head - fifo->tail); /* if head - tail == size, fifo is full */
-
     _semaphore_post(fifo->lock);
 
     return ret;
@@ -137,9 +152,7 @@ bool fifo_full(Fifo_t fifo)
 bool fifo_empty(Fifo_t fifo)
 {
     _semaphore_wait(fifo->lock);
-
     bool ret = (fifo->head == fifo->tail); /* if head == tail, fifo is empty */
-
     _semaphore_post(fifo->lock);
 
     return ret;
@@ -168,24 +181,26 @@ static int _fifo_grow(Fifo_t fifo)
     return FIFO_OK;
 }
 
-
-int fifo_write(Fifo_t fifo, void* src, bool dynamic)
+/**
+ * @brief   写入数据到 fifo
+ * @param   src         源数据指针, 将被直接保存到fifo;
+ *                      若src为静态分配的内存, auto_free应为false,
+ *                      且在该变量的生命周期结束前保证fifo中的数据已被使用完毕
+ * @param   auto_free   是否在fifo_read()中自动释放src
+ * @return  FIFO_OK: 写入成功, 其他失败
+ */
+int fifo_write(Fifo_t fifo, void* src, bool auto_free)
 {
     if (fifo_full(fifo) && _fifo_grow(fifo) < 0)
         return -FIFO_FULL; /* caller decide to free data or head again */
 
     _semaphore_wait(fifo->lock);
+    {
+        int pos = fifo->head++ % fifo->fifo_size;
 
-    int pos = fifo->head++ % fifo->fifo_size;
-
-    if (dynamic) { /* data is malloc by caller */
-        fifo->nodes[pos].data = src;
+        fifo->nodes[pos].data      = src;
+        fifo->nodes[pos].auto_free = auto_free;
     }
-    else {
-        fifo->nodes[pos].data = malloc(fifo->node_size);
-        fifo->copy_cb(fifo->nodes[pos].data, src, fifo->node_size);
-    }
-
     _semaphore_post(fifo->lock);
 
     return FIFO_OK;
@@ -193,39 +208,36 @@ int fifo_write(Fifo_t fifo, void* src, bool dynamic)
 
 
 /**
- * \param   dst if NULL, return data pointer, and caller should free data after use
- *              if not NULL, copy data to dst and free data
+ * @brief   读取数据
+ * @param   dst     将数据拷贝到dst, 根据auto_free标识决定是否释放原数据
+ * @return  FIFO_OK: 读取成功, 其他失败
  */
-void* fifo_read(Fifo_t fifo, void* dst)
+int fifo_read(Fifo_t fifo, void* dst)
 {
     if (fifo_empty(fifo))
-        return NULL;
+        return -FIFO_EMPTY;
 
     _semaphore_wait(fifo->lock);
+    {
+        int       pos  = fifo->tail++ % fifo->fifo_size;
+        FifoNode* node = &fifo->nodes[pos];
 
-    int       pos  = fifo->tail++ % fifo->fifo_size;
-    FifoNode* node = &fifo->nodes[pos];
-
-    if (dst) {
-        fifo->copy_cb(dst, node->data, fifo->node_size);
-        fifo->free_cb(node->data);
+        if (dst) {
+            fifo->copy_cb(dst, node->data, fifo->node_size);
+            if (node->auto_free)
+                fifo->free_cb(node->data);
+        }
     }
-    else {
-        dst = node->data; /* caller should free data after use */
-    }
-
     _semaphore_post(fifo->lock);
 
-    return dst;
+    return FIFO_OK;
 }
 
 
 int fifo_clear(Fifo_t fifo)
 {
-    while (!fifo_empty(fifo)) {
-        void* data = fifo_read(fifo, NULL);
-        fifo->free_cb(data);
-    }
+    while (!fifo_empty(fifo))
+        fifo_read(fifo, NULL);
 
     return FIFO_OK;
 }
