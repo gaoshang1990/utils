@@ -27,9 +27,16 @@ int mem_rev(uint8_t* buf, int len);
 
 void mem_swap(void* a, void* b, int size);
 
-/* mode: 0-little endian, 1-big endian */
+/**
+ * @brief   Convert a series of bytes into an integer
+ * @param   buf:    byte array
+ * @param   offset: offset of the byte array, if offset is NULL, it will be ignored, otherwise it will increase by len
+ * @param   len:    length of the byte array, should <= sizeof(int64_t)
+ * @param   mode:   0-little endian, 1-big endian
+ */
 int64_t byte2int(uint8_t* buf, int* offset, int len, int mode);
-double  byte2fp(uint8_t* buf, int* offset, int len, int mode);
+
+double byte2fp(uint8_t* buf, int* offset, int len, int mode);
 
 /* string to number, strlen should <= 8 */
 int atox_(const char* str, int len);
