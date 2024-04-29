@@ -117,8 +117,8 @@ int check_time(struct tm* pdate)
     int month = pdate->tm_mon + 1;
     int day   = pdate->tm_mday;
 
-    if ((pdate->tm_wday != 0xffff) &&
-        (((pdate->tm_wday > 0) ? (pdate->tm_wday - 1) : 6) != get_weekday(year, month, day)))
+    if ((pdate->tm_wday != 0xffff)
+        && (((pdate->tm_wday > 0) ? (pdate->tm_wday - 1) : 6) != get_weekday(year, month, day)))
     {
         return 0;
     }
@@ -187,26 +187,29 @@ uint64_t cpu_ms(void)
 
 struct _Timer_t_ {
     uint8_t   flag;
-    uint64_t  setted_ms; /* if > 0, TMR_USER_FLAG can be used */
+    uint64_t  user_define; /* if > 0, TMR_USER_FLAG can be used */
     uint64_t  last_ms;
     struct tm last_tm;
     struct tm curr_tm;
 };
 
-
 /**
- * \param   setted_ms: unit: ms, if > 0, TMR_USER_FLAG can be used
+ * @param set_all_flag 初次运行时是否设置所有标识为真
+ * @param user_define  用户自定义的定时器周期, 单位ms
  */
-Timer_t timer_new(uint64_t setted_ms)
+Timer_t timer_new(bool set_all_flag, uint64_t user_define)
 {
     Timer_t timer = (Timer_t)malloc(sizeof(struct _Timer_t_));
     if (timer != NULL) {
-        // time_t nowSec = time(NULL);
-        // LOCAL_TIME(&nowSec, &timer->last_tm);
-        memset(&timer->last_tm, 0xff, sizeof(struct tm)); /* 首次所有标识将置1 */
+        if (set_all_flag)
+            memset(&timer->last_tm, 0xff, sizeof(struct tm)); /* 首次所有标识将置1 */
+        else {
+            time_t now_sec = time(NULL);
+            LOCAL_TIME(&now_sec, &timer->last_tm);
+        }
 
-        if (setted_ms > 0) {
-            timer->setted_ms = setted_ms;
+        if (user_define > 0) {
+            timer->user_define = user_define;
             timer->last_ms   = cpu_ms();
         }
     }
@@ -224,9 +227,9 @@ void timer_del(Timer_t timer)
 }
 
 
-void timer_set_ms(Timer_t timer, uint64_t setted_ms)
+void timer_set_ms(Timer_t timer, uint64_t user_define)
 {
-    timer->setted_ms = setted_ms;
+    timer->user_define = user_define;
     timer->last_ms   = cpu_ms();
 }
 
@@ -241,9 +244,9 @@ int timer_running(Timer_t timer)
     time_t nowSec = time(NULL);
     LOCAL_TIME(&nowSec, &timer->curr_tm);
 
-    if (timer->setted_ms > 0) {
+    if (timer->user_define > 0) {
         uint64_t nowMs = cpu_ms();
-        if (nowMs - timer->last_ms > timer->setted_ms) {
+        if (nowMs - timer->last_ms > timer->user_define) {
             timer->last_ms = nowMs;
             timer->flag |= TMR_USER_FLAG;
         }
@@ -281,7 +284,7 @@ int timer_running(Timer_t timer)
 }
 
 
-bool past_setted_ms(Timer_t timer)
+bool past_user_define(Timer_t timer)
 {
     return timer->flag & TMR_USER_FLAG;
 }

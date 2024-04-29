@@ -47,9 +47,10 @@ uint64_t cpu_ms(void);
  */
 
 /**
- * \param   setted_ms: unit: ms, if > 0, TMR_USER_FLAG can be used
+ * @param set_all_flag 初次运行时是否设置所有标识为真
+ * @param user_define  用户自定义的定时器周期, 单位ms
  */
-Timer_t timer_new(uint64_t setted_ms);
+Timer_t timer_new(bool set_all_flag, uint64_t user_define);
 
 void timer_del(Timer_t timer);
 void timer_set_ms(Timer_t timer, uint64_t settedMs);
@@ -57,7 +58,7 @@ void timer_set_ms(Timer_t timer, uint64_t settedMs);
 /* call this function in the start of loop */
 int timer_running(Timer_t timer);
 
-bool past_setted_ms(Timer_t timer);
+bool past_user_define(Timer_t timer);
 bool past_second(Timer_t timer);
 bool past_minute(Timer_t timer);
 bool past_hour(Timer_t timer);
