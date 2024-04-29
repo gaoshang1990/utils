@@ -1,4 +1,4 @@
-# from folly
+# 来自folly
 
 function(auto_sources RETURN_VALUE PATTERN SOURCE_SUBDIRS)
   if ("${SOURCE_SUBDIRS}" STREQUAL "RECURSE")
@@ -326,6 +326,7 @@ endfunction()
 
 function(find_include_dir RETURN_VALUE H_FILES)
   foreach(H_FILE ${H_FILES})
+    # message(STATUS "H_FILE: ${H_FILE}")
     get_filename_component(H_DIR ${H_FILE} DIRECTORY)
     if (EXISTS "${H_DIR}")
       # message(STATUS "Found include dir ${H_DIR}")

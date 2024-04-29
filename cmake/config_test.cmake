@@ -19,6 +19,11 @@ if (MSVC)
     )
     
     target_link_libraries(${TEST_NAME} 
-        ${LINK_LIB_FILES}
+        ${LIB_FILES}
+    )
+
+    target_include_directories(${TEST_NAME}  PRIVATE
+        ${TEST_INC_DIRS}
+        ${ALL_INC_DIRS}
     )
 endif ()

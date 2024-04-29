@@ -14,10 +14,10 @@
                 "-G",
                 "Visual Studio 16 2019",
                 "-A Win32",
-                "-DUSE_ENC=1",
-                // "-DUSE_INI=1",
-                "-DUSE_OSP=1",
-                "-DUSE_UCL=1"
+                "-DUSE_ENC=ON",
+                // "-DUSE_INI=ON",
+                "-DUSE_OSP=ON",
+                "-DUSE_UTL=ON"
             ],
             "group": "build",
         },
@@ -34,10 +34,11 @@
                 "MinGW Makefiles",
                 "-DCMAKE_TOOLCHAIN_FILE:STRING=CMake/arm-gcc-toolchain.cmake",
                 "-DCMAKE_BUILD_TYPE=Release",
-                "-DUSE_B64=1",
-                // "-DUSE_INI=1",
-                "-DUSE_OSP=1",
-                "-DUSE_UCL=1"
+                "-DBUILD_FOR_HUAWEI_TERMINAL=ON",
+                "-DUSE_ENC=ON",
+                // "-DUSE_INI=ON",
+                "-DUSE_OSP=ON",
+                "-DUSE_UTL=ON"
             ],
             "group": "build",
         },
