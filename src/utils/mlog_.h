@@ -16,19 +16,37 @@ extern "C" {
 #define M_ERROR (4)
 
 
-int  mlog_init(int level, int log_id, const char* file_dir, const char* file_name);
-int  mlog_set_level(int log_no, int level);
-void mlog_set_print_color(int log_no, bool enable);
-void mlog_set_print_console(int log_no, bool enable);
-void mlog_write(int level, int log_id, bool is_raw, const char* szfunc, int line, const char* fmt, ...);
-int  print_buf(int log_level, uint8_t* buf, uint16_t buf_len);
-int  print_app_info(const char* name, const char* version, const char* date, const char* time);
+/**
+ * @brief   日志初始化
+ * @return  0: success, -1: failed
+ * @note    1.本函数非线程安全
+ *          2.可以重复调用来更改日志级别
+ */
+int mlog_init(int log_id, int log_level, const char* file_dir, const char* file_name);
 
-#define SLOG_INIT(level, dir, file)       mlog_init(level, 0, dir, file)
-#define SLOG_SET_LEVEL(level)             mlog_set_level(level, 0)
-#define SLOG_SET_PRINT_COLOR(enable)      mlog_set_print_color(0, enable)
-#define SLOG_SET_PRINT_CONSOLE(enable)    mlog_set_print_console(0, enable)
-#define PRINT_APP_INFO(name, version)     print_app_info(name, version, __DATE__, __TIME__)
+int  mlog_set_level(int log_id, int log_level);
+void mlog_set_print_color(int log_id, bool enable);
+void mlog_set_print_console(int log_id, bool enable);
+
+void mlog_write(int         log_id,
+                int         log_level,
+                bool        is_raw,
+                const char* szfunc,
+                int         line,
+                const char* fmt,
+                ...);
+
+int print_buf(int log_level, uint8_t* buf, uint16_t buf_len);
+int print_app_info(const char* name,
+                   const char* version,
+                   const char* date,
+                   const char* time);
+
+#define SLOG_INIT(level, dir, file)    mlog_init(0, level, dir, file)
+#define SLOG_SET_LEVEL(level)          mlog_set_level(0, level)
+#define SLOG_SET_PRINT_COLOR(enable)   mlog_set_print_color(0, enable)
+#define SLOG_SET_PRINT_CONSOLE(enable) mlog_set_print_console(0, enable)
+#define PRINT_APP_INFO(name, version)  print_app_info(name, version, __DATE__, __TIME__)
 
 
 /*!
@@ -38,38 +56,40 @@ int  print_app_info(const char* name, const char* version, const char* date, con
  * MLOG_ERROR(0, "MLOG ERROR TEST");
  * MLOG_WARN(1, "MLOG WARN TEST");
  */
-#define MLOG(level, log_id, fmt, ...)     mlog_write(level, log_id, 0, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
-#define MLOG_TRACE(log_id, fmt, ...)      MLOG(M_TRACE, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_DEBUG(log_id, fmt, ...)      MLOG(M_DEBUG, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_INFO(log_id, fmt, ...)       MLOG(M_INFO, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_WARN(log_id, fmt, ...)       MLOG(M_WARN, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_ERROR(log_id, fmt, ...)      MLOG(M_ERROR, log_id, fmt, ##__VA_ARGS__)
+#define MLOG(log_id, level, fmt, ...) \
+    mlog_write(log_id, level, 0, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define MLOG_TRACE(log_id, fmt, ...) MLOG(M_TRACE, log_id, fmt, ##__VA_ARGS__)
+#define MLOG_DEBUG(log_id, fmt, ...) MLOG(M_DEBUG, log_id, fmt, ##__VA_ARGS__)
+#define MLOG_INFO(log_id, fmt, ...)  MLOG(M_INFO, log_id, fmt, ##__VA_ARGS__)
+#define MLOG_WARN(log_id, fmt, ...)  MLOG(M_WARN, log_id, fmt, ##__VA_ARGS__)
+#define MLOG_ERROR(log_id, fmt, ...) MLOG(M_ERROR, log_id, fmt, ##__VA_ARGS__)
 
-#define MLOG_RAW(level, log_id, fmt, ...) mlog_write(level, log_id, 1, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
-#define MLOG_TRACE_RAW(log_id, fmt, ...)  MLOG_RAW(M_TRACE, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_DEBUG_RAW(log_id, fmt, ...)  MLOG_RAW(M_DEBUG, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_INFO_RAW(log_id, fmt, ...)   MLOG_RAW(M_INFO, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_WARN_RAW(log_id, fmt, ...)   MLOG_RAW(M_WARN, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_ERROR_RAW(log_id, fmt, ...)  MLOG_RAW(M_ERROR, log_id, fmt, ##__VA_ARGS__)
+#define MLOG_RAW(level, log_id, fmt, ...) \
+    mlog_write(log_id, level, 1, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define MLOG_TRACE_RAW(log_id, fmt, ...) MLOG_RAW(M_TRACE, log_id, fmt, ##__VA_ARGS__)
+#define MLOG_DEBUG_RAW(log_id, fmt, ...) MLOG_RAW(M_DEBUG, log_id, fmt, ##__VA_ARGS__)
+#define MLOG_INFO_RAW(log_id, fmt, ...)  MLOG_RAW(M_INFO, log_id, fmt, ##__VA_ARGS__)
+#define MLOG_WARN_RAW(log_id, fmt, ...)  MLOG_RAW(M_WARN, log_id, fmt, ##__VA_ARGS__)
+#define MLOG_ERROR_RAW(log_id, fmt, ...) MLOG_RAW(M_ERROR, log_id, fmt, ##__VA_ARGS__)
 
 /*!
  * singleton mode:
  * slogInit_("./log", "mlog.log", M_TRACE);
  * SLOG_ERROR("SLOG ERROR TEST");
  */
-#define SLOG(level, fmt, ...)             MLOG(level, 0, fmt, ##__VA_ARGS__)
-#define SLOG_TRACE(fmt, ...)              SLOG(M_TRACE, fmt, ##__VA_ARGS__)
-#define SLOG_DEBUG(fmt, ...)              SLOG(M_DEBUG, fmt, ##__VA_ARGS__)
-#define SLOG_INFO(fmt, ...)               SLOG(M_INFO, fmt, ##__VA_ARGS__)
-#define SLOG_WARN(fmt, ...)               SLOG(M_WARN, fmt, ##__VA_ARGS__)
-#define SLOG_ERROR(fmt, ...)              SLOG(M_ERROR, fmt, ##__VA_ARGS__)
+#define SLOG(level, fmt, ...)            MLOG(0, level, fmt, ##__VA_ARGS__)
+#define SLOG_TRACE(fmt, ...)             SLOG(M_TRACE, fmt, ##__VA_ARGS__)
+#define SLOG_DEBUG(fmt, ...)             SLOG(M_DEBUG, fmt, ##__VA_ARGS__)
+#define SLOG_INFO(fmt, ...)              SLOG(M_INFO, fmt, ##__VA_ARGS__)
+#define SLOG_WARN(fmt, ...)              SLOG(M_WARN, fmt, ##__VA_ARGS__)
+#define SLOG_ERROR(fmt, ...)             SLOG(M_ERROR, fmt, ##__VA_ARGS__)
 
-#define SLOG_RAW(level, fmt, ...)         MLOG_RAW(level, 0, fmt, ##__VA_ARGS__)
-#define SLOG_TRACE_RAW(fmt, ...)          SLOG_RAW(M_TRACE, fmt, ##__VA_ARGS__)
-#define SLOG_DEBUG_RAW(fmt, ...)          SLOG_RAW(M_DEBUG, fmt, ##__VA_ARGS__)
-#define SLOG_INFO_RAW(fmt, ...)           SLOG_RAW(M_INFO, fmt, ##__VA_ARGS__)
-#define SLOG_WARN_RAW(fmt, ...)           SLOG_RAW(M_WARN, fmt, ##__VA_ARGS__)
-#define SLOG_ERROR_RAW(fmt, ...)          SLOG_RAW(M_ERROR, fmt, ##__VA_ARGS__)
+#define SLOG_RAW(level, fmt, ...)        MLOG_RAW(level, 0, fmt, ##__VA_ARGS__)
+#define SLOG_TRACE_RAW(fmt, ...)         SLOG_RAW(M_TRACE, fmt, ##__VA_ARGS__)
+#define SLOG_DEBUG_RAW(fmt, ...)         SLOG_RAW(M_DEBUG, fmt, ##__VA_ARGS__)
+#define SLOG_INFO_RAW(fmt, ...)          SLOG_RAW(M_INFO, fmt, ##__VA_ARGS__)
+#define SLOG_WARN_RAW(fmt, ...)          SLOG_RAW(M_WARN, fmt, ##__VA_ARGS__)
+#define SLOG_ERROR_RAW(fmt, ...)         SLOG_RAW(M_ERROR, fmt, ##__VA_ARGS__)
 
 
 #ifdef __cplusplus
