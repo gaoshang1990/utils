@@ -81,7 +81,7 @@ int Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
 
         timeout.tv_sec  = timeoutMs / 1000;
         timeout.tv_usec = (timeoutMs % 1000) * 1000;
-        result          = select(self->maxHandle + 1, &self->handles, NULL, NULL, &timeout);
+        result = select(self->maxHandle + 1, &self->handles, NULL, NULL, &timeout);
     }
     else {
         result = -1;
@@ -106,9 +106,19 @@ static void _activateKeepAlive(SOCKET s)
     keepalive.keepalivetime     = CONFIG_TCP_KEEPALIVE_IDLE * 1000;
     keepalive.keepaliveinterval = CONFIG_TCP_KEEPALIVE_INTERVAL * 1000;
 
-    if (WSAIoctl(s, SIO_KEEPALIVE_VALS, &keepalive, sizeof(keepalive), NULL, 0, &retVal, NULL, NULL) == SOCKET_ERROR) {
+    if (WSAIoctl(s,
+                 SIO_KEEPALIVE_VALS,
+                 &keepalive,
+                 sizeof(keepalive),
+                 NULL,
+                 0,
+                 &retVal,
+                 NULL,
+                 NULL) == SOCKET_ERROR)
+    {
         if (DEBUG_SOCKET)
-            printf("WIN32_SOCKET: WSAIotcl(SIO_KEEPALIVE_VALS) failed: %d\n", WSAGetLastError());
+            printf("WIN32_SOCKET: WSAIotcl(SIO_KEEPALIVE_VALS) failed: %d\n",
+                   WSAGetLastError());
     }
 }
 
@@ -140,7 +150,7 @@ static void _setUdpSocketNonBlocking(Socket self)
 
 /**
  * xu add 2022-09-01
- * ÉèÖÃcloseºóÁ¢¼´¹Ø±ÕÁ¬½Ó
+ * è®¾ç½®closeåŽç«‹å³å…³é—­è¿žæŽ¥
  */
 int setSocketLinger(Socket self, uint16_t onoff, uint16_t linger)
 {
@@ -152,7 +162,8 @@ int setSocketLinger(Socket self, uint16_t onoff, uint16_t linger)
 }
 
 
-static bool _prepareServerAddress(const char* address, int port, struct sockaddr_in* sockaddr)
+static bool
+_prepareServerAddress(const char* address, int port, struct sockaddr_in* sockaddr)
 {
     memset((char*)sockaddr, 0, sizeof(struct sockaddr_in));
 
@@ -163,7 +174,8 @@ static bool _prepareServerAddress(const char* address, int port, struct sockaddr
         if (server == NULL)
             return false;
 
-        memcpy((char*)&sockaddr->sin_addr.s_addr, (char*)server->h_addr, server->h_length);
+        memcpy(
+            (char*)&sockaddr->sin_addr.s_addr, (char*)server->h_addr, server->h_length);
     }
     else
         sockaddr->sin_addr.s_addr = INADDR_ANY;
@@ -203,7 +215,8 @@ ServerSocket TcpServerSocket_create(const char* address, int port)
     }
 
     int optionReuseAddr = 1;
-    setsockopt(listen_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&optionReuseAddr, sizeof(int));
+    setsockopt(
+        listen_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&optionReuseAddr, sizeof(int));
 
 
     struct sockaddr_in server_addr;
@@ -253,7 +266,9 @@ Socket UdpServerSocket_create(const char* address, int port)
     if (!_prepareServerAddress(address, port, &server_addr))
         return NULL;
 
-    if (bind(listen_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR) {
+    if (bind(listen_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) ==
+        SOCKET_ERROR)
+    {
         if (DEBUG_SOCKET)
             printf("WIN32_SOCKET: bind failed with error: %i\n", WSAGetLastError());
         closesocket(listen_socket);
@@ -277,7 +292,7 @@ void ServerSocket_listen(ServerSocket self)
 }
 
 
-/* xu 2022-09-01 Ôö¼Óacceptº¯ÊýµÄ²ÎÊý */
+/* xu 2022-09-01 å¢žåŠ acceptå‡½æ•°çš„å‚æ•° */
 Socket ServerSocket_accept(ServerSocket self, int* addr)
 {
     int    fd        = -1;
@@ -359,7 +374,9 @@ bool Socket_connect(Socket self, const char* address, int port)
     FD_ZERO(&fdSet);
     FD_SET(self->fd, &fdSet);
 
-    if (connect(self->fd, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
+    if (connect(self->fd, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) ==
+        SOCKET_ERROR)
+    {
         if (WSAGetLastError() != WSAEWOULDBLOCK)
             return false;
     }
@@ -392,16 +409,22 @@ char* Socket_getPeerAddress(Socket self)
         struct sockaddr_in* ipv4Addr = (struct sockaddr_in*)&addr;
         port                         = ntohs(ipv4Addr->sin_port);
         ipv4Addr->sin_port           = 0;
-        WSAAddressToString(
-            (LPSOCKADDR)ipv4Addr, sizeof(struct sockaddr_storage), NULL, (LPSTR)addrString, (LPDWORD)&addrStringLen);
+        WSAAddressToString((LPSOCKADDR)ipv4Addr,
+                           sizeof(struct sockaddr_storage),
+                           NULL,
+                           (LPSTR)addrString,
+                           (LPDWORD)&addrStringLen);
         isIPv6 = false;
     }
     else if (addr.ss_family == AF_INET6) {
         struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*)&addr;
         port                          = ntohs(ipv6Addr->sin6_port);
         ipv6Addr->sin6_port           = 0;
-        WSAAddressToString(
-            (LPSOCKADDR)ipv6Addr, sizeof(struct sockaddr_storage), NULL, (LPSTR)addrString, (LPDWORD)&addrStringLen);
+        WSAAddressToString((LPSOCKADDR)ipv6Addr,
+                           sizeof(struct sockaddr_storage),
+                           NULL,
+                           (LPSTR)addrString,
+                           (LPDWORD)&addrStringLen);
         isIPv6 = true;
     }
     else
@@ -435,16 +458,22 @@ char* Socket_getPeerAddressStatic(Socket self, char* peerAddressString)
         struct sockaddr_in* ipv4Addr = (struct sockaddr_in*)&addr;
         port                         = ntohs(ipv4Addr->sin_port);
         ipv4Addr->sin_port           = 0;
-        WSAAddressToString(
-            (LPSOCKADDR)ipv4Addr, sizeof(struct sockaddr_storage), NULL, (LPSTR)addrString, (LPDWORD)&addrStringLen);
+        WSAAddressToString((LPSOCKADDR)ipv4Addr,
+                           sizeof(struct sockaddr_storage),
+                           NULL,
+                           (LPSTR)addrString,
+                           (LPDWORD)&addrStringLen);
         isIPv6 = false;
     }
     else if (addr.ss_family == AF_INET6) {
         struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*)&addr;
         port                          = ntohs(ipv6Addr->sin6_port);
         ipv6Addr->sin6_port           = 0;
-        WSAAddressToString(
-            (LPSOCKADDR)ipv6Addr, sizeof(struct sockaddr_storage), NULL, (LPSTR)addrString, (LPDWORD)&addrStringLen);
+        WSAAddressToString((LPSOCKADDR)ipv6Addr,
+                           sizeof(struct sockaddr_storage),
+                           NULL,
+                           (LPSTR)addrString,
+                           (LPDWORD)&addrStringLen);
         isIPv6 = true;
     }
     else
@@ -483,7 +512,8 @@ int UdpSocket_read(Socket self, uint8_t* buf, int size, SocketAddr_t* from)
     memset(*from, 0, sizeof(struct sSocketAddr));
     (*from)->len = sizeof((*from)->addr);
 
-    int read_bytes = recvfrom(self->fd, (char*)buf, size, 0, (struct sockaddr*)&(*from)->addr, &(*from)->len);
+    int read_bytes = recvfrom(
+        self->fd, (char*)buf, size, 0, (struct sockaddr*)&(*from)->addr, &(*from)->len);
     if (read_bytes == 0) /* peer has closed socket */
         return -1;
 
@@ -516,7 +546,8 @@ int Socket_write(Socket self, uint8_t* buf, int size)
 
 int UdpSocket_write(Socket self, uint8_t* buf, int size, SocketAddr_t to)
 {
-    int sent_bytes = sendto(self->fd, (char*)buf, size, 0, (struct sockaddr*)&to->addr, to->len);
+    int sent_bytes =
+        sendto(self->fd, (char*)buf, size, 0, (struct sockaddr*)&to->addr, to->len);
 
     if (sent_bytes == SOCKET_ERROR) {
         int errorCode = WSAGetLastError();

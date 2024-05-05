@@ -78,8 +78,8 @@ int delay_ms(int ms)
 
 
 /**
- * \brief   »ùÄ·À­¶ûÉ­¼ÆËãĞÇÆÚ¹«Ê½
- * \retval  0-6£ºĞÇÆÚÈÕ~Áù
+ * \brief   åŸºå§†æ‹‰å°”æ£®è®¡ç®—æ˜ŸæœŸå…¬å¼
+ * \retval  0-6ï¼šæ˜ŸæœŸæ—¥~å…­
  */
 int get_weekday(int year, int month, int day)
 {
@@ -88,13 +88,15 @@ int get_weekday(int year, int month, int day)
         year--;
     }
 
-    return (day + 2 * month + 3 * (month + 1) / 5 + year + year / 4 - year / 100 + year / 400) % 7;
+    return (day + 2 * month + 3 * (month + 1) / 5 + year + year / 4 - year / 100 +
+            year / 400) %
+           7;
 }
 
 
 /**
- * \brief   ÅĞ¶¨Ò»¸öÊ±¼äµÄºÏ·¨ĞÔ£¬×¢Òâ¸Ã¼ì²â°üº¬·Ç·¨ÈÕÆÚ¼ì²â
- * \retval  0-ÕıÈ·£»-1-´íÎó
+ * \brief   åˆ¤å®šä¸€ä¸ªæ—¶é—´çš„åˆæ³•æ€§ï¼Œæ³¨æ„è¯¥æ£€æµ‹åŒ…å«éæ³•æ—¥æœŸæ£€æµ‹
+ * \retval  0-æ­£ç¡®ï¼›-1-é”™è¯¯
  */
 int check_time(struct tm* pdate)
 {
@@ -117,8 +119,9 @@ int check_time(struct tm* pdate)
     int month = pdate->tm_mon + 1;
     int day   = pdate->tm_mday;
 
-    if ((pdate->tm_wday != 0xffff)
-        && (((pdate->tm_wday > 0) ? (pdate->tm_wday - 1) : 6) != get_weekday(year, month, day)))
+    if ((pdate->tm_wday != 0xffff) &&
+        (((pdate->tm_wday > 0) ? (pdate->tm_wday - 1) : 6) !=
+         get_weekday(year, month, day)))
     {
         return 0;
     }
@@ -194,15 +197,15 @@ struct _Timer_t_ {
 };
 
 /**
- * @param set_all_flag ³õ´ÎÔËĞĞÊ±ÊÇ·ñÉèÖÃËùÓĞ±êÊ¶ÎªÕæ
- * @param user_define  ÓÃ»§×Ô¶¨ÒåµÄ¶¨Ê±Æ÷ÖÜÆÚ, µ¥Î»ms
+ * @param set_all_flag åˆæ¬¡è¿è¡Œæ—¶æ˜¯å¦è®¾ç½®æ‰€æœ‰æ ‡è¯†ä¸ºçœŸ
+ * @param user_define  ç”¨æˆ·è‡ªå®šä¹‰çš„å®šæ—¶å™¨å‘¨æœŸ, å•ä½ms
  */
 Timer_t timer_new(bool set_all_flag, uint64_t user_define)
 {
     Timer_t timer = (Timer_t)malloc(sizeof(struct _Timer_t_));
     if (timer != NULL) {
         if (set_all_flag)
-            memset(&timer->last_tm, 0xff, sizeof(struct tm)); /* Ê×´ÎËùÓĞ±êÊ¶½«ÖÃ1 */
+            memset(&timer->last_tm, 0xff, sizeof(struct tm)); /* é¦–æ¬¡æ‰€æœ‰æ ‡è¯†å°†ç½®1 */
         else {
             time_t now_sec = time(NULL);
             LOCAL_TIME(&now_sec, &timer->last_tm);
@@ -210,7 +213,7 @@ Timer_t timer_new(bool set_all_flag, uint64_t user_define)
 
         if (user_define > 0) {
             timer->user_define = user_define;
-            timer->last_ms   = cpu_ms();
+            timer->last_ms     = cpu_ms();
         }
     }
 
@@ -230,7 +233,7 @@ void timer_del(Timer_t timer)
 void timer_set_ms(Timer_t timer, uint64_t user_define)
 {
     timer->user_define = user_define;
-    timer->last_ms   = cpu_ms();
+    timer->last_ms     = cpu_ms();
 }
 
 

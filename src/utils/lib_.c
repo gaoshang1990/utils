@@ -58,7 +58,7 @@ void memcpy_r(uint8_t* dst, uint8_t* src, int len)
     for (int i = 0; i < len; i++)
         dst[i] = src[len - i - 1];
     // int i;
-    // LOOP_UNROLLING(i, len, dst[i] = src[len - i - 1]); /* FIXME: 结果不对 */
+    // LOOP_UNROLLING(i, len, dst[i] = src[len - i - 1]); /* FIXME: 缁撴灉涓嶅 */
 }
 
 
@@ -90,7 +90,8 @@ int mem_rev(uint8_t* buf, int len)
 /**
  * @brief   Convert a series of bytes into an integer
  * @param   buf:    byte array
- * @param   offset: offset of the byte array, if offset is NULL, it will be ignored, otherwise it will increase by len
+ * @param   offset: offset of the byte array, if offset is NULL, it will be ignored,
+ * otherwise it will increase by len
  * @param   len:    length of the byte array, should <= sizeof(int64_t)
  * @param   mode:   0-little endian, 1-big endian
  */
@@ -163,7 +164,9 @@ int str2byte(uint8_t* buf, int bufSize, const char* str)
     char     tmp[2] = {0};
 
     for (uint16_t i = 0; i < strlen(str); i++) {
-        if ((str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'f') || (str[i] >= 'A' && str[i] <= 'F')) {
+        if ((str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'f') ||
+            (str[i] >= 'A' && str[i] <= 'F'))
+        {
             tmp[j++] = str[i];
             if (j >= 2) {
                 buf[bufLen++] = atox_(tmp, 2);

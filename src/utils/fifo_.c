@@ -109,7 +109,8 @@ void fifo_unlock(Fifo_t fifo)
 }
 
 
-Fifo_t fifo_new(size_t node_size, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool thread_safe)
+Fifo_t
+fifo_new(size_t node_size, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool thread_safe)
 {
     Fifo_t fifo = (Fifo_t)calloc(1, sizeof(struct _Fifo_t_));
     if (fifo == NULL)
@@ -141,7 +142,8 @@ bool fifo_full(Fifo_t fifo)
             fifo->tail = fifo->tail % fifo->fifo_size;
         }
 
-        ret = (fifo->fifo_size == fifo->head - fifo->tail); /* if head - tail == size, fifo is full */
+        ret = (fifo->fifo_size ==
+               fifo->head - fifo->tail); /* if head - tail == size, fifo is full */
     }
     _semaphore_post(fifo->lock);
 
@@ -182,12 +184,12 @@ static int _fifo_grow(Fifo_t fifo)
 }
 
 /**
- * @brief   Ğ´ÈëÊı¾İµ½ fifo
- * @param   src         Ô´Êı¾İÖ¸Õë, ½«±»Ö±½Ó±£´æµ½fifo;
- *                      ÈôsrcÎª¾²Ì¬·ÖÅäµÄÄÚ´æ, auto_freeÓ¦Îªfalse,
- *                      ÇÒÔÚ¸Ã±äÁ¿µÄÉúÃüÖÜÆÚ½áÊøÇ°±£Ö¤fifoÖĞµÄÊı¾İÒÑ±»Ê¹ÓÃÍê±Ï
- * @param   auto_free   ÊÇ·ñÔÚfifo_read()ÖĞ×Ô¶¯ÊÍ·Åsrc
- * @return  FIFO_OK: Ğ´Èë³É¹¦, ÆäËûÊ§°Ü
+ * @brief   å†™å…¥æ•°æ®åˆ° fifo
+ * @param   src         æºæ•°æ®æŒ‡é’ˆ, å°†è¢«ç›´æ¥ä¿å­˜åˆ°fifo;
+ *                      è‹¥srcä¸ºé™æ€åˆ†é…çš„å†…å­˜, auto_freeåº”ä¸ºfalse,
+ *                      ä¸”åœ¨è¯¥å˜é‡çš„ç”Ÿå‘½å‘¨æœŸç»“æŸå‰ä¿è¯fifoä¸­çš„æ•°æ®å·²è¢«ä½¿ç”¨å®Œæ¯•
+ * @param   auto_free   æ˜¯å¦åœ¨fifo_read()ä¸­è‡ªåŠ¨é‡Šæ”¾src
+ * @return  FIFO_OK: å†™å…¥æˆåŠŸ, å…¶ä»–å¤±è´¥
  */
 int fifo_write(Fifo_t fifo, void* src, bool auto_free)
 {
@@ -208,9 +210,9 @@ int fifo_write(Fifo_t fifo, void* src, bool auto_free)
 
 
 /**
- * @brief   ¶ÁÈ¡Êı¾İ
- * @param   dst     ½«Êı¾İ¿½±´µ½dst, ¸ù¾İauto_free±êÊ¶¾ö¶¨ÊÇ·ñÊÍ·ÅÔ­Êı¾İ
- * @return  FIFO_OK: ¶ÁÈ¡³É¹¦, ÆäËûÊ§°Ü
+ * @brief   è¯»å–æ•°æ®
+ * @param   dst     å°†æ•°æ®æ‹·è´åˆ°dst, æ ¹æ®auto_freeæ ‡è¯†å†³å®šæ˜¯å¦é‡Šæ”¾åŸæ•°æ®
+ * @return  FIFO_OK: è¯»å–æˆåŠŸ, å…¶ä»–å¤±è´¥
  */
 int fifo_read(Fifo_t fifo, void* dst)
 {

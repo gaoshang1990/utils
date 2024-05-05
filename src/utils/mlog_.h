@@ -17,10 +17,10 @@ extern "C" {
 
 
 /**
- * @brief   ÈÕÖ¾³õÊ¼»¯
+ * @brief   æ—¥å¿—åˆå§‹åŒ–
  * @return  0: success, -1: failed
- * @note    1.±¾º¯Êı·ÇÏß³Ì°²È«
- *          2.¿ÉÒÔÖØ¸´µ÷ÓÃÀ´¸ü¸ÄÈÕÖ¾¼¶±ğ
+ * @note    1.æœ¬å‡½æ•°éçº¿ç¨‹å®‰å…¨
+ *          2.å¯ä»¥é‡å¤è°ƒç”¨æ¥æ›´æ”¹æ—¥å¿—çº§åˆ«
  */
 int mlog_init(int log_id, int log_level, const char* file_dir, const char* file_name);
 

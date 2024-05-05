@@ -43,12 +43,12 @@ extern "C" {
 #endif
 
 
-#define ffree_(p)                                                                                                      \
-    do {                                                                                                               \
-        if (p) {                                                                                                       \
-            free((void*)p);                                                                                            \
-            p = NULL;                                                                                                  \
-        }                                                                                                              \
+#define ffree_(p)           \
+    do {                    \
+        if (p) {            \
+            free((void*)p); \
+            p = NULL;       \
+        }                   \
     } while (0)
 
 

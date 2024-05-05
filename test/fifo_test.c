@@ -15,7 +15,7 @@ int fifo_simple_test()
     Fifo_t fifo = fifo_new(sizeof(buf), NULL, NULL, false);
     ASSERT_(fifo, "fifo_new failed");
 
-    // Ğ´¶ÓÁĞ1: ¾²Ì¬·ÖÅä
+    // å†™é˜Ÿåˆ—1: é™æ€åˆ†é…
     for (int i = 0; i < 26; i++) {
         buf[0] = 'a' + i;
         fifo_write(fifo, buf, false);
@@ -27,7 +27,7 @@ int fifo_simple_test()
         ASSERT_(buf[0] == 'a' + i, "buf[0] = %c", buf[0]);
     }
 
-    // Ğ´¶ÓÁĞ2: ¶¯Ì¬·ÖÅä
+    // å†™é˜Ÿåˆ—2: åŠ¨æ€åˆ†é…
     for (int i = 0; i < 26; i++) {
         char* test = (char*)malloc(sizeof(buf));
         memset(test, 0, sizeof(buf));
@@ -39,7 +39,7 @@ int fifo_simple_test()
         char* test = (char*)fifo_read(fifo, NULL);
         SLOG_DEBUG("test = %s", test);
         ASSERT_(test[0] == 'A' + i, "test[0] = %c", test[0]);
-        free(test); // µ÷ÓÃÕß´«ÈëNULL, fifoÖ±½Ó·µ»ØÖ¸Õë£¬µ÷ÓÃÕßĞèÒªÊÍ·Åtest
+        free(test); // è°ƒç”¨è€…ä¼ å…¥NULL, fifoç›´æ¥è¿”å›æŒ‡é’ˆï¼Œè°ƒç”¨è€…éœ€è¦é‡Šæ”¾test
     }
 
     fifo_del(fifo);
@@ -81,7 +81,7 @@ void* FifoTest_copy(void* dst, const void* src, size_t len)
 }
 
 
-/* ¸´ÔÓ½Úµã²âÊÔ, Èç½Úµãº¬ÓĞ¶¯Ì¬·ÖÅäÄÚÈİµÈ */
+/* å¤æ‚èŠ‚ç‚¹æµ‹è¯•, å¦‚èŠ‚ç‚¹å«æœ‰åŠ¨æ€åˆ†é…å†…å®¹ç­‰ */
 int fifo_complex_test()
 {
     SLOG_INFO("-- fifo complex test start --\n");
@@ -92,7 +92,7 @@ int fifo_complex_test()
                            false);
     ASSERT_(fifo, "fifo_new failed");
 
-    /* Ğ´¶ÓÁĞ1 */
+    /* å†™é˜Ÿåˆ—1 */
     FifoTest test1;
     test1.len = 2;
     test1.str = (char*)malloc(sizeof(char) * test1.len);
@@ -108,10 +108,10 @@ int fifo_complex_test()
         fifo_read(fifo, &test2);
         SLOG_DEBUG("test2 = %s", test2.str);
         ASSERT_(test2.str[0] == 'a' + i, "test2.str[0] = %c", test2.str[0]);
-        free(test2.str); // µ÷ÓÃÕß´«Èë±äÁ¿test2, fifoÉî¿½±´ºó£¬µ÷ÓÃÕßĞèÒªÊÍ·Åarr
+        free(test2.str); // è°ƒç”¨è€…ä¼ å…¥å˜é‡test2, fifoæ·±æ‹·è´åï¼Œè°ƒç”¨è€…éœ€è¦é‡Šæ”¾arr
     }
 
-    /* Ğ´¶ÓÁĞ2 */
+    /* å†™é˜Ÿåˆ—2 */
     for (int i = 0; i < 26; i++) {
         FifoTest* test2 = (FifoTest*)malloc(sizeof(FifoTest));
         test2->len      = 2;
@@ -125,7 +125,7 @@ int fifo_complex_test()
         FifoTest* test3 = (FifoTest*)fifo_read(fifo, NULL);
         SLOG_DEBUG("test3 = %s", test3->str);
         ASSERT_(test3->str[0] == 'A' + i, "test3.str[0] = %c", test3->str[0]);
-        FifoTest_free(test3); // µ÷ÓÃÕß´«ÈëNULL, fifoÖ±½Ó·µ»ØÖ¸Õë£¬µ÷ÓÃÕßĞèÒªÊÍ·Åtest3
+        FifoTest_free(test3); // è°ƒç”¨è€…ä¼ å…¥NULL, fifoç›´æ¥è¿”å›æŒ‡é’ˆï¼Œè°ƒç”¨è€…éœ€è¦é‡Šæ”¾test3
     }
 
     fifo_del(fifo);

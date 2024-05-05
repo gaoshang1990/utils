@@ -16,30 +16,30 @@ extern "C" {
 
 
 /**
- * @brief   ÅĞ¶ÏÊÇ·ñÊÇUTF-8
+ * @brief   åˆ¤æ–­æ˜¯å¦æ˜¯UTF-8
  */
 bool is_utf8(const char* str);
 
 /**
- * @brief   ÅĞ¶ÏÊÇ·ñÊÇGBK
+ * @brief   åˆ¤æ–­æ˜¯å¦æ˜¯GBK
  */
 bool is_gbk(const char* str);
 
 /**
  * @brief       gbk to utf8
- * @param[in]   pin_buf ÊäÈë»º³åÇø
- * @param[in]   in_len  ÊäÈë³¤¶È
- * @param[out]  ptr     Êä³ö»º³åÇø
- * @return      ×ª»»ºóµÄ³¤¶È, < 0 Ê§°Ü, ÆäËü³É¹¦
+ * @param[in]   pin_buf è¾“å…¥ç¼“å†²åŒº
+ * @param[in]   in_len  è¾“å…¥é•¿åº¦
+ * @param[out]  ptr     è¾“å‡ºç¼“å†²åŒº
+ * @return      è½¬æ¢åçš„é•¿åº¦, < 0 å¤±è´¥, å…¶å®ƒæˆåŠŸ
  */
 int gbk2utf8(char** ptr, const char* pin_buf, int in_len);
 
 /**
  * @brief       utf8 to gbk
- * @param[in]   pin_buf ÊäÈë»º³åÇø
- * @param[in]   in_len  ÊäÈë³¤¶È
- * @param[out]  ptr     Êä³ö»º³åÇø
- * @return      ×ª»»ºóµÄ³¤¶È, < 0 Ê§°Ü, ÆäËü³É¹¦
+ * @param[in]   pin_buf è¾“å…¥ç¼“å†²åŒº
+ * @param[in]   in_len  è¾“å…¥é•¿åº¦
+ * @param[out]  ptr     è¾“å‡ºç¼“å†²åŒº
+ * @return      è½¬æ¢åçš„é•¿åº¦, < 0 å¤±è´¥, å…¶å®ƒæˆåŠŸ
  */
 int utf82gbk(char** ptr, const char* pin_buf, int in_len);
 

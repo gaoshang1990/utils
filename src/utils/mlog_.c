@@ -285,7 +285,7 @@ static MLogger_t* _mlog_new(int log_id)
 }
 
 /**
- * @brief   ×Ô¶¯À©³äloggerÊµÀı, ¿¼ÂÇµ½ÈÕÖ¾ÊµÀıÊıÁ¿²»»áÌ«¶à, Ã¿´ÎÖ»Ôö¼ÓÒ»¸ö
+ * @brief   è‡ªåŠ¨æ‰©å……loggerå®ä¾‹, è€ƒè™‘åˆ°æ—¥å¿—å®ä¾‹æ•°é‡ä¸ä¼šå¤ªå¤š, æ¯æ¬¡åªå¢åŠ ä¸€ä¸ª
  */
 static void _mlog_grow(void)
 {
@@ -298,7 +298,7 @@ static void _mlog_grow(void)
 }
 
 /**
- * @brief   ¸ù¾İlog_id»ñÈ¡logger, Èç¹û²»´æÔÚÔò´´½¨Ò»¸öĞÂµÄ
+ * @brief   æ ¹æ®log_idè·å–logger, å¦‚æœä¸å­˜åœ¨åˆ™åˆ›å»ºä¸€ä¸ªæ–°çš„
  */
 static MLogger_t* _get_logger(int log_id)
 {
@@ -331,9 +331,9 @@ static MLogger_t* _get_logger(int log_id)
 
 
 /**
- * @brief   ÈÕÖ¾³õÊ¼»¯
+ * @brief   æ—¥å¿—åˆå§‹åŒ–
  * @return  0: success, -1: failed
- * @note    ¿ÉÒÔÖØ¸´µ÷ÓÃÀ´¸ü¸ÄÈÕÖ¾¼¶±ğ
+ * @note    å¯ä»¥é‡å¤è°ƒç”¨æ¥æ›´æ”¹æ—¥å¿—çº§åˆ«
  */
 int mlog_init(int log_id, int log_level, const char* file_dir, const char* file_name)
 {

@@ -76,7 +76,7 @@ int Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
 
         timeout.tv_sec  = timeoutMs / 1000;
         timeout.tv_usec = (timeoutMs % 1000) * 1000;
-        result          = select(self->maxHandle + 1, &self->handles, NULL, NULL, &timeout);
+        result = select(self->maxHandle + 1, &self->handles, NULL, NULL, &timeout);
     }
     else {
         result = -1;
@@ -90,7 +90,8 @@ void Handleset_destroy(HandleSet self)
     free(self);
 }
 
-static bool _prepareServerAddress(const char* address, int port, struct sockaddr_in* sockaddr)
+static bool
+_prepareServerAddress(const char* address, int port, struct sockaddr_in* sockaddr)
 {
     bool retVal = true;
 
@@ -131,7 +132,7 @@ static void _setSocketNonBlocking(Socket self)
 
 /**
  * xu add 2022-09-01
- * ÉèÖÃcloseºóÁ¢¼´¹Ø±ÕÁ¬½Ó
+ * è®¾ç½®closeåŽç«‹å³å…³é—­è¿žæŽ¥
  */
 int setSocketLinger(Socket self, uint16_t onoff, uint16_t linger)
 {
@@ -222,7 +223,7 @@ void ServerSocket_listen(ServerSocket self)
 
 
 /* CHANGED TO MAKE NON-BLOCKING --> RETURNS NULL IF NO CONNECTION IS PENDING */
-/* xu 2022-09-01 Ôö¼Óacceptº¯ÊýµÄ²ÎÊý */
+/* xu 2022-09-01 å¢žåŠ acceptå‡½æ•°çš„å‚æ•° */
 Socket ServerSocket_accept(ServerSocket self, int* addr)
 {
     int    fd        = -1;
@@ -452,7 +453,8 @@ int UdpSocket_read(Socket self, uint8_t* buf, int size, SocketAddr_t* from)
     memset((*from), 0, sizeof(struct sSocketAddr));
     (*from)->len = sizeof((*from)->addr);
 
-    int read_bytes = recvfrom(self->fd, (char*)buf, size, 0, (struct sockaddr*)&(*from)->addr, &(*from)->len);
+    int read_bytes = recvfrom(
+        self->fd, (char*)buf, size, 0, (struct sockaddr*)&(*from)->addr, &(*from)->len);
 
     if (read_bytes == 0)
         return -1;
@@ -480,7 +482,8 @@ int Socket_write(Socket self, uint8_t* buf, int size)
     if (self->fd == -1)
         return -1;
 
-    // MSG_NOSIGNAL - prevent send to signal SIGPIPE when peer unexpectedly closed the socket
+    // MSG_NOSIGNAL - prevent send to signal SIGPIPE when peer unexpectedly closed the
+    // socket
     return send(self->fd, buf, size, MSG_NOSIGNAL);
 }
 

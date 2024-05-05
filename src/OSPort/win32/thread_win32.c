@@ -44,9 +44,11 @@ Thread Thread_create_(ThreadExecutionFunction function, void* parameter, bool au
     thread->autodestroy = autodestroy;
 
     if (autodestroy == true)
-        thread->handle = CreateThread(0, 0, destroyAutomaticThreadRunner, thread, CREATE_SUSPENDED, &threadId);
+        thread->handle = CreateThread(
+            0, 0, destroyAutomaticThreadRunner, thread, CREATE_SUSPENDED, &threadId);
     else
-        thread->handle = CreateThread(0, 0, threadRunner, thread, CREATE_SUSPENDED, &threadId);
+        thread->handle =
+            CreateThread(0, 0, threadRunner, thread, CREATE_SUSPENDED, &threadId);
 
     return thread;
 }
@@ -87,8 +89,7 @@ void Semaphore_wait(Semaphore self)
 int Semaphore_wait_timeout(Semaphore self, int ms)
 {
     DWORD dw = WaitForSingleObject((HANDLE)self, ms);
-    switch (dw)
-    {
+    switch (dw) {
     case WAIT_OBJECT_0:
         return 0;
     case WAIT_TIMEOUT:
@@ -110,10 +111,10 @@ void Semaphore_destroy(Semaphore self)
 
 uint32_t Thread_getTID(void)
 {
-	return (uint32_t)GetCurrentThreadId();
+    return (uint32_t)GetCurrentThreadId();
 }
 
 uint32_t Thread_getPID(void)
 {
-	return (uint32_t)GetCurrentProcessId();
+    return (uint32_t)GetCurrentProcessId();
 }
