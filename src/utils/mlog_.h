@@ -42,11 +42,11 @@ int print_app_info(const char* name,
                    const char* date,
                    const char* time);
 
-#define SLOG_INIT(level, dir, file)    mlog_init(0, level, dir, file)
-#define SLOG_SET_LEVEL(level)          mlog_set_level(0, level)
-#define SLOG_SET_PRINT_COLOR(enable)   mlog_set_print_color(0, enable)
-#define SLOG_SET_PRINT_CONSOLE(enable) mlog_set_print_console(0, enable)
-#define PRINT_APP_INFO(name, version)  print_app_info(name, version, __DATE__, __TIME__)
+#define SLOG_INIT(log_level, dir, file) mlog_init(0, log_level, dir, file)
+#define SLOG_SET_LEVEL(log_level)       mlog_set_level(0, log_level)
+#define SLOG_SET_PRINT_COLOR(enable)    mlog_set_print_color(0, enable)
+#define SLOG_SET_PRINT_CONSOLE(enable)  mlog_set_print_console(0, enable)
+#define PRINT_APP_INFO(name, version)   print_app_info(name, version, __DATE__, __TIME__)
 
 
 /*!
@@ -56,16 +56,16 @@ int print_app_info(const char* name,
  * MLOG_ERROR(0, "MLOG ERROR TEST");
  * MLOG_WARN(1, "MLOG WARN TEST");
  */
-#define MLOG(log_id, level, fmt, ...) \
-    mlog_write(log_id, level, 0, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define MLOG(log_id, log_level, fmt, ...) \
+    mlog_write(log_id, log_level, 0, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 #define MLOG_TRACE(log_id, fmt, ...) MLOG(M_TRACE, log_id, fmt, ##__VA_ARGS__)
 #define MLOG_DEBUG(log_id, fmt, ...) MLOG(M_DEBUG, log_id, fmt, ##__VA_ARGS__)
 #define MLOG_INFO(log_id, fmt, ...)  MLOG(M_INFO, log_id, fmt, ##__VA_ARGS__)
 #define MLOG_WARN(log_id, fmt, ...)  MLOG(M_WARN, log_id, fmt, ##__VA_ARGS__)
 #define MLOG_ERROR(log_id, fmt, ...) MLOG(M_ERROR, log_id, fmt, ##__VA_ARGS__)
 
-#define MLOG_RAW(level, log_id, fmt, ...) \
-    mlog_write(log_id, level, 1, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define MLOG_RAW(log_level, log_id, fmt, ...) \
+    mlog_write(log_id, log_level, 1, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 #define MLOG_TRACE_RAW(log_id, fmt, ...) MLOG_RAW(M_TRACE, log_id, fmt, ##__VA_ARGS__)
 #define MLOG_DEBUG_RAW(log_id, fmt, ...) MLOG_RAW(M_DEBUG, log_id, fmt, ##__VA_ARGS__)
 #define MLOG_INFO_RAW(log_id, fmt, ...)  MLOG_RAW(M_INFO, log_id, fmt, ##__VA_ARGS__)
@@ -77,14 +77,14 @@ int print_app_info(const char* name,
  * slogInit_("./log", "mlog.log", M_TRACE);
  * SLOG_ERROR("SLOG ERROR TEST");
  */
-#define SLOG(level, fmt, ...)            MLOG(0, level, fmt, ##__VA_ARGS__)
+#define SLOG(log_level, fmt, ...)        MLOG(0, log_level, fmt, ##__VA_ARGS__)
 #define SLOG_TRACE(fmt, ...)             SLOG(M_TRACE, fmt, ##__VA_ARGS__)
 #define SLOG_DEBUG(fmt, ...)             SLOG(M_DEBUG, fmt, ##__VA_ARGS__)
 #define SLOG_INFO(fmt, ...)              SLOG(M_INFO, fmt, ##__VA_ARGS__)
 #define SLOG_WARN(fmt, ...)              SLOG(M_WARN, fmt, ##__VA_ARGS__)
 #define SLOG_ERROR(fmt, ...)             SLOG(M_ERROR, fmt, ##__VA_ARGS__)
 
-#define SLOG_RAW(level, fmt, ...)        MLOG_RAW(level, 0, fmt, ##__VA_ARGS__)
+#define SLOG_RAW(log_level, fmt, ...)    MLOG_RAW(log_level, 0, fmt, ##__VA_ARGS__)
 #define SLOG_TRACE_RAW(fmt, ...)         SLOG_RAW(M_TRACE, fmt, ##__VA_ARGS__)
 #define SLOG_DEBUG_RAW(fmt, ...)         SLOG_RAW(M_DEBUG, fmt, ##__VA_ARGS__)
 #define SLOG_INFO_RAW(fmt, ...)          SLOG_RAW(M_INFO, fmt, ##__VA_ARGS__)

@@ -22,10 +22,8 @@
 #  define access                _access
 #  define snprintf              _snprintf
 #  define LOCAL_TIME(pSec, pTm) localtime_s(pTm, pSec)
-#  define MLOG_COLOR_ENABLE     (1)
 #else
 #  define LOCAL_TIME(pSec, pTm) localtime_r(pSec, pTm)
-#  define MLOG_COLOR_ENABLE     (1) /* enalbe print color. support on linux/unix platform */
 #endif
 
 #define MLOG_FILE_MAX_SIZE   (5 * 1024 * 1024) /* max size of logfile */
@@ -36,46 +34,53 @@
 #define LINE_PREFIX_MAX_LEN  (256)
 
 
-#if MLOG_COLOR_ENABLE
 /**
  * CSI(Control Sequence Introducer/Initiator) sign
  * more information on https://en.wikipedia.org/wiki/ANSI_escape_code
  */
-#  define CSI_START "\033["
-#  define CSI_END   "\033[0m"
+#define CSI_START            "\033["
+#define CSI_END              "\033[0m"
 /* output log front color */
-#  define F_BLACK   "30;"
-#  define F_RED     "31;"
-#  define F_GREEN   "32;"
-#  define F_YELLOW  "33;"
-#  define F_BLUE    "34;"
-#  define F_MAGENTA "35;"
-#  define F_CYAN    "36;"
-#  define F_WHITE   "37;"
+#define F_BLACK              "30;"
+#define F_RED                "31;"
+#define F_GREEN              "32;"
+#define F_YELLOW             "33;"
+#define F_BLUE               "34;"
+#define F_MAGENTA            "35;"
+#define F_CYAN               "36;"
+#define F_WHITE              "37;"
 /* output log background color */
-#  define B_NULL
-#  define B_BLACK          "40;"
-#  define B_RED            "41;"
-#  define B_GREEN          "42;"
-#  define B_YELLOW         "43;"
-#  define B_BLUE           "44;"
-#  define B_MAGENTA        "45;"
-#  define B_CYAN           "46;"
-#  define B_WHITE          "47;"
+#define B_NULL
+#define B_BLACK          "40;"
+#define B_RED            "41;"
+#define B_GREEN          "42;"
+#define B_YELLOW         "43;"
+#define B_BLUE           "44;"
+#define B_MAGENTA        "45;"
+#define B_CYAN           "46;"
+#define B_WHITE          "47;"
 /* output log fonts style */
-#  define STYLE_BOLD       "1m"
-#  define STYLE_UNDERLINE  "4m"
-#  define STYLE_BLINK      "5m"
-#  define STYLE_NORMAL     "22m"
+#define STYLE_BOLD       "1m"
+#define STYLE_UNDERLINE  "4m"
+#define STYLE_BLINK      "5m"
+#define STYLE_NORMAL     "22m"
 
 /* change the some level logs to not default color if you want */
-#  define MLOG_COLOR_ERROR F_RED B_NULL STYLE_NORMAL
-#  define MLOG_COLOR_WARN  F_YELLOW B_NULL STYLE_NORMAL
-#  define MLOG_COLOR_INFO  F_CYAN B_NULL STYLE_NORMAL
-#  define MLOG_COLOR_DEBUG F_GREEN B_NULL STYLE_NORMAL
-#  define MLOG_COLOR_TRACE F_BLUE B_NULL STYLE_NORMAL
+#define MLOG_COLOR_ERROR F_RED B_NULL STYLE_NORMAL
+#define MLOG_COLOR_WARN  F_YELLOW B_NULL STYLE_NORMAL
+#define MLOG_COLOR_INFO  F_CYAN B_NULL STYLE_NORMAL
+#define MLOG_COLOR_DEBUG F_GREEN B_NULL STYLE_NORMAL
+#define MLOG_COLOR_TRACE F_BLUE B_NULL STYLE_NORMAL
 
-#endif /* MLOG_COLOR_ENABLE */
+
+#define VSNSPRINTF_WRAPPER(buf, buf_size, fmt)  \
+    do {                                        \
+        va_list args___;                        \
+        va_start(args___, fmt);                 \
+        vsnprintf(buf, buf_size, fmt, args___); \
+        va_end(args___);                        \
+    } while (0)
+
 
 typedef void* MLogMutex_t;
 
@@ -379,9 +384,9 @@ void mlog_set_print_color(int log_id, bool enable)
 }
 
 
-static const char* _level_str(int level)
+static const char* _level_str(int log_level)
 {
-    switch (level) {
+    switch (log_level) {
     default:
     case M_TRACE:
         return "[TRACE]";
@@ -397,15 +402,15 @@ static const char* _level_str(int level)
 }
 
 
-static int _make_line_prefix(char* prefix, int level, const char* func, int line)
+static int _make_line_prefix(char* prefix, int log_level, const char* func, int line)
 {
     char timestr[MAX_TIME_STR] = {0};
     _make_curr_timestr(timestr, sizeof(timestr)); /* time */
 
-    const char* szlevel = _level_str(level);
+    const char* szlevel = _level_str(log_level);
 
     /* log format for different level please modify below */
-    switch (level) {
+    switch (log_level) {
     case M_WARN:
     case M_ERROR:
         snprintf(prefix,
@@ -438,38 +443,46 @@ static int _make_line_prefix(char* prefix, int level, const char* func, int line
 }
 
 
-static void _print_in_console(bool        en_print,
-                              bool        en_color,
-                              int         level,
-                              const char* prefix,
-                              const char* content)
+static void _print_in_console(MLogger_t* logger)
 {
-    if (!en_print)
+    if (logger->en_print == false)
         return;
 
-    if (en_color) {
-        switch (level) {
+    if (logger->en_color) {
+        switch (logger->level) {
         default:
         case M_TRACE:
-            printf(CSI_START MLOG_COLOR_TRACE "%s%s" CSI_END, prefix, content);
+            printf(CSI_START MLOG_COLOR_TRACE "%s%s" CSI_END,
+                   logger->line_prefix,
+                   logger->line_content);
             break;
         case M_DEBUG:
-            printf(CSI_START MLOG_COLOR_DEBUG "%s%s" CSI_END, prefix, content);
+            printf(CSI_START MLOG_COLOR_DEBUG "%s%s" CSI_END,
+                   logger->line_prefix,
+                   logger->line_content);
             break;
         case M_INFO:
-            printf(CSI_START MLOG_COLOR_INFO "%s%s" CSI_END, prefix, content);
+            printf(CSI_START MLOG_COLOR_INFO "%s%s" CSI_END,
+                   logger->line_prefix,
+                   logger->line_content);
             break;
         case M_WARN:
-            printf(CSI_START MLOG_COLOR_WARN "%s%s" CSI_END, prefix, content);
+            printf(CSI_START MLOG_COLOR_WARN "%s%s" CSI_END,
+                   logger->line_prefix,
+                   logger->line_content);
             break;
         case M_ERROR:
-            printf(CSI_START MLOG_COLOR_ERROR "%s%s" CSI_END, prefix, content);
+            printf(CSI_START MLOG_COLOR_ERROR "%s%s" CSI_END,
+                   logger->line_prefix,
+                   logger->line_content);
             break;
         }
     }
     else {
-        printf("%s%s", prefix, content);
+        printf("%s%s", logger->line_prefix, logger->line_content);
     }
+
+    return;
 }
 
 
@@ -482,12 +495,14 @@ static void _mlog_file_rotate(MLogger_t* logger)
     struct stat statbuf;
     fstat(fd, &statbuf);
 
-    int fileSize = statbuf.st_size;
-    if (fileSize >= logger->max_size) {
+    int file_size = statbuf.st_size;
+    if (file_size >= logger->max_size) {
         fclose(logger->fp);
         logger->fp = NULL;
         _rotate_file(logger);
     }
+
+    return;
 }
 
 
@@ -498,18 +513,25 @@ static void _mlog_file_open(MLogger_t* logger)
         snprintf(file_path, sizeof(file_path) - 1, "%s/%s", logger->dir, logger->name);
         logger->fp = fopen(file_path, "a+");
     }
+
+    return;
 }
 
 
-static void _mlog_file_write(MLogger_t* logger, const char* prefix, const char* content)
+static void _mlog_file_write(MLogger_t* logger)
 {
     _mlog_file_open(logger);
+
+    const char* prefix  = logger->line_prefix;
+    const char* content = logger->line_content;
 
     if (logger->fp) {
         fwrite(prefix, sizeof(char), strlen(prefix), logger->fp);
         fwrite(content, sizeof(char), strlen(content), logger->fp);
         fflush(logger->fp);
     }
+
+    return;
 }
 
 
@@ -521,7 +543,7 @@ static void _mlog_file_write(MLogger_t* logger, const char* prefix, const char* 
 void mlog_write(int         log_id,
                 int         log_level,
                 bool        is_raw,
-                const char* func,
+                const char* szFunc,
                 int         line,
                 const char* fmt,
                 ...)
@@ -535,31 +557,28 @@ void mlog_write(int         log_id,
         log_level = M_ERROR;
 
     _mlog_lock(logger->mtx);
+    {
+        char* line_content = logger->line_content;
+        char* line_prefix  = logger->line_prefix;
+        line_content[0]    = '\0';
+        line_prefix[0]     = '\0';
 
-    char* line_content = logger->line_content;
-    char* line_prefix  = logger->line_prefix;
-    line_content[0]    = '\0';
-    line_prefix[0]     = '\0';
+        VSNSPRINTF_WRAPPER(line_content, LINE_CONTENT_MAX_LEN - 1, fmt);
 
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(line_content, LINE_CONTENT_MAX_LEN - 1, fmt, args);
-    va_end(args);
+        if (is_raw == false) {
+            _make_line_prefix(line_prefix, log_level, szFunc, line);
+            snprintf(line_content + strlen(line_content),
+                     LINE_CONTENT_MAX_LEN - strlen(line_content) - 1,
+                     "\n");
+        }
 
-    if (!is_raw) {
-        _make_line_prefix(line_prefix, log_level, func, line);
-        snprintf(line_content + strlen(line_content),
-                 LINE_CONTENT_MAX_LEN - strlen(line_content) - 1,
-                 "\n");
+        _print_in_console(logger);
+        _mlog_file_rotate(logger);
+        _mlog_file_write(logger);
     }
-
-    _print_in_console(
-        logger->en_print, logger->en_color, log_level, line_prefix, line_content);
-
-    _mlog_file_rotate(logger);
-    _mlog_file_write(logger, line_prefix, line_content);
-
     _mlog_unlock(logger->mtx);
+
+    return;
 }
 
 
@@ -570,29 +589,34 @@ int print_buf(int log_level, uint8_t* buf, uint16_t buf_len)
 
     for (int i = 0; i < buf_len; i++)
         SLOG_RAW(log_level, "%02x ", buf[i]);
+
     SLOG_RAW(log_level, "\n");
 
     return 0;
 }
 
-
-static int _make_star_str(char* str, uint8_t nb)
+/**
+ * @brief   make star string with '*'
+ */
+static void _make_star_str(char* str, size_t nb)
 {
-    for (uint8_t i = 0; i < nb; i++)
+    for (size_t i = 0; i < nb; i++)
         str[i] = '*';
 
-    return 0;
+    return;
 }
 
-
-static int _make_info_str(char* str, uint8_t nb)
+/**
+ * @brief   make info string with ' *' at the end
+ */
+static void _make_info_str(char* str, size_t nb)
 {
-    for (uint8_t i = (uint8_t)strlen(str); i < nb - 1; i++)
+    for (size_t i = strlen(str); i < nb - 1; i++)
         str[i] = ' ';
 
     str[nb - 1] = '*';
 
-    return 0;
+    return;
 }
 
 
@@ -610,16 +634,19 @@ int print_app_info(const char* name,
     snprintf(app_ver, sizeof(app_ver), "* Version: %s", version);
     snprintf(app_date, sizeof(app_date), "* Build time: %s, %s", date, time);
 
+    /* get the max length of the three strings */
     int max_len = strlen(app_info);
     if (strlen(app_ver) > max_len)
         max_len = strlen(app_ver);
     if (strlen(app_date) > max_len)
         max_len = strlen(app_date);
 
-    _make_star_str(stars, max_len + 2);
-    _make_info_str(app_info, max_len + 2);
-    _make_info_str(app_ver, max_len + 2);
-    _make_info_str(app_date, max_len + 2);
+    max_len += 2; /* add 2 for ' ' and '*' */
+
+    _make_star_str(stars, max_len);
+    _make_info_str(app_info, max_len);
+    _make_info_str(app_ver, max_len);
+    _make_info_str(app_date, max_len);
 
     SLOG_INFO_RAW("\n");
     SLOG_INFO("%s", stars);
