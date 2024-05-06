@@ -443,13 +443,13 @@ static int _make_line_prefix(char* prefix, int log_level, const char* func, int 
 }
 
 
-static void _print_in_console(MLogger_t* logger)
+static void _print_in_console(MLogger_t* logger, int log_level)
 {
     if (logger->en_print == false)
         return;
 
     if (logger->en_color) {
-        switch (logger->level) {
+        switch (log_level) {
         default:
         case M_TRACE:
             printf(CSI_START MLOG_COLOR_TRACE "%s%s" CSI_END,
@@ -549,7 +549,6 @@ void mlog_write(int         log_id,
                 ...)
 {
     MLogger_t* logger = _get_logger(log_id);
-
     if (logger->level > log_level)
         return;
 
@@ -572,7 +571,7 @@ void mlog_write(int         log_id,
                      "\n");
         }
 
-        _print_in_console(logger);
+        _print_in_console(logger, log_level);
         _mlog_file_rotate(logger);
         _mlog_file_write(logger);
     }

@@ -91,7 +91,7 @@ int mem_rev(uint8_t* buf, int len)
  * @brief   Convert a series of bytes into an integer
  * @param   buf:    byte array
  * @param   offset: offset of the byte array, if offset is NULL, it will be ignored,
- * otherwise it will increase by len
+ *                  otherwise it will increase by len
  * @param   len:    length of the byte array, should <= sizeof(int64_t)
  * @param   mode:   0-little endian, 1-big endian
  */

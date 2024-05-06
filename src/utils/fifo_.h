@@ -27,6 +27,7 @@ enum {
 
 Fifo_t
 fifo_new(size_t node_size, FreeNode_cb free_cb, CopyNode_cb copy_cb, bool thread_safe);
+
 void fifo_lock(Fifo_t fifo);
 void fifo_unlock(Fifo_t fifo);
 bool fifo_full(Fifo_t fifo);
