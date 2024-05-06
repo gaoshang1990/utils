@@ -15,6 +15,7 @@ const char* log_file_path(const char* strAppName)
     static char strBuffer[256];
 
 #ifndef _WIN32
+    int  ret = 0;
     char szAbsAppNamePath[256];
     char szAbsLogFilePath[256];
     sprintf(szAbsAppNamePath, "/data/app/%s/", strAppName);
@@ -22,18 +23,19 @@ const char* log_file_path(const char* strAppName)
     DIR* dp;
     if ((dp = opendir(szAbsAppNamePath)) == NULL) {
         mkdir(szAbsAppNamePath, 0777);
-        system("sync");
+        ret = system("sync");
     }
     else {
         closedir(dp);
     }
     if ((dp = opendir(szAbsLogFilePath)) == NULL) {
         mkdir(szAbsLogFilePath, 0777);
-        system("sync");
+        ret = system("sync");
     }
     else {
         closedir(dp);
     }
+    (void)ret; /* Ignore the return value */
     strcpy(strBuffer, szAbsLogFilePath);
 #else
     sprintf(strBuffer, "./logFile/");
@@ -48,6 +50,7 @@ const char* config_file_path(const char* strAppName, const char* strFileName)
     static char strBuffer[256];
 
 #ifndef _WIN32
+    int  ret = 0;
     char szAbsConfigPath[256];
     char szAbsAppNamePath[256];
     char szTmp[256 + 32];
@@ -68,8 +71,8 @@ const char* config_file_path(const char* strAppName, const char* strFileName)
     if ((dp = opendir(szAbsAppNamePath)) == NULL) {
         mkdir(szAbsAppNamePath, 0777);
         sprintf(szTmp, "cp ./configFile/%s %s", strFileName, szAbsAppNamePath);
-        system(szTmp);
-        system("sync");
+        ret = system(szTmp);
+        ret = system("sync");
     }
     else {
         closedir(dp);
@@ -77,8 +80,8 @@ const char* config_file_path(const char* strAppName, const char* strFileName)
 
     if (-1 == access(szAbsConfigPath, 0)) {
         sprintf(szTmp, "cp ./configFile/%s %s", strFileName, szAbsAppNamePath);
-        system(szTmp);
-        system("sync");
+        ret = system(szTmp);
+        ret = system("sync");
     }
     if (-1 == access(szAbsConfigPath, 0)) {
         strcpy(strBuffer, strFileName);
@@ -86,6 +89,7 @@ const char* config_file_path(const char* strAppName, const char* strFileName)
     else {
         strcpy(strBuffer, szAbsConfigPath);
     }
+    (void)ret; /* Ignore the return value */
 #else
     sprintf(strBuffer, "./%s", strFileName);
 #endif /* _WIN32 */
@@ -99,6 +103,7 @@ const char* history_file_path(const char* strAppName)
     static char strBuffer[256];
 
 #ifndef _WIN32
+    int  ret = 0;
     char szAbsAppNamePath[256];
 
     sprintf(szAbsAppNamePath, "/data/app/%s/history/", strAppName);
@@ -107,12 +112,13 @@ const char* history_file_path(const char* strAppName)
 
     if ((dp = opendir(szAbsAppNamePath)) == NULL) {
         mkdir(szAbsAppNamePath, 0777);
-        system("sync");
+        ret = system("sync");
     }
     else {
         closedir(dp);
     }
 
+    (void)ret; /* Ignore the return value */
     strcpy(strBuffer, szAbsAppNamePath);
 #else
     sprintf(strBuffer, "./history/");
