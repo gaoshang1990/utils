@@ -1,15 +1,15 @@
-#ifndef _UCL_TIME_H_
-#define _UCL_TIME_H_
+#ifndef _UTILS_TIME_H___
+#define _UTILS_TIME_H___
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <time.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define TIME_STR_LEN       19 /* "YYYY-MM-DD HH:MM:SS" ä¸å«ç»“æŸç¬¦ */
+#define TIME_STR_LEN       19 /* "YYYY-MM-DD HH:MM:SS" ²»º¬½áÊø·û */
 #define IS_LEAP_YEAR(year) ((year % 4 == 0 && year % 100) || year % 400 == 0)
 
 
@@ -21,10 +21,9 @@ extern "C" {
 
 typedef struct _Timer_t_* Timer_t;
 
-extern const uint8_t MONTH_TAB[];
 
-time_t   timestr2second(const char* str);
-int      second2timestr(char* timestr, time_t sec);
+time_t   time_str_to_sec(const char* str);
+int      time_str(char* timestr, time_t sec);
 int      get_weekday(int year, int month, int day);
 int      check_time(struct tm* pdate);
 int      delay_ms(int ms);
@@ -47,8 +46,8 @@ uint64_t cpu_ms(void);
  */
 
 /**
- * @param set_all_flag åˆæ¬¡è¿è¡Œæ—¶æ˜¯å¦è®¾ç½®æ‰€æœ‰æ ‡è¯†ä¸ºçœŸ
- * @param user_define  ç”¨æˆ·è‡ªå®šä¹‰çš„å®šæ—¶å™¨å‘¨æœŸ, å•ä½ms
+ * @param set_all_flag ³õ´ÎÔËĞĞÊ±ÊÇ·ñÉèÖÃËùÓĞ±êÊ¶ÎªÕæ
+ * @param user_define  ÓÃ»§×Ô¶¨ÒåµÄ¶¨Ê±Æ÷ÖÜÆÚ, µ¥Î»ms
  */
 Timer_t timer_new(bool set_all_flag, uint64_t user_define);
 
@@ -67,9 +66,18 @@ bool past_week(Timer_t timer);
 bool past_month(Timer_t timer);
 bool past_year(Timer_t timer);
 
+int now_year(Timer_t self);
+int now_month(Timer_t self);
+int now_day(Timer_t self);
+int now_hour(Timer_t self);
+int now_minute(Timer_t self);
+int now_second(Timer_t self);
+int now_weekday(Timer_t self);
+int now_ms(Timer_t self);
+
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _UCL_TIME_H_ */
+#endif /* _UTILS_TIME_H___ */

@@ -8,13 +8,10 @@
 #  include <unistd.h>
 #endif
 
-#include "time_.h"
+#include "utils_time.h"
 
 
-const uint8_t MONTH_TAB[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
-
-time_t timestr2second(const char* str)
+time_t time_str_to_sec(const char* str)
 {
     if (str == NULL)
         return 0;
@@ -43,7 +40,7 @@ time_t timestr2second(const char* str)
 }
 
 
-int second2timestr(char* timestr, time_t sec)
+int time_str(char* timestr, time_t sec)
 {
     if (timestr == NULL)
         return -1;
@@ -76,10 +73,23 @@ int delay_ms(int ms)
     return 0;
 }
 
+/**
+ * @brief   ªÒ»°ƒ≥ƒÍ‘¬µƒÃÏ ˝
+ */
+int month_days(int year, int month)
+{
+    const uint8_t MONTH_TAB[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+    if (month == 2)
+        return 28 + IS_LEAP_YEAR(year);
+
+    return MONTH_TAB[month - 1];
+}
+
 
 /**
- * \brief   Âü∫ÂßÜÊãâÂ∞îÊ£ÆËÆ°ÁÆóÊòüÊúüÂÖ¨Âºè
- * \retval  0-6ÔºöÊòüÊúüÊó•~ÂÖ≠
+ * @brief   ª˘ƒ∑¿≠∂˚…≠º∆À„–«∆⁄π´ Ω
+ * @retval  0-6£∫–«∆⁄»’~¡˘
  */
 int get_weekday(int year, int month, int day)
 {
@@ -95,8 +105,8 @@ int get_weekday(int year, int month, int day)
 
 
 /**
- * \brief   Âà§ÂÆö‰∏Ä‰∏™Êó∂Èó¥ÁöÑÂêàÊ≥ïÊÄßÔºåÊ≥®ÊÑèËØ•Ê£ÄÊµãÂåÖÂê´ÈùûÊ≥ïÊó•ÊúüÊ£ÄÊµã
- * \retval  0-Ê≠£Á°ÆÔºõ-1-ÈîôËØØ
+ * @brief   ≈–∂®“ª∏ˆ ±º‰µƒ∫œ∑®–‘£¨◊¢“‚∏√ºÏ≤‚∞¸∫¨∑«∑®»’∆⁄ºÏ≤‚
+ * @retval  0-’˝»∑£ª-1-¥ÌŒÛ
  */
 int check_time(struct tm* pdate)
 {
@@ -197,15 +207,15 @@ struct _Timer_t_ {
 };
 
 /**
- * @param set_all_flag ÂàùÊ¨°ËøêË°åÊó∂ÊòØÂê¶ËÆæÁΩÆÊâÄÊúâÊ†áËØÜ‰∏∫Áúü
- * @param user_define  Áî®Êà∑Ëá™ÂÆö‰πâÁöÑÂÆöÊó∂Âô®Âë®Êúü, Âçï‰Ωçms
+ * @param set_all_flag ≥ı¥Œ‘À–– ± «∑Ò…Ë÷√À˘”–±Í ∂Œ™’Ê
+ * @param user_define  ”√ªß◊‘∂®“Âµƒ∂® ±∆˜÷‹∆⁄, µ•Œªms
  */
 Timer_t timer_new(bool set_all_flag, uint64_t user_define)
 {
     Timer_t timer = (Timer_t)malloc(sizeof(struct _Timer_t_));
     if (timer != NULL) {
         if (set_all_flag)
-            memset(&timer->last_tm, 0xff, sizeof(struct tm)); /* È¶ñÊ¨°ÊâÄÊúâÊ†áËØÜÂ∞ÜÁΩÆ1 */
+            memset(&timer->last_tm, 0xff, sizeof(struct tm)); /*  ◊¥ŒÀ˘”–±Í ∂Ω´÷√1 */
         else {
             time_t now_sec = time(NULL);
             LOCAL_TIME(&now_sec, &timer->last_tm);
@@ -238,7 +248,7 @@ void timer_set_ms(Timer_t timer, uint64_t user_define)
 
 
 /**
- * \brief   call this function in the start of loop
+ * @brief   call this function in the start of loop
  */
 int timer_running(Timer_t timer)
 {
@@ -332,4 +342,75 @@ bool past_week(Timer_t timer)
 bool past_year(Timer_t timer)
 {
     return timer->flag & TMR_YEAR_FLAG;
+}
+
+/**
+ * @brief   ªÒ»°µ±«∞ƒÍ∑›
+ */
+int now_year(Timer_t self)
+{
+    return self->curr_tm.tm_year + 1900;
+}
+
+/**
+ * @brief   ªÒ»°µ±«∞‘¬∑›
+ * @retval  1-12
+ */
+int now_month(Timer_t self)
+{
+    return self->curr_tm.tm_mon + 1;
+}
+
+/**
+ * @brief   ªÒ»°µ±«∞»’∆⁄
+ * @retval  1-31
+ */
+int now_day(Timer_t self)
+{
+    return self->curr_tm.tm_mday;
+}
+
+/**
+ * @brief   ªÒ»°µ±«∞–° ±
+ * @retval  0-23
+ */
+int now_hour(Timer_t self)
+{
+    return self->curr_tm.tm_hour;
+}
+
+/**
+ * @brief   ªÒ»°µ±«∞∑÷÷”
+ * @retval  0-59
+ */
+int now_minute(Timer_t self)
+{
+    return self->curr_tm.tm_min;
+}
+
+/**
+ * @brief   ªÒ»°µ±«∞√Î
+ * @retval  0-59
+ */
+int now_second(Timer_t self)
+{
+    return self->curr_tm.tm_sec;
+}
+
+/**
+ * @brief   ªÒ»°µ±«∞–«∆⁄
+ * @retval  1-7
+ */
+int now_weekday(Timer_t self)
+{
+    return self->curr_tm.tm_wday + 1;
+}
+
+/**
+ * @brief   ªÒ»°µ±«∞∫¡√Î
+ * @retval  0-999
+ */
+int now_ms(Timer_t self)
+{
+    return cpu_ms() % 1000;
 }
