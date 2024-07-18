@@ -34,7 +34,6 @@
                 "MinGW Makefiles",
                 "-DCMAKE_TOOLCHAIN_FILE:STRING=CMake/arm-gcc-toolchain.cmake",
                 "-DCMAKE_BUILD_TYPE=Release",
-                "-DBUILD_FOR_HUAWEI_TERMINAL=ON",
                 "-DUSE_ENC=ON",
                 // "-DUSE_INI=ON",
                 "-DUSE_OSP=ON",

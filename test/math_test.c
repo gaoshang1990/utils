@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "mlog_.h"
-#include "math_.h"
+#include "utils_log.h"
+#include "utils_math.h"
 
 static int _userShift(const char* src, int scaler)
 {

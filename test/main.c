@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "mlog_.h"
+#include "utils_log.h"
 
 double _gauss_noise(double mean, double stddev)
 {
@@ -24,6 +24,9 @@ double _gauss_noise(double mean, double stddev)
 
 int main(int argc, char* argv[])
 {
+
+    extern int serial_test();
+    serial_test();
 
     extern int premake_test();
     // premake_test();
