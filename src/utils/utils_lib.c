@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lib_.h"
+#include "utils_lib.h"
 
 
 /* bcd to hex: 0x10 -> 10(0x0a) */
@@ -28,6 +28,20 @@ uint8_t hex2bcd(uint8_t hex)
     uint8_t upper_nibble = (hex / 10) % 10;
 
     return (upper_nibble << 4) | lower_nibble;
+}
+
+
+uint32_t hex2bcd32(uint32_t hex)
+{
+    uint8_t  tmp[4];
+    uint32_t divisor = 1;
+    for (int i = 0; i < 4; i++) {
+        tmp[i] = (hex / divisor) % 100;
+        tmp[i] = hex2bcd(tmp[i]);
+        divisor *= 100;
+    }
+
+    return (uint32_t)byte2int(tmp, NULL, 4, UCL_LITTLE_ENDIAN);
 }
 
 

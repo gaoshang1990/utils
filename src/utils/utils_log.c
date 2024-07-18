@@ -14,7 +14,7 @@
 #  include <semaphore.h>
 #endif
 
-#include "mlog_.h"
+#include "utils_log.h"
 
 
 #ifdef _WIN32
@@ -274,7 +274,7 @@ static MLogger_t* _mlog_new(int log_id)
     memset(logger, 0, sizeof(MLogger_t));
 
     logger->id       = log_id;
-    logger->level    = M_DEBUG;
+    logger->level    = M_INFO;
     logger->mtx      = _mlog_lock_init(1);
     logger->max_size = MLOG_FILE_MAX_SIZE;
     logger->max_num  = MLOG_FILE_MAX_ROTATE;

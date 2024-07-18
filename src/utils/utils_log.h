@@ -1,5 +1,5 @@
-#ifndef _UCL_MLOG_H_
-#define _UCL_MLOG_H_
+#ifndef _UTILS_LOG_H___
+#define _UTILS_LOG_H___
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -96,4 +96,4 @@ int print_app_info(const char* name,
 }
 #endif
 
-#endif /* _UCL_MLOG_H_ */
+#endif /* _UTILS_LOG_H___ */

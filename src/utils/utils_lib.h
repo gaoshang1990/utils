@@ -1,5 +1,5 @@
-#ifndef _UCL_LIB_H_
-#define _UCL_LIB_H_
+#ifndef _UTILS_LIB_H___
+#define _UTILS_LIB_H___
 
 #include <stdint.h>
 
@@ -19,6 +19,8 @@ uint8_t bcd2hex(uint8_t bcd);
 /* 0x10(16) -> 0x16 */
 uint8_t hex2bcd(uint8_t hex);
 
+uint32_t hex2bcd32(uint32_t hex);
+
 /* memcpy in an opposite direction */
 void memcpy_r(uint8_t* dst, uint8_t* src, int len);
 
@@ -30,7 +32,8 @@ void mem_swap(void* a, void* b, int size);
 /**
  * @brief   Convert a series of bytes into an integer
  * @param   buf:    byte array
- * @param   offset: offset of the byte array, if offset is NULL, it will be ignored, otherwise it will increase by len
+ * @param   offset: offset of the byte array, if offset is NULL, it will be ignored,
+ * otherwise it will increase by len
  * @param   len:    length of the byte array, should <= sizeof(int64_t)
  * @param   mode:   0-little endian, 1-big endian
  */
@@ -61,4 +64,4 @@ int add_gap(uint8_t* data, int len, uint8_t gap);
 #endif
 
 
-#endif /* _UCL_LIB_H_ */
+#endif /* _UTILS_LIB_H___ */
