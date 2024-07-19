@@ -1,6 +1,5 @@
-#ifndef _USER_DEBUG_H_
-#define _USER_DEBUG_H_
-
+#ifndef _UTILS_DEBUG_H___
+#define _UTILS_DEBUG_H___
 
 #include <stdio.h>
 
@@ -64,16 +63,16 @@ enum { LOG_LEVEL_DEBUG = 0, LOG_LEVEL_INFO, LOG_LEVEL_WARN, LOG_LEVEL_OFF };
 
 
 #if USER_ASSERT_ON
-#  define ASSERT_(expression_, fmt, ...)    \
-      do {                                  \
-          if (!(expression_)) {             \
-              LOG_WARN(fmt, ##__VA_ARGS__); \
-              while (1)                     \
-                  ;                         \
-          }                                 \
+#  define UTILS_ASSERT(expression_, fmt, ...) \
+      do {                                    \
+          if (!(expression_)) {               \
+              LOG_WARN(fmt, ##__VA_ARGS__);   \
+              while (1)                       \
+                  ;                           \
+          }                                   \
       } while (0)
 #else
-#  define ASSERT_(expression_, fmt, ...)
+#  define UTILS_ASSERT(expression_, fmt, ...)
 #endif
 
 
@@ -81,4 +80,4 @@ enum { LOG_LEVEL_DEBUG = 0, LOG_LEVEL_INFO, LOG_LEVEL_WARN, LOG_LEVEL_OFF };
 }
 #endif
 
-#endif /* _USER_DEBUG_H_ */
+#endif /* _UTILS_DEBUG_H___ */

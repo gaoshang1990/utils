@@ -13,7 +13,7 @@ int fifo_simple_test()
     char buf[256] = {0};
 
     Fifo_t fifo = fifo_new(sizeof(buf), NULL, NULL, false);
-    ASSERT_(fifo, "fifo_new failed");
+    UTILS_ASSERT(fifo, "fifo_new failed");
 
     // 写队列1: 静态分配
     for (int i = 0; i < 26; i++) {
@@ -24,7 +24,7 @@ int fifo_simple_test()
     for (int i = 0; !fifo_empty(fifo); i++) {
         fifo_read(fifo, buf);
         SLOG_DEBUG("buf = %s", buf);
-        ASSERT_(buf[0] == 'a' + i, "buf[0] = %c", buf[0]);
+        UTILS_ASSERT(buf[0] == 'a' + i, "buf[0] = %c", buf[0]);
     }
 
     // 写队列2: 动态分配
@@ -38,7 +38,7 @@ int fifo_simple_test()
     for (int i = 0; !fifo_empty(fifo); i++) {
         char* test = (char*)fifo_read(fifo, NULL);
         SLOG_DEBUG("test = %s", test);
-        ASSERT_(test[0] == 'A' + i, "test[0] = %c", test[0]);
+        UTILS_ASSERT(test[0] == 'A' + i, "test[0] = %c", test[0]);
         free(test); // 调用者传入NULL, fifo直接返回指针，调用者需要释放test
     }
 
@@ -90,7 +90,7 @@ int fifo_complex_test()
                            FifoTest_free, // FifoTest_copy can be NULL, equal to free()
                            FifoTest_copy, // FifoTest_free can be NULL, equal to memcpy()
                            false);
-    ASSERT_(fifo, "fifo_new failed");
+    UTILS_ASSERT(fifo, "fifo_new failed");
 
     /* 写队列1 */
     FifoTest test1;
@@ -107,7 +107,7 @@ int fifo_complex_test()
         FifoTest test2;
         fifo_read(fifo, &test2);
         SLOG_DEBUG("test2 = %s", test2.str);
-        ASSERT_(test2.str[0] == 'a' + i, "test2.str[0] = %c", test2.str[0]);
+        UTILS_ASSERT(test2.str[0] == 'a' + i, "test2.str[0] = %c", test2.str[0]);
         free(test2.str); // 调用者传入变量test2, fifo深拷贝后，调用者需要释放arr
     }
 
@@ -124,7 +124,7 @@ int fifo_complex_test()
     for (int i = 0; !fifo_empty(fifo); i++) {
         FifoTest* test3 = (FifoTest*)fifo_read(fifo, NULL);
         SLOG_DEBUG("test3 = %s", test3->str);
-        ASSERT_(test3->str[0] == 'A' + i, "test3.str[0] = %c", test3->str[0]);
+        UTILS_ASSERT(test3->str[0] == 'A' + i, "test3.str[0] = %c", test3->str[0]);
         FifoTest_free(test3); // 调用者传入NULL, fifo直接返回指针，调用者需要释放test3
     }
 
