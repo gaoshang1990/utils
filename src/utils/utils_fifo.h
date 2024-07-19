@@ -1,5 +1,5 @@
-#ifndef _UCL_FIFO_H_
-#define _UCL_FIFO_H_
+#ifndef _UTILS_FIFO_H___
+#define _UTILS_FIFO_H___
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -58,4 +58,4 @@ int fifo_del(Fifo_t fifo);
 }
 #endif
 
-#endif /* _UCL_FIFO_H_ */
+#endif /* _UTILS_FIFO_H___ */

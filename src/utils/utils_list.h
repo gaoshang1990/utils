@@ -1,5 +1,5 @@
-#ifndef _LIST__H_
-#define _LIST__H_
+#ifndef _UTILS_LIST_H___
+#define _UTILS_LIST_H___
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,4 +41,4 @@ void  lstInsert(LIST* pList, NODE* pPrev, NODE* pNode);
 }
 #endif
 
-#endif /* _LIST__H_ */
+#endif /* _UTILS_LIST_H___ */
