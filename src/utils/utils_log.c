@@ -285,7 +285,7 @@ static MLogger_t* _mlog_new(int log_id)
 }
 
 /**
- * @brief   è‡ªåŠ¨æ‰©å……loggerå®ä¾‹, è€ƒè™‘åˆ°æ—¥å¿—å®ä¾‹æ•°é‡ä¸ä¼šå¤ªå¤š, æ¯æ¬¡åªå¢åŠ ä¸€ä¸ª
+ * @brief   ×Ô¶¯À©³äloggerÊµÀı, ¿¼ÂÇµ½ÈÕÖ¾ÊµÀıÊıÁ¿²»»áÌ«¶à, Ã¿´ÎÖ»Ôö¼ÓÒ»¸ö
  */
 static void _mlog_grow(void)
 {
@@ -298,7 +298,7 @@ static void _mlog_grow(void)
 }
 
 /**
- * @brief   æ ¹æ®log_idè·å–logger, å¦‚æœä¸å­˜åœ¨åˆ™åˆ›å»ºä¸€ä¸ªæ–°çš„
+ * @brief   ¸ù¾İlog_id»ñÈ¡logger, Èç¹û²»´æÔÚÔò´´½¨Ò»¸öĞÂµÄ
  */
 static MLogger_t* _get_logger(int log_id)
 {
@@ -306,23 +306,19 @@ static MLogger_t* _get_logger(int log_id)
     if (_mlog_mtx == NULL)
         _mlog_mtx = _mlog_lock_init(1);
 
+    for (int i = 0; i < _mlog.num; i++) {
+        if (_mlog.loggers[i]->id == log_id)
+            return _mlog.loggers[i];
+    }
+
     MLogger_t* logger = NULL;
 
     _mlog_lock(_mlog_mtx);
     {
-        int i;
-        for (i = 0; i < _mlog.num; i++) {
-            if (_mlog.loggers[i]->id == log_id) {
-                logger = _mlog.loggers[i];
-                break;
-            }
-        }
-
-        if (i >= _mlog.num) { /* not found, create a new logger */
-            _mlog_grow();
-            logger                     = _mlog_new(log_id);
-            _mlog.loggers[_mlog.num++] = logger;
-        }
+        /* not found, create a new logger */
+        _mlog_grow();
+        logger                     = _mlog_new(log_id);
+        _mlog.loggers[_mlog.num++] = logger;
     }
     _mlog_unlock(_mlog_mtx);
 
@@ -331,9 +327,9 @@ static MLogger_t* _get_logger(int log_id)
 
 
 /**
- * @brief   æ—¥å¿—åˆå§‹åŒ–
+ * @brief   ÈÕÖ¾³õÊ¼»¯
  * @return  0: success, -1: failed
- * @note    å¯ä»¥é‡å¤è°ƒç”¨æ¥æ›´æ”¹æ—¥å¿—çº§åˆ«
+ * @note    ¿ÉÒÔÖØ¸´µ÷ÓÃÀ´¸ü¸ÄÈÕÖ¾¼¶±ğ
  */
 int mlog_init(int log_id, int log_level, const char* file_dir, const char* file_name)
 {

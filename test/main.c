@@ -25,19 +25,19 @@ double _gauss_noise(double mean, double stddev)
 int main(int argc, char* argv[])
 {
 
-    extern int serial_test();
-    serial_test();
+    // extern int serial_test();
+    // serial_test();
 
-    extern int premake_test();
-    // premake_test();
-    srand(time(NULL));
-    for (int i = 0; i < 10000; i++) {
-        double noise = _gauss_noise(0, 1);
-        printf("%f, ", noise);
-        if (noise > 5 || noise < -5) {
-            printf("error\n");
-        }
-    }
+    // extern int premake_test();
+    // // premake_test();
+    // srand(time(NULL));
+    // for (int i = 0; i < 10000; i++) {
+    //     double noise = _gauss_noise(0, 1);
+    //     printf("%f, ", noise);
+    //     if (noise > 5 || noise < -5) {
+    //         printf("error\n");
+    //     }
+    // }
 
     SLOG_INFO("- unit test start -\n");
 

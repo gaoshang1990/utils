@@ -94,57 +94,31 @@ int stat_test()
 {
     SLOG_INFO("--- stat test start ---\n");
 
-    StatUnit stat = stat_new(STAT_TYPE_INT, 3);
+    SLOG_DEBUG_RAW("\n");
+
+    StatUnit stat = stat_new(3);
     for (int i = 1; i < 10; i++) {
-        stat_push_int(stat, i);
-        int64_t m = *((int64_t*)stat_min(stat));
-        SLOG_DEBUG("min = %lld, max = %lld, avg = %lld, sum = %lld",
-                   STAT_MIN_INT(stat),
-                   STAT_MAX_INT(stat),
-                   STAT_AVG_INT(stat),
-                   STAT_SUM_INT(stat));
+        stat_push(stat, i);
+        SLOG_DEBUG("min = %lf, max = %lf, avg = %lf, sum = %lf",
+                   stat_min(stat),
+                   stat_max(stat),
+                   stat_avg(stat),
+                   stat_sum(stat));
     }
     stat_del(stat);
     SLOG_DEBUG_RAW("\n");
 
-    stat = stat_new(STAT_TYPE_INT, 0);
+    stat = stat_new(0);
     for (int i = 1; i < 10; i++) {
         if (i == 5)
-            stat_restart(stat);
+            stat_reset(stat);
 
-        stat_push_int(stat, i);
-        SLOG_DEBUG("min = %lld, max = %lld, avg = %lld, sum = %lld",
-                   STAT_MIN_INT(stat),
-                   STAT_MAX_INT(stat),
-                   STAT_AVG_INT(stat),
-                   STAT_SUM_INT(stat));
-    }
-    stat_del(stat);
-    SLOG_DEBUG_RAW("\n");
-
-    stat = stat_new(STAT_TYPE_DOUBLE, 3);
-    for (int i = 1; i < 10; i++) {
-        stat_push_fp(stat, i);
+        stat_push(stat, i);
         SLOG_DEBUG("min = %lf, max = %lf, avg = %lf, sum = %lf",
-                   STAT_MIN_FP(stat),
-                   STAT_MAX_FP(stat),
-                   STAT_AVG_FP(stat),
-                   STAT_SUM_FP(stat));
-    }
-    stat_del(stat);
-    SLOG_DEBUG_RAW("\n");
-
-    stat = stat_new(STAT_TYPE_DOUBLE, 0);
-    for (int i = 1; i < 10; i++) {
-        if (i == 5)
-            stat_restart(stat);
-
-        stat_push_fp(stat, i);
-        SLOG_DEBUG("min = %lf, max = %lf, avg = %lf, sum = %lf",
-                   STAT_MIN_FP(stat),
-                   STAT_MAX_FP(stat),
-                   STAT_AVG_FP(stat),
-                   STAT_SUM_FP(stat));
+                   stat_min(stat),
+                   stat_max(stat),
+                   stat_avg(stat),
+                   stat_sum(stat));
     }
     stat_del(stat);
     SLOG_DEBUG_RAW("\n");

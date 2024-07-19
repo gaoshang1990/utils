@@ -23,8 +23,8 @@ int mlog_test()
     SLOG_DEBUG("SLOG DEBUG TEST");
     SLOG_TRACE("SLOG TRACE TEST");
 
-    mlog_init(M_TRACE, 1, "./test/log", "mlog1.log");
-    mlog_init(M_TRACE, 2, "./test/log", "mlog2.log");
+    mlog_init(1, M_TRACE, "./test/log", "mlog1.log");
+    mlog_init(2, M_TRACE, "./test/log", "mlog2.log");
     MLOG_ERROR(1, "MLOG ERROR TEST 111");
     MLOG_WARN(1, "MLOG WARN TEST 111");
     MLOG_INFO(1, "MLOG INFO TEST 111");

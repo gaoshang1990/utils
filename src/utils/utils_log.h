@@ -17,10 +17,10 @@ extern "C" {
 
 
 /**
- * @brief   æ—¥å¿—åˆå§‹åŒ–
+ * @brief   ÈÕÖ¾³õÊ¼»¯
  * @return  0: success, -1: failed
- * @note    1.æœ¬å‡½æ•°éçº¿ç¨‹å®‰å…¨
- *          2.å¯ä»¥é‡å¤è°ƒç”¨æ¥æ›´æ”¹æ—¥å¿—çº§åˆ«
+ * @note    1.±¾º¯Êı·ÇÏß³Ì°²È«
+ *          2.¿ÉÒÔÖØ¸´µ÷ÓÃÀ´¸ü¸ÄÈÕÖ¾¼¶±ğ
  */
 int mlog_init(int log_id, int log_level, const char* file_dir, const char* file_name);
 
@@ -58,11 +58,11 @@ int print_app_info(const char* name,
  */
 #define MLOG(log_id, log_level, fmt, ...) \
     mlog_write(log_id, log_level, 0, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
-#define MLOG_TRACE(log_id, fmt, ...) MLOG(M_TRACE, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_DEBUG(log_id, fmt, ...) MLOG(M_DEBUG, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_INFO(log_id, fmt, ...)  MLOG(M_INFO, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_WARN(log_id, fmt, ...)  MLOG(M_WARN, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_ERROR(log_id, fmt, ...) MLOG(M_ERROR, log_id, fmt, ##__VA_ARGS__)
+#define MLOG_TRACE(log_id, fmt, ...) MLOG(log_id, M_TRACE, fmt, ##__VA_ARGS__)
+#define MLOG_DEBUG(log_id, fmt, ...) MLOG(log_id, M_DEBUG, fmt, ##__VA_ARGS__)
+#define MLOG_INFO(log_id, fmt, ...)  MLOG(log_id, M_INFO, fmt, ##__VA_ARGS__)
+#define MLOG_WARN(log_id, fmt, ...)  MLOG(log_id, M_WARN, fmt, ##__VA_ARGS__)
+#define MLOG_ERROR(log_id, fmt, ...) MLOG(log_id, M_ERROR, fmt, ##__VA_ARGS__)
 
 #define MLOG_RAW(log_level, log_id, fmt, ...) \
     mlog_write(log_id, log_level, 1, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
