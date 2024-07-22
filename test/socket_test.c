@@ -5,7 +5,7 @@
 
 static int udp_test()
 {
-    SLOG_INFO("--- udp test start ---\n");
+    slog_info("--- udp test start ---\n");
 
     Socket udpSock = UdpServerSocket_create(NULL, 9001);
 
@@ -23,7 +23,7 @@ static int udp_test()
         delayMs_(10);
     }
 
-    SLOG_INFO("--- udp test done ---\n");
+    slog_info("--- udp test done ---\n");
 
     return 0;
 }
@@ -31,11 +31,11 @@ static int udp_test()
 
 int socket_test()
 {
-    SLOG_INFO("-- socket test start --\n");
+    slog_info("-- socket test start --\n");
 
     // udp_test();
 
-    SLOG_INFO("-- socket test done --\n");
+    slog_info("-- socket test done --\n");
 
     return 0;
 }

@@ -98,9 +98,7 @@ int get_weekday(int year, int month, int day)
         year--;
     }
 
-    return (day + 2 * month + 3 * (month + 1) / 5 + year + year / 4 - year / 100 +
-            year / 400) %
-           7;
+    return (day + 2 * month + 3 * (month + 1) / 5 + year + year / 4 - year / 100 + year / 400) % 7;
 }
 
 
@@ -108,39 +106,36 @@ int get_weekday(int year, int month, int day)
  * @brief   判定一个时间的合法性，注意该检测包含非法日期检测
  * @retval  0-正确；-1-错误
  */
-int check_time(struct tm* pdate)
+bool check_time_valid(struct tm* pdate)
 {
-    int c[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
     if (pdate->tm_year < 100 || pdate->tm_year > 200)
-        return -1;
+        return false;
     if ((pdate->tm_mon < 0) || (pdate->tm_mon > 11))
-        return -1;
+        return false;
     if ((pdate->tm_mday < 0) || (pdate->tm_mday > 31))
-        return -1;
+        return false;
     if ((pdate->tm_hour < 0) || (pdate->tm_hour > 23))
-        return -1;
+        return false;
     if ((pdate->tm_min < 0) || (pdate->tm_min > 59))
-        return -1;
+        return false;
     if ((pdate->tm_sec < 0) || (pdate->tm_sec > 60))
-        return -1;
+        return false;
 
     int year  = pdate->tm_year + 1900;
     int month = pdate->tm_mon + 1;
     int day   = pdate->tm_mday;
 
     if ((pdate->tm_wday != 0xffff) &&
-        (((pdate->tm_wday > 0) ? (pdate->tm_wday - 1) : 6) !=
-         get_weekday(year, month, day)))
+        (((pdate->tm_wday > 0) ? (pdate->tm_wday - 1) : 6) != get_weekday(year, month, day)))
     {
-        return 0;
+        return true;
     }
 
-    c[1] = 28 + IS_LEAP_YEAR(year);
-    if (day <= c[month - 1])
-        return 0;
+    int day_of_month = month_days(year, month);
+    if (day <= day_of_month)
+        return true;
 
-    return -1;
+    return false;
 }
 
 
@@ -150,13 +145,14 @@ uint64_t time_ms(void)
     uint64_t ret = 0;
 
 #ifdef _WIN32
-    FILETIME              ft;
-    uint64_t              now;
-    static const uint64_t DIFF_TO_UNIXTIME = 11644473600000LL;
+    static const uint64_t _DIFF_TO_UNIXTIME = 11644473600000LL;
+
+    FILETIME ft;
+    uint64_t now;
 
     GetSystemTimeAsFileTime(&ft);
     now = (uint64_t)ft.dwLowDateTime + ((uint64_t)(ft.dwHighDateTime) << 32LL);
-    ret = (now / 10000LL) - DIFF_TO_UNIXTIME;
+    ret = (now / 10000LL) - _DIFF_TO_UNIXTIME; /* now的单位为100ns */
 #else
     struct timeval now;
     gettimeofday(&now, NULL);
@@ -173,11 +169,15 @@ uint64_t cpu_ms(void)
     uint64_t now_ms = 0;
 
 #ifdef _WIN32
-    long now_tick = clock();
-    if (now_tick < 0)
-        now_ms = time_ms();
-    else
-        now_ms = (uint64_t)((now_tick * 1000) / CLOCKS_PER_SEC);
+    LARGE_INTEGER frequency; /* 计时器频率 */
+    LARGE_INTEGER now;       /* 当前时间 */
+
+    if (QueryPerformanceFrequency(&frequency)) { /* 获取计时器的频率(每秒的计数) */
+        if (QueryPerformanceCounter(&now)) {     /* 获取当前计数 */
+            now_ms = (now.QuadPart * 1000) / frequency.QuadPart;
+        }
+    }
+
 #else
     struct timespec tp;
     clock_gettime(CLOCK_MONOTONIC, &tp);
@@ -210,144 +210,144 @@ struct _Timer_t_ {
  * @param set_all_flag 初次运行时是否设置所有标识为真
  * @param user_define  用户自定义的定时器周期, 单位ms
  */
-Timer_t timer_new(bool set_all_flag, uint64_t user_define)
+UtilTimer timer_new(bool set_all_flag, uint64_t user_define)
 {
-    Timer_t timer = (Timer_t)malloc(sizeof(struct _Timer_t_));
-    if (timer != NULL) {
+    UtilTimer tmr = (UtilTimer)malloc(sizeof(struct _Timer_t_));
+    if (tmr != NULL) {
         if (set_all_flag)
-            memset(&timer->last_tm, 0xff, sizeof(struct tm)); /* 首次所有标识将置1 */
+            memset(&tmr->last_tm, 0xff, sizeof(struct tm)); /* 首次所有标识将置1 */
         else {
             time_t now_sec = time(NULL);
-            LOCAL_TIME(&now_sec, &timer->last_tm);
+            LOCAL_TIME(&now_sec, &tmr->last_tm);
         }
 
         if (user_define > 0) {
-            timer->user_define = user_define;
-            timer->last_ms     = cpu_ms();
+            tmr->user_define = user_define;
+            tmr->last_ms     = cpu_ms();
         }
     }
 
-    return timer;
+    return tmr;
 }
 
 
-void timer_del(Timer_t timer)
+void timer_del(UtilTimer self)
 {
-    if (timer != NULL) {
-        free(timer);
-        timer = NULL;
+    if (self != NULL) {
+        free(self);
+        self = NULL;
     }
 }
 
 
-void timer_set_ms(Timer_t timer, uint64_t user_define)
+void timer_set_ms(UtilTimer self, uint64_t user_define)
 {
-    timer->user_define = user_define;
-    timer->last_ms     = cpu_ms();
+    self->user_define = user_define;
+    self->last_ms     = cpu_ms();
 }
 
 
 /**
  * @brief   call this function in the start of loop
  */
-int timer_running(Timer_t timer)
+void timer_running(UtilTimer self)
 {
-    timer->flag = 0; /* clear timer flag */
+    self->flag = 0; /* clear timer flag */
 
-    time_t nowSec = time(NULL);
-    LOCAL_TIME(&nowSec, &timer->curr_tm);
+    time_t now_sec = time(NULL);
+    LOCAL_TIME(&now_sec, &self->curr_tm);
 
-    if (timer->user_define > 0) {
-        uint64_t nowMs = cpu_ms();
-        if (nowMs - timer->last_ms > timer->user_define) {
-            timer->last_ms = nowMs;
-            timer->flag |= TMR_USER_FLAG;
+    if (self->user_define > 0) {
+        uint64_t now_ms = cpu_ms();
+        if (now_ms - self->last_ms > self->user_define) {
+            self->last_ms = now_ms;
+            self->flag |= TMR_USER_FLAG;
         }
     }
-    if (timer->curr_tm.tm_sec != timer->last_tm.tm_sec) {
-        timer->last_tm.tm_sec = timer->curr_tm.tm_sec;
-        timer->flag |= TMR_SEC_FLAG;
+    if (self->curr_tm.tm_sec != self->last_tm.tm_sec) {
+        self->last_tm.tm_sec = self->curr_tm.tm_sec;
+        self->flag |= TMR_SEC_FLAG;
     }
-    if (timer->curr_tm.tm_min != timer->last_tm.tm_min) {
-        timer->last_tm.tm_min = timer->curr_tm.tm_min;
-        timer->flag |= TMR_MIN_FLAG;
+    if (self->curr_tm.tm_min != self->last_tm.tm_min) {
+        self->last_tm.tm_min = self->curr_tm.tm_min;
+        self->flag |= TMR_MIN_FLAG;
     }
-    if (timer->curr_tm.tm_hour != timer->last_tm.tm_hour) {
-        timer->last_tm.tm_hour = timer->curr_tm.tm_hour;
-        timer->flag |= TMR_HOUR_FLAG;
+    if (self->curr_tm.tm_hour != self->last_tm.tm_hour) {
+        self->last_tm.tm_hour = self->curr_tm.tm_hour;
+        self->flag |= TMR_HOUR_FLAG;
     }
-    if (timer->curr_tm.tm_mday != timer->last_tm.tm_mday) {
-        timer->last_tm.tm_mday = timer->curr_tm.tm_mday;
-        timer->flag |= TMR_DAY_FLAG;
+    if (self->curr_tm.tm_mday != self->last_tm.tm_mday) {
+        self->last_tm.tm_mday = self->curr_tm.tm_mday;
+        self->flag |= TMR_DAY_FLAG;
     }
-    if (timer->curr_tm.tm_mon != timer->last_tm.tm_mon) {
-        timer->last_tm.tm_mon = timer->curr_tm.tm_mon;
-        timer->flag |= TMR_MON_FLAG;
+    if (self->curr_tm.tm_mon != self->last_tm.tm_mon) {
+        self->last_tm.tm_mon = self->curr_tm.tm_mon;
+        self->flag |= TMR_MON_FLAG;
     }
-    if (timer->curr_tm.tm_year != timer->last_tm.tm_year) {
-        timer->last_tm.tm_year = timer->curr_tm.tm_year;
-        timer->flag |= TMR_YEAR_FLAG;
+    if (self->curr_tm.tm_year != self->last_tm.tm_year) {
+        self->last_tm.tm_year = self->curr_tm.tm_year;
+        self->flag |= TMR_YEAR_FLAG;
     }
-    if (timer->curr_tm.tm_min != timer->last_tm.tm_min) {
-        timer->last_tm.tm_min = timer->curr_tm.tm_min;
-        timer->flag |= TMR_MIN_FLAG;
+    if (self->curr_tm.tm_min != self->last_tm.tm_min) {
+        self->last_tm.tm_min = self->curr_tm.tm_min;
+        self->flag |= TMR_MIN_FLAG;
     }
 
-    return 0;
+    return;
 }
 
 
-bool past_user_define(Timer_t timer)
+bool past_user_define(UtilTimer self)
 {
-    return timer->flag & TMR_USER_FLAG;
+    return self->flag & TMR_USER_FLAG;
 }
 
 
-bool past_second(Timer_t timer)
+bool past_second(UtilTimer self)
 {
-    return timer->flag & TMR_SEC_FLAG;
+    return self->flag & TMR_SEC_FLAG;
 }
 
 
-bool past_minute(Timer_t timer)
+bool past_minute(UtilTimer self)
 {
-    return timer->flag & TMR_MIN_FLAG;
+    return self->flag & TMR_MIN_FLAG;
 }
 
 
-bool past_hour(Timer_t timer)
+bool past_hour(UtilTimer self)
 {
-    return timer->flag & TMR_HOUR_FLAG;
+    return self->flag & TMR_HOUR_FLAG;
 }
 
 
-bool past_day(Timer_t timer)
+bool past_day(UtilTimer self)
 {
-    return timer->flag & TMR_DAY_FLAG;
+    return self->flag & TMR_DAY_FLAG;
 }
 
 
-bool past_month(Timer_t timer)
+bool past_month(UtilTimer self)
 {
-    return timer->flag & TMR_MON_FLAG;
+    return self->flag & TMR_MON_FLAG;
 }
 
 
-bool past_week(Timer_t timer)
+bool past_week(UtilTimer self)
 {
-    return timer->flag & TMR_WEEK_FLAG;
+    return self->flag & TMR_WEEK_FLAG;
 }
 
 
-bool past_year(Timer_t timer)
+bool past_year(UtilTimer self)
 {
-    return timer->flag & TMR_YEAR_FLAG;
+    return self->flag & TMR_YEAR_FLAG;
 }
 
 /**
  * @brief   获取当前年份
  */
-int now_year(Timer_t self)
+int now_year(UtilTimer self)
 {
     return self->curr_tm.tm_year + 1900;
 }
@@ -356,7 +356,7 @@ int now_year(Timer_t self)
  * @brief   获取当前月份
  * @retval  1-12
  */
-int now_month(Timer_t self)
+int now_month(UtilTimer self)
 {
     return self->curr_tm.tm_mon + 1;
 }
@@ -365,7 +365,7 @@ int now_month(Timer_t self)
  * @brief   获取当前日期
  * @retval  1-31
  */
-int now_day(Timer_t self)
+int now_day(UtilTimer self)
 {
     return self->curr_tm.tm_mday;
 }
@@ -374,7 +374,7 @@ int now_day(Timer_t self)
  * @brief   获取当前小时
  * @retval  0-23
  */
-int now_hour(Timer_t self)
+int now_hour(UtilTimer self)
 {
     return self->curr_tm.tm_hour;
 }
@@ -383,7 +383,7 @@ int now_hour(Timer_t self)
  * @brief   获取当前分钟
  * @retval  0-59
  */
-int now_minute(Timer_t self)
+int now_minute(UtilTimer self)
 {
     return self->curr_tm.tm_min;
 }
@@ -392,7 +392,7 @@ int now_minute(Timer_t self)
  * @brief   获取当前秒
  * @retval  0-59
  */
-int now_second(Timer_t self)
+int now_second(UtilTimer self)
 {
     return self->curr_tm.tm_sec;
 }
@@ -401,16 +401,7 @@ int now_second(Timer_t self)
  * @brief   获取当前星期
  * @retval  1-7
  */
-int now_weekday(Timer_t self)
+int now_weekday(UtilTimer self)
 {
     return self->curr_tm.tm_wday + 1;
-}
-
-/**
- * @brief   获取当前毫秒
- * @retval  0-999
- */
-int now_ms(Timer_t self)
-{
-    return cpu_ms() % 1000;
 }

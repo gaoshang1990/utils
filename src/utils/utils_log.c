@@ -82,38 +82,48 @@
     } while (0)
 
 
-typedef void* MLogMutex_t;
+typedef void* MLogMutex;
 
-typedef struct _LoggerCfg_ {
-    int         id;
-    int         level;
-    char        dir[128];
-    char        name[64];
-    FILE*       fp;
-    MLogMutex_t mtx;
-    int         max_size; /* file max size */
-    int         max_num;  /* max rotate file count */
+struct MLogger {
+    int       id;
+    int       level;
+    char      dir[128];
+    char      name[64];
+    FILE*     fp;
+    MLogMutex mtx;
+    int       max_size; /* file max size */
+    int       max_num;  /* max rotate file count */
 
     bool en_print; /* enable print output to console fd=stdout */
     bool en_color; /* enalbe print color. support on linux/unix platform */
 
     char line_prefix[LINE_PREFIX_MAX_LEN];   /* prefix of log */
     char line_content[LINE_CONTENT_MAX_LEN]; /* content of log */
-} MLogger_t;
+};
 
 
-static struct {
-    int         num;
-    MLogger_t** loggers;
-} _mlog = {0};
+struct MLogInst {
+    int              num;
+    struct MLogger** loggers;
+
+    MLogMutex lock;
+};
 
 
-static MLogMutex_t _mlog_lock_init(int init_value)
+static struct MLogInst* _mlog_inst()
+{
+    static struct MLogInst _mlog = {0};
+
+    return &_mlog;
+}
+
+
+static MLogMutex _mlog_lock_init(int init_value)
 {
 #ifdef _WIN32
     HANDLE self = CreateSemaphore(NULL, init_value, 1, NULL);
 #else
-    MLogMutex_t self = malloc(sizeof(sem_t));
+    MLogMutex self = malloc(sizeof(sem_t));
     sem_init((sem_t*)self, 0, init_value);
 #endif
 
@@ -121,7 +131,7 @@ static MLogMutex_t _mlog_lock_init(int init_value)
 }
 
 
-static void _mlog_lock(MLogMutex_t self)
+static void _mlog_lock(MLogMutex self)
 {
 #ifdef _WIN32
     WaitForSingleObject((HANDLE)self, INFINITE);
@@ -131,7 +141,7 @@ static void _mlog_lock(MLogMutex_t self)
 }
 
 
-static void _mlog_unlock(MLogMutex_t self)
+static void _mlog_unlock(MLogMutex self)
 {
 #ifdef _WIN32
     ReleaseSemaphore((HANDLE)self, 1, NULL);
@@ -192,7 +202,7 @@ static void _make_curr_timestr(char* timestr, int size)
 
 
 /* move xxx_1.log => xxx_n.log, and xxx.log => xxx_0.log */
-static void _rotate_file(MLogger_t* logger)
+static void _rotate_file(struct MLogger* logger)
 {
     char file_name[256] = {0}; /* file name without suffix */
     char suffix[16]     = {0}; /* file suffix */
@@ -268,12 +278,12 @@ static int _mkdir_m_(const char* dir)
 // }
 
 
-static MLogger_t* _mlog_new(int log_id)
+static struct MLogger* _mlog_new(int id)
 {
-    MLogger_t* logger = (MLogger_t*)malloc(sizeof(MLogger_t));
-    memset(logger, 0, sizeof(MLogger_t));
+    struct MLogger* logger = (struct MLogger*)malloc(sizeof(struct MLogger));
+    memset(logger, 0, sizeof(struct MLogger));
 
-    logger->id       = log_id;
+    logger->id       = id;
     logger->level    = M_INFO;
     logger->mtx      = _mlog_lock_init(1);
     logger->max_size = MLOG_FILE_MAX_SIZE;
@@ -289,38 +299,40 @@ static MLogger_t* _mlog_new(int log_id)
  */
 static void _mlog_grow(void)
 {
-    MLogger_t** loggers = (MLogger_t**)malloc(sizeof(MLogger_t*) * (_mlog.num + 1));
+    struct MLogInst* mlog    = _mlog_inst();
+    struct MLogger** loggers = (struct MLogger**)malloc(sizeof(struct MLogger*) * (mlog->num + 1));
 
-    memcpy(loggers, _mlog.loggers, sizeof(MLogger_t*) * _mlog.num);
-    free(_mlog.loggers);
+    memcpy(loggers, mlog->loggers, sizeof(struct MLogger*) * mlog->num);
+    free(mlog->loggers);
 
-    _mlog.loggers = loggers;
+    mlog->loggers = loggers;
 }
 
 /**
  * @brief   根据log_id获取logger, 如果不存在则创建一个新的
  */
-static MLogger_t* _get_logger(int log_id)
+static struct MLogger* _get_logger(int id)
 {
-    static MLogMutex_t _mlog_mtx = NULL;
-    if (_mlog_mtx == NULL)
-        _mlog_mtx = _mlog_lock_init(1);
+    struct MLogInst* mlog = _mlog_inst();
 
-    for (int i = 0; i < _mlog.num; i++) {
-        if (_mlog.loggers[i]->id == log_id)
-            return _mlog.loggers[i];
+    for (int i = 0; i < mlog->num; i++) {
+        if (mlog->loggers[i]->id == id)
+            return mlog->loggers[i];
     }
 
-    MLogger_t* logger = NULL;
+    struct MLogger* logger = NULL;
 
-    _mlog_lock(_mlog_mtx);
+    if (mlog->lock == NULL)
+        mlog->lock = _mlog_lock_init(1);
+
+    _mlog_lock(mlog->lock);
     {
         /* not found, create a new logger */
         _mlog_grow();
-        logger                     = _mlog_new(log_id);
-        _mlog.loggers[_mlog.num++] = logger;
+        logger                     = _mlog_new(id);
+        mlog->loggers[mlog->num++] = logger;
     }
-    _mlog_unlock(_mlog_mtx);
+    _mlog_unlock(mlog->lock);
 
     return logger;
 }
@@ -331,11 +343,11 @@ static MLogger_t* _get_logger(int log_id)
  * @return  0: success, -1: failed
  * @note    可以重复调用来更改日志级别
  */
-int mlog_init(int log_id, int log_level, const char* file_dir, const char* file_name)
+int mlog_init(int id, int level, const char* file_dir, const char* file_name)
 {
-    MLogger_t* logger = _get_logger(log_id);
+    struct MLogger* logger = _get_logger(id);
 
-    logger->level = log_level;
+    logger->level = level;
 
     // int version = _windows_version();
 
@@ -356,33 +368,33 @@ int mlog_init(int log_id, int log_level, const char* file_dir, const char* file_
 }
 
 
-int mlog_set_level(int log_id, int log_level)
+int mlog_set_level(int id, int level)
 {
-    MLogger_t* logger = _get_logger(log_id);
+    struct MLogger* logger = _get_logger(id);
 
-    logger->level = log_level;
+    logger->level = level;
 
     return 0;
 }
 
 
-void mlog_set_print_console(int log_id, bool enable)
+void mlog_enable_console(int id, bool enable)
 {
-    MLogger_t* logger = _get_logger(log_id);
-    logger->en_print  = enable;
+    struct MLogger* logger = _get_logger(id);
+    logger->en_print       = enable;
 }
 
 
-void mlog_set_print_color(int log_id, bool enable)
+void mlog_enable_color(int id, bool enable)
 {
-    MLogger_t* logger = _get_logger(log_id);
-    logger->en_color  = enable;
+    struct MLogger* logger = _get_logger(id);
+    logger->en_color       = enable;
 }
 
 
-static const char* _level_str(int log_level)
+static const char* _level_str(int level)
 {
-    switch (log_level) {
+    switch (level) {
     default:
     case M_TRACE:
         return "[TRACE]";
@@ -398,24 +410,18 @@ static const char* _level_str(int log_level)
 }
 
 
-static int _make_line_prefix(char* prefix, int log_level, const char* func, int line)
+static int _make_line_prefix(char* prefix, int level, const char* func, int line)
 {
     char timestr[MAX_TIME_STR] = {0};
     _make_curr_timestr(timestr, sizeof(timestr)); /* time */
 
-    const char* szlevel = _level_str(log_level);
+    const char* szlevel = _level_str(level);
 
     /* log format for different level please modify below */
-    switch (log_level) {
+    switch (level) {
     case M_WARN:
     case M_ERROR:
-        snprintf(prefix,
-                 LINE_PREFIX_MAX_LEN - 1,
-                 "%s %s- %s: %d | ",
-                 szlevel,
-                 timestr,
-                 func,
-                 line);
+        snprintf(prefix, LINE_PREFIX_MAX_LEN - 1, "%s %s- %s: %d | ", szlevel, timestr, func, line);
         break;
     case M_TRACE:
         snprintf(prefix,
@@ -439,38 +445,28 @@ static int _make_line_prefix(char* prefix, int log_level, const char* func, int 
 }
 
 
-static void _print_in_console(MLogger_t* logger, int log_level)
+static void _print_in_console(struct MLogger* logger, int level)
 {
     if (logger->en_print == false)
         return;
 
     if (logger->en_color) {
-        switch (log_level) {
+        switch (level) {
         default:
         case M_TRACE:
-            printf(CSI_START MLOG_COLOR_TRACE "%s%s" CSI_END,
-                   logger->line_prefix,
-                   logger->line_content);
+            printf(CSI_START MLOG_COLOR_TRACE "%s%s" CSI_END, logger->line_prefix, logger->line_content);
             break;
         case M_DEBUG:
-            printf(CSI_START MLOG_COLOR_DEBUG "%s%s" CSI_END,
-                   logger->line_prefix,
-                   logger->line_content);
+            printf(CSI_START MLOG_COLOR_DEBUG "%s%s" CSI_END, logger->line_prefix, logger->line_content);
             break;
         case M_INFO:
-            printf(CSI_START MLOG_COLOR_INFO "%s%s" CSI_END,
-                   logger->line_prefix,
-                   logger->line_content);
+            printf(CSI_START MLOG_COLOR_INFO "%s%s" CSI_END, logger->line_prefix, logger->line_content);
             break;
         case M_WARN:
-            printf(CSI_START MLOG_COLOR_WARN "%s%s" CSI_END,
-                   logger->line_prefix,
-                   logger->line_content);
+            printf(CSI_START MLOG_COLOR_WARN "%s%s" CSI_END, logger->line_prefix, logger->line_content);
             break;
         case M_ERROR:
-            printf(CSI_START MLOG_COLOR_ERROR "%s%s" CSI_END,
-                   logger->line_prefix,
-                   logger->line_content);
+            printf(CSI_START MLOG_COLOR_ERROR "%s%s" CSI_END, logger->line_prefix, logger->line_content);
             break;
         }
     }
@@ -482,7 +478,7 @@ static void _print_in_console(MLogger_t* logger, int log_level)
 }
 
 
-static void _mlog_file_rotate(MLogger_t* logger)
+static void _mlog_file_rotate(struct MLogger* logger)
 {
     if (logger->fp == NULL)
         return;
@@ -502,7 +498,7 @@ static void _mlog_file_rotate(MLogger_t* logger)
 }
 
 
-static void _mlog_file_open(MLogger_t* logger)
+static void _mlog_file_open(struct MLogger* logger)
 {
     if (logger->fp == NULL) {
         char file_path[256] = {0};
@@ -514,7 +510,7 @@ static void _mlog_file_open(MLogger_t* logger)
 }
 
 
-static void _mlog_file_write(MLogger_t* logger)
+static void _mlog_file_write(struct MLogger* logger)
 {
     _mlog_file_open(logger);
 
@@ -536,20 +532,14 @@ static void _mlog_file_write(MLogger_t* logger)
  * and exceeding the length will result in truncation.
  * Through MAX_LOG_LINE macro can modify maximum length
  */
-void mlog_write(int         log_id,
-                int         log_level,
-                bool        is_raw,
-                const char* szFunc,
-                int         line,
-                const char* fmt,
-                ...)
+void mlog_write(int id, int level, bool is_raw, const char* func, int line, const char* fmt, ...)
 {
-    MLogger_t* logger = _get_logger(log_id);
-    if (logger->level > log_level)
+    struct MLogger* logger = _get_logger(id);
+    if (logger->level > level)
         return;
 
-    if (log_level > M_ERROR)
-        log_level = M_ERROR;
+    if (level > M_ERROR)
+        level = M_ERROR;
 
     _mlog_lock(logger->mtx);
     {
@@ -561,13 +551,11 @@ void mlog_write(int         log_id,
         VSNSPRINTF_WRAPPER(line_content, LINE_CONTENT_MAX_LEN - 1, fmt);
 
         if (is_raw == false) {
-            _make_line_prefix(line_prefix, log_level, szFunc, line);
-            snprintf(line_content + strlen(line_content),
-                     LINE_CONTENT_MAX_LEN - strlen(line_content) - 1,
-                     "\n");
+            _make_line_prefix(line_prefix, level, func, line);
+            snprintf(line_content + strlen(line_content), LINE_CONTENT_MAX_LEN - strlen(line_content) - 1, "\n");
         }
 
-        _print_in_console(logger, log_level);
+        _print_in_console(logger, level);
         _mlog_file_rotate(logger);
         _mlog_file_write(logger);
     }
@@ -577,15 +565,15 @@ void mlog_write(int         log_id,
 }
 
 
-int print_buf(int log_level, uint8_t* buf, uint16_t buf_len)
+int print_buf(int level, uint8_t* buf, uint16_t buf_len)
 {
     if (buf == NULL && buf_len == 0)
         return -1;
 
     for (int i = 0; i < buf_len; i++)
-        SLOG_RAW(log_level, "%02x ", buf[i]);
+        slog_raw(level, "%02x ", buf[i]);
 
-    SLOG_RAW(log_level, "\n");
+    slog_raw(level, "\n");
 
     return 0;
 }
@@ -615,10 +603,7 @@ static void _make_info_str(char* str, size_t nb)
 }
 
 
-int print_app_info(const char* name,
-                   const char* version,
-                   const char* date,
-                   const char* time)
+int print_app_info(const char* name, const char* version, const char* date, const char* time)
 {
     char stars[128]    = {0};
     char app_info[128] = {0};
@@ -643,13 +628,13 @@ int print_app_info(const char* name,
     _make_info_str(app_ver, max_len);
     _make_info_str(app_date, max_len);
 
-    SLOG_INFO_RAW("\n");
-    SLOG_INFO("%s", stars);
-    SLOG_INFO("%s", app_info);
-    SLOG_INFO("%s", app_ver);
-    SLOG_INFO("%s", app_date);
-    SLOG_INFO("%s", stars);
-    SLOG_INFO_RAW("\n");
+    slog_info_raw("\n");
+    slog_info("%s", stars);
+    slog_info("%s", app_info);
+    slog_info("%s", app_ver);
+    slog_info("%s", app_date);
+    slog_info("%s", stars);
+    slog_info_raw("\n");
 
     return 0;
 }

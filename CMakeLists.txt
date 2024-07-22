@@ -35,7 +35,7 @@ endif()
 if (MSVC)
     message(STATUS "Configuring for Win32")
 
-    add_compile_options(/utf-8)
+    # add_compile_options(/utf-8)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})           # 设置VS默认启动工程
     remove_matches_from_lists(C_FILES CPP_FILES H_FILES MATCHES "/linux")                                     # 删除不需要的文件
     auto_source_group(source ./ ${C_FILES} ${CPP_FILES} ${H_FILES} ${HPP_FILES}) # vs工程目录结构

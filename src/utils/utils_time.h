@@ -19,13 +19,13 @@ extern "C" {
 #  define LOCAL_TIME(pSec, pTm) localtime_r(pSec, pTm)
 #endif
 
-typedef struct _Timer_t_* Timer_t;
+typedef struct _Timer_t_* UtilTimer;
 
 
 time_t   time_str_to_sec(const char* str);
 int      time_str(char* timestr, time_t sec);
 int      get_weekday(int year, int month, int day);
-int      check_time(struct tm* pdate);
+bool     check_time_valid(struct tm* pdate);
 int      delay_ms(int ms);
 uint64_t time_ms(void);
 uint64_t cpu_ms(void);
@@ -49,31 +49,30 @@ uint64_t cpu_ms(void);
  * @param set_all_flag 初次运行时是否设置所有标识为真
  * @param user_define  用户自定义的定时器周期, 单位ms
  */
-Timer_t timer_new(bool set_all_flag, uint64_t user_define);
+UtilTimer timer_new(bool set_all_flag, uint64_t user_define);
 
-void timer_del(Timer_t timer);
-void timer_set_ms(Timer_t timer, uint64_t settedMs);
+void timer_del(UtilTimer timer);
+void timer_set_ms(UtilTimer timer, uint64_t settedMs);
 
 /* call this function in the start of loop */
-int timer_running(Timer_t timer);
+void timer_running(UtilTimer timer);
 
-bool past_user_define(Timer_t timer);
-bool past_second(Timer_t timer);
-bool past_minute(Timer_t timer);
-bool past_hour(Timer_t timer);
-bool past_day(Timer_t timer);
-bool past_week(Timer_t timer);
-bool past_month(Timer_t timer);
-bool past_year(Timer_t timer);
+bool past_user_define(UtilTimer timer);
+bool past_second(UtilTimer timer);
+bool past_minute(UtilTimer timer);
+bool past_hour(UtilTimer timer);
+bool past_day(UtilTimer timer);
+bool past_week(UtilTimer timer);
+bool past_month(UtilTimer timer);
+bool past_year(UtilTimer timer);
 
-int now_year(Timer_t self);
-int now_month(Timer_t self);
-int now_day(Timer_t self);
-int now_hour(Timer_t self);
-int now_minute(Timer_t self);
-int now_second(Timer_t self);
-int now_weekday(Timer_t self);
-int now_ms(Timer_t self);
+int now_year(UtilTimer self);
+int now_month(UtilTimer self);
+int now_day(UtilTimer self);
+int now_hour(UtilTimer self);
+int now_minute(UtilTimer self);
+int now_second(UtilTimer self);
+int now_weekday(UtilTimer self);
 
 
 #ifdef __cplusplus

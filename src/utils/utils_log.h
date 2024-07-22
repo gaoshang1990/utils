@@ -22,74 +22,63 @@ extern "C" {
  * @note    1.本函数非线程安全
  *          2.可以重复调用来更改日志级别
  */
-int mlog_init(int log_id, int log_level, const char* file_dir, const char* file_name);
+int mlog_init(int id, int level, const char* file_dir, const char* file_name);
 
-int  mlog_set_level(int log_id, int log_level);
-void mlog_set_print_color(int log_id, bool enable);
-void mlog_set_print_console(int log_id, bool enable);
+int  mlog_set_level(int id, int level);
+void mlog_enable_color(int id, bool enable);
+void mlog_enable_console(int id, bool enable);
 
-void mlog_write(int         log_id,
-                int         log_level,
-                bool        is_raw,
-                const char* szfunc,
-                int         line,
-                const char* fmt,
-                ...);
+void mlog_write(int id, int level, bool is_raw, const char* szfunc, int line, const char* fmt, ...);
 
-int print_buf(int log_level, uint8_t* buf, uint16_t buf_len);
-int print_app_info(const char* name,
-                   const char* version,
-                   const char* date,
-                   const char* time);
+int print_buf(int level, uint8_t* buf, uint16_t buf_len);
+int print_app_info(const char* name, const char* version, const char* date, const char* time);
 
-#define SLOG_INIT(log_level, dir, file) mlog_init(0, log_level, dir, file)
-#define SLOG_SET_LEVEL(log_level)       mlog_set_level(0, log_level)
-#define SLOG_SET_PRINT_COLOR(enable)    mlog_set_print_color(0, enable)
-#define SLOG_SET_PRINT_CONSOLE(enable)  mlog_set_print_console(0, enable)
-#define PRINT_APP_INFO(name, version)   print_app_info(name, version, __DATE__, __TIME__)
+#define slog_init(level, dir, file)   mlog_init(0, level, dir, file)
+#define slog_set_level(level)         mlog_set_level(0, level)
+#define slog_enable_color(enable)     mlog_enable_color(0, enable)
+#define slog_enable_console(enable)   mlog_enable_console(0, enable)
+#define slog_app_info(name, version)  print_app_info(name, version, __DATE__, __TIME__)
 
 
 /*!
  * Multiton mode:
  * mlogInit_(0, "./log", "mlog1.log", M_TRACE);
  * mlogInit_(1, "./log", "mlog2.log", M_DEBUG);
- * MLOG_ERROR(0, "MLOG ERROR TEST");
- * MLOG_WARN(1, "MLOG WARN TEST");
+ * mlog_error(0, "mlog ERROR TEST");
+ * mlog_warn(1, "mlog WARN TEST");
  */
-#define MLOG(log_id, log_level, fmt, ...) \
-    mlog_write(log_id, log_level, 0, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
-#define MLOG_TRACE(log_id, fmt, ...) MLOG(log_id, M_TRACE, fmt, ##__VA_ARGS__)
-#define MLOG_DEBUG(log_id, fmt, ...) MLOG(log_id, M_DEBUG, fmt, ##__VA_ARGS__)
-#define MLOG_INFO(log_id, fmt, ...)  MLOG(log_id, M_INFO, fmt, ##__VA_ARGS__)
-#define MLOG_WARN(log_id, fmt, ...)  MLOG(log_id, M_WARN, fmt, ##__VA_ARGS__)
-#define MLOG_ERROR(log_id, fmt, ...) MLOG(log_id, M_ERROR, fmt, ##__VA_ARGS__)
+#define mlog(id, level, fmt, ...)     mlog_write(id, level, 0, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define mlog_trace(id, fmt, ...)      mlog(id, M_TRACE, fmt, ##__VA_ARGS__)
+#define mlog_debug(id, fmt, ...)      mlog(id, M_DEBUG, fmt, ##__VA_ARGS__)
+#define mlog_info(id, fmt, ...)       mlog(id, M_INFO, fmt, ##__VA_ARGS__)
+#define mlog_warn(id, fmt, ...)       mlog(id, M_WARN, fmt, ##__VA_ARGS__)
+#define mlog_error(id, fmt, ...)      mlog(id, M_ERROR, fmt, ##__VA_ARGS__)
 
-#define MLOG_RAW(log_level, log_id, fmt, ...) \
-    mlog_write(log_id, log_level, 1, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
-#define MLOG_TRACE_RAW(log_id, fmt, ...) MLOG_RAW(M_TRACE, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_DEBUG_RAW(log_id, fmt, ...) MLOG_RAW(M_DEBUG, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_INFO_RAW(log_id, fmt, ...)  MLOG_RAW(M_INFO, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_WARN_RAW(log_id, fmt, ...)  MLOG_RAW(M_WARN, log_id, fmt, ##__VA_ARGS__)
-#define MLOG_ERROR_RAW(log_id, fmt, ...) MLOG_RAW(M_ERROR, log_id, fmt, ##__VA_ARGS__)
+#define mlog_raw(level, id, fmt, ...) mlog_write(id, level, 1, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define mlog_trace_raw(id, fmt, ...)  mlog_raw(M_TRACE, id, fmt, ##__VA_ARGS__)
+#define mlog_debug_raw(id, fmt, ...)  mlog_raw(M_DEBUG, id, fmt, ##__VA_ARGS__)
+#define mlog_info_raw(id, fmt, ...)   mlog_raw(M_INFO, id, fmt, ##__VA_ARGS__)
+#define mlog_warn_raw(id, fmt, ...)   mlog_raw(M_WARN, id, fmt, ##__VA_ARGS__)
+#define mlog_error_raw(id, fmt, ...)  mlog_raw(M_ERROR, id, fmt, ##__VA_ARGS__)
 
 /*!
  * singleton mode:
  * slogInit_("./log", "mlog.log", M_TRACE);
- * SLOG_ERROR("SLOG ERROR TEST");
+ * slog_error("slog ERROR TEST");
  */
-#define SLOG(log_level, fmt, ...)        MLOG(0, log_level, fmt, ##__VA_ARGS__)
-#define SLOG_TRACE(fmt, ...)             SLOG(M_TRACE, fmt, ##__VA_ARGS__)
-#define SLOG_DEBUG(fmt, ...)             SLOG(M_DEBUG, fmt, ##__VA_ARGS__)
-#define SLOG_INFO(fmt, ...)              SLOG(M_INFO, fmt, ##__VA_ARGS__)
-#define SLOG_WARN(fmt, ...)              SLOG(M_WARN, fmt, ##__VA_ARGS__)
-#define SLOG_ERROR(fmt, ...)             SLOG(M_ERROR, fmt, ##__VA_ARGS__)
+#define slog(level, fmt, ...)         mlog(0, level, fmt, ##__VA_ARGS__)
+#define slog_trace(fmt, ...)          slog(M_TRACE, fmt, ##__VA_ARGS__)
+#define slog_debug(fmt, ...)          slog(M_DEBUG, fmt, ##__VA_ARGS__)
+#define slog_info(fmt, ...)           slog(M_INFO, fmt, ##__VA_ARGS__)
+#define slog_warn(fmt, ...)           slog(M_WARN, fmt, ##__VA_ARGS__)
+#define slog_error(fmt, ...)          slog(M_ERROR, fmt, ##__VA_ARGS__)
 
-#define SLOG_RAW(log_level, fmt, ...)    MLOG_RAW(log_level, 0, fmt, ##__VA_ARGS__)
-#define SLOG_TRACE_RAW(fmt, ...)         SLOG_RAW(M_TRACE, fmt, ##__VA_ARGS__)
-#define SLOG_DEBUG_RAW(fmt, ...)         SLOG_RAW(M_DEBUG, fmt, ##__VA_ARGS__)
-#define SLOG_INFO_RAW(fmt, ...)          SLOG_RAW(M_INFO, fmt, ##__VA_ARGS__)
-#define SLOG_WARN_RAW(fmt, ...)          SLOG_RAW(M_WARN, fmt, ##__VA_ARGS__)
-#define SLOG_ERROR_RAW(fmt, ...)         SLOG_RAW(M_ERROR, fmt, ##__VA_ARGS__)
+#define slog_raw(level, fmt, ...)     mlog_raw(level, 0, fmt, ##__VA_ARGS__)
+#define slog_trace_raw(fmt, ...)      slog_raw(M_TRACE, fmt, ##__VA_ARGS__)
+#define slog_debug_raw(fmt, ...)      slog_raw(M_DEBUG, fmt, ##__VA_ARGS__)
+#define slog_info_raw(fmt, ...)       slog_raw(M_INFO, fmt, ##__VA_ARGS__)
+#define slog_warn_raw(fmt, ...)       slog_raw(M_WARN, fmt, ##__VA_ARGS__)
+#define slog_error_raw(fmt, ...)      slog_raw(M_ERROR, fmt, ##__VA_ARGS__)
 
 
 #ifdef __cplusplus

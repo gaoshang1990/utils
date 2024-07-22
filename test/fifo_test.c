@@ -2,13 +2,13 @@
 #include <stdlib.h>
 
 #include "utils_log.h"
-#include "fifo_.h"
-#include "debug_.h"
+#include "utils_fifo.h"
+#include "utils_debug.h"
 
 
 int fifo_simple_test()
 {
-    SLOG_INFO("-- fifo simple test start --\n");
+    slog_info("-- fifo simple test start --\n");
 
     char buf[256] = {0};
 
@@ -17,14 +17,16 @@ int fifo_simple_test()
 
     // 写队列1: 静态分配
     for (int i = 0; i < 26; i++) {
-        buf[0] = 'a' + i;
-        fifo_write(fifo, buf, false);
+        buf[i] = 'a' + i;
+        fifo_write(fifo, &buf[i], false);
     }
 
+    char out[256] = {0};
+
     for (int i = 0; !fifo_empty(fifo); i++) {
-        fifo_read(fifo, buf);
-        SLOG_DEBUG("buf = %s", buf);
-        UTILS_ASSERT(buf[0] == 'a' + i, "buf[0] = %c", buf[0]);
+        fifo_read(fifo, out);
+        slog_debug("out = %s", out);
+        UTILS_ASSERT(out[0] == 'a' + i, "out[0] = %c", buf[0]);
     }
 
     // 写队列2: 动态分配
@@ -36,15 +38,16 @@ int fifo_simple_test()
     }
 
     for (int i = 0; !fifo_empty(fifo); i++) {
-        char* test = (char*)fifo_read(fifo, NULL);
-        SLOG_DEBUG("test = %s", test);
-        UTILS_ASSERT(test[0] == 'A' + i, "test[0] = %c", test[0]);
-        free(test); // 调用者传入NULL, fifo直接返回指针，调用者需要释放test
+        char out[256] = {0};
+        fifo_read(fifo, out);
+        slog_debug("out = %s", out);
+        UTILS_ASSERT(out[0] == 'A' + i, "out[0] = %c", out[0]);
+        // free(test); // 调用者传入NULL, fifo直接返回指针，调用者需要释放test
     }
 
     fifo_del(fifo);
 
-    SLOG_INFO("-- fifo simple test done --\n");
+    slog_info("-- fifo simple test done --\n");
 
     return 0;
 }
@@ -84,7 +87,7 @@ void* FifoTest_copy(void* dst, const void* src, size_t len)
 /* 复杂节点测试, 如节点含有动态分配内容等 */
 int fifo_complex_test()
 {
-    SLOG_INFO("-- fifo complex test start --\n");
+    slog_info("-- fifo complex test start --\n");
 
     Fifo_t fifo = fifo_new(sizeof(FifoTest),
                            FifoTest_free, // FifoTest_copy can be NULL, equal to free()
@@ -98,15 +101,14 @@ int fifo_complex_test()
     test1.str = (char*)malloc(sizeof(char) * test1.len);
     memset(test1.str, 0, sizeof(char) * test1.len);
     for (int i = 0; i < 26; i++) {
-        test1.str[0] = 'a' + i;
+        test1.str[i] = 'a' + i;
         fifo_write(fifo, &test1, false);
     }
-    free(test1.str); // fifo will copy test1, we should free arr here
 
     for (int i = 0; !fifo_empty(fifo); i++) {
         FifoTest test2;
         fifo_read(fifo, &test2);
-        SLOG_DEBUG("test2 = %s", test2.str);
+        slog_debug("test2 = %s", test2.str);
         UTILS_ASSERT(test2.str[0] == 'a' + i, "test2.str[0] = %c", test2.str[0]);
         free(test2.str); // 调用者传入变量test2, fifo深拷贝后，调用者需要释放arr
     }
@@ -123,14 +125,14 @@ int fifo_complex_test()
 
     for (int i = 0; !fifo_empty(fifo); i++) {
         FifoTest* test3 = (FifoTest*)fifo_read(fifo, NULL);
-        SLOG_DEBUG("test3 = %s", test3->str);
+        slog_debug("test3 = %s", test3->str);
         UTILS_ASSERT(test3->str[0] == 'A' + i, "test3.str[0] = %c", test3->str[0]);
         FifoTest_free(test3); // 调用者传入NULL, fifo直接返回指针，调用者需要释放test3
     }
 
     fifo_del(fifo);
 
-    SLOG_INFO("-- fifo complex test done --\n");
+    slog_info("-- fifo complex test done --\n");
 
     return 0;
 }
@@ -138,12 +140,12 @@ int fifo_complex_test()
 
 int fifo_test()
 {
-    SLOG_INFO("-- fifo test start --\n");
+    slog_info("-- fifo test start --\n");
 
     fifo_simple_test();
     fifo_complex_test();
 
-    SLOG_INFO("-- fifo test done --\n");
+    slog_info("-- fifo test done --\n");
 
     return 0;
 }

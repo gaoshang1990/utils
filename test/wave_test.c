@@ -56,7 +56,7 @@ typedef struct {
 typedef struct {
     // IN
     T_ADChannelConfig adChannels[NUM_AD_COUNT]; // 当前通道配置
-    int bIsDirectOutput; // 是否直接输出，如果0控制参数将先存储，通过PTS_Start生效
+    int               bIsDirectOutput; // 是否直接输出，如果0控制参数将先存储，通过PTS_Start生效
 
     // OUT
     char szErrorCode[64];
@@ -74,7 +74,7 @@ typedef struct {
 typedef struct {
     // IN
     THarmADItem adChannels[NUM_AD_COUNT]; // 当前通道配置
-    int bIsDirectOutput; // 是否直接输出，如果0控制参数将先存储，通过PTS_Start生效
+    int         bIsDirectOutput; // 是否直接输出，如果0控制参数将先存储，通过PTS_Start生效
 
     // OUT
     char szErrorCode[64];
@@ -94,10 +94,10 @@ typedef struct {
 //! 启动波形回放
 typedef struct {
     // IN
-    char szWaveFileName[64]; // 录波文件名
-    uint16_t nReplayCount; // 回放次数，0xFFFF表示无限次，其他回放完后自动停止
-    int   channel[6]; // Ua Ub Uc Ia Ib Ic对应的comtrade文件中的通道号
-    float ratio[6];   // Ua Ub Uc Ia Ib Ic对应的比例系数
+    char     szWaveFileName[64]; // 录波文件名
+    uint16_t nReplayCount;       // 回放次数，0xFFFF表示无限次，其他回放完后自动停止
+    int      channel[6];         // Ua Ub Uc Ia Ib Ic对应的comtrade文件中的通道号
+    float    ratio[6];           // Ua Ub Uc Ia Ib Ic对应的比例系数
 
     // OUT
     char szErrorCode[64];
@@ -343,7 +343,7 @@ static WideCalib* _get_calib_chn_cfg(int channel)
 
 int premake_wave_harmonic(TPTS_SetHarm* harm_cfg, int item_id)
 {
-    SLOG_DEBUG("pre make harmonic wave:");
+    slog_debug("pre make harmonic wave:");
 
     for (int c = 0; c < ID_AD_UB; c++) { /* 只测试UA */
 
@@ -388,19 +388,17 @@ int premake_wave_harmonic(TPTS_SetHarm* harm_cfg, int item_id)
                         line->b = wide[i].calib.k;
                     }
                     else {
-                        line->k = (wide[i].calib.k - wide[i - 1].calib.k) /
-                                  (wide[i].hz - wide[i - 1].hz);
+                        line->k = (wide[i].calib.k - wide[i - 1].calib.k) / (wide[i].hz - wide[i - 1].hz);
                         line->b = wide[i].calib.k - wide[i].hz * line->k;
                     }
                     break;
                 }
             }
 #endif
-            SLOG_DEBUG(
-                "k[%d][%d] = %.8f, b[%d][%d] = %.8f", c, h, line->k, c, h, line->b);
+            slog_debug("k[%d][%d] = %.8f, b[%d][%d] = %.8f", c, h, line->k, c, h, line->b);
         }
     }
-    SLOG_DEBUG_RAW("\n");
+    slog_debug_raw("\n");
 
     return 0;
 }
