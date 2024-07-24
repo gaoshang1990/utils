@@ -16,32 +16,31 @@ extern "C" {
 
 /* bit array */
 #define BIT_MASK(b)     (1 << ((b) % 8))
-#define BIT_SET(a, b)   ((a)[(b) / 8] |= BIT_MASK(b))  /* Set bit b of bit array a to 1 */
-#define BIT_CLR(a, b)   ((a)[(b) / 8] &= ~BIT_MASK(b)) /* Set bit b of bit array a to 0 */
-#define BIT_GET(a, b) \
-    (!!((a)[(b) / 8] & BIT_MASK(b)))    /* Read the value of bit b in bit array a */
-#define BYTE_NUM(nb) ((nb + 8 - 1) / 8) /* to declare an array of nb bits */
+#define BIT_SET(a, b)   ((a)[(b) / 8] |= BIT_MASK(b))    /* Set bit b of bit array a to 1 */
+#define BIT_CLR(a, b)   ((a)[(b) / 8] &= ~BIT_MASK(b))   /* Set bit b of bit array a to 0 */
+#define BIT_GET(a, b)   (!!((a)[(b) / 8] & BIT_MASK(b))) /* Read the value of bit b in bit array a */
+#define BYTE_NUM(nb)    ((nb + 8 - 1) / 8)               /* to declare an array of nb bits */
 
 
 /* return a random nuber: [min, max] */
 int rand_num(int min, int max);
 
 int shift_decimal_point(char* szNum, int scaler);
-int shell_sort(int* arr, int len);
+int shell_sort(int arr[], int len);
 
 
 typedef struct _StatUnit_* StatUnit;
 
-StatUnit stat_new(int count);
-int      stat_del(StatUnit stat);
-int      stat_reset(StatUnit stat);
-int      stat_push(StatUnit stat, double item);
-double   stat_min(StatUnit stat);
-double   stat_max(StatUnit stat);
-double   stat_avg(StatUnit stat);
-double   stat_sum(StatUnit stat);
-double   stat_cur(StatUnit stat);
-double   stat_variance(StatUnit stat);
+StatUnit stat_new(int size);
+void     stat_del(StatUnit self);
+int      stat_reset(StatUnit self);
+int      stat_push(StatUnit self, double item);
+double   stat_min(StatUnit self);
+double   stat_max(StatUnit self);
+double   stat_avg(StatUnit self);
+double   stat_sum(StatUnit self);
+double   stat_cur(StatUnit self);
+double   stat_variance(StatUnit self);
 
 
 #ifdef __cplusplus

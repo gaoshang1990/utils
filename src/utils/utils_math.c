@@ -43,13 +43,10 @@ int shift_decimal_point(char* szNum, int scaler)
         if (szNum[0] == '-' || szNum[0] == '+') {
             nbLeft--;
         }
-        uint8_t nbZero =
-            (nbLeft > scaler) ? 0 : scaler - nbLeft + 1; /* Number of zeros to be added */
+        uint8_t nbZero = (nbLeft > scaler) ? 0 : scaler - nbLeft + 1; /* Number of zeros to be added */
         if (nbZero > 0) {
             int bsign = szNum[0] == '-' || szNum[0] == '+';
-            memmove(&szNum[nbZero + bsign],
-                    &szNum[bsign],
-                    strlen(szNum) + 1); /* If there is a sign, offset by 1 */
+            memmove(&szNum[nbZero + bsign], &szNum[bsign], strlen(szNum) + 1); /* If there is a sign, offset by 1 */
             memset(&szNum[bsign], '0', nbZero);
             pos += nbZero;
         }
@@ -86,7 +83,7 @@ int shift_decimal_point(char* szNum, int scaler)
 }
 
 
-int shell_sort(int* arr, int len)
+int shell_sort(int arr[], int len)
 {
     for (int gap = len / 2; gap > 0; gap /= 2) {
         for (int i = 0; i < gap; ++i) {
@@ -128,47 +125,45 @@ struct _StatUnit_ {
         bool    first;
         int     count;
         int     head;
-        bool    sliding; /* å·²å¼€å§‹æ»‘çª— */
+        bool    sliding; /* ÒÑ¿ªÊ¼»¬´° */
         double* his;
-    } priv; /* ç§æœ‰å˜é‡ */
+    } priv; /* Ë½ÓĞ±äÁ¿ */
 };
 
 /**
- * @brief   åˆ›å»ºç»Ÿè®¡å•å…ƒ
- * @param   count: ç»Ÿè®¡çª—å£å¤§å°, 0-ä¸€ç›´ç»Ÿè®¡, ç›´è‡³ä¸Šé™(INT32_MAX)
+ * @brief   ´´½¨Í³¼Æµ¥Ôª
+ * @param   count: Í³¼Æ´°¿Ú´óĞ¡, 0-Ò»Ö±Í³¼Æ, Ö±ÖÁÉÏÏŞ(INT32_MAX)
  */
-StatUnit stat_new(int count)
+StatUnit stat_new(int size)
 {
     StatUnit self = (StatUnit)malloc(sizeof(struct _StatUnit_));
     memset(self, 0, sizeof(struct _StatUnit_));
 
-    self->setting.size = count;
+    self->setting.size = size;
     self->priv.first   = true;
     self->priv.head    = 0;
     self->priv.sliding = false;
     self->priv.his     = NULL;
 
-    if (count > 0)
+    if (size > 0)
         self->priv.his = (double*)malloc(self->setting.size * sizeof(double));
 
     return self;
 }
 
 
-int stat_del(StatUnit self)
+void stat_del(StatUnit self)
 {
     if (self->priv.his)
         free(self->priv.his);
 
     free(self);
-
-    return 0;
 }
 
 /**
- * @brief   åˆ¤æ–­æ˜¯å¦ä¸ºæ»‘åŠ¨çª—å£ç»Ÿè®¡
- * @note    æ»‘åŠ¨çª—å£ç»Ÿè®¡: ç»Ÿè®¡æ•°æ®é‡å›ºå®š, å¾ªç¯è¦†ç›–
- *          éæ»‘åŠ¨çª—å£ç»Ÿè®¡: ç»Ÿè®¡æ•°æ®é‡ä¸å›ºå®š, ä¸€ç›´ç´¯åŠ , åˆ°ä¸Šé™åæ¸…é›¶é‡æ–°å¼€å§‹
+ * @brief   ÅĞ¶ÏÊÇ·ñÎª»¬¶¯´°¿ÚÍ³¼Æ
+ * @note    »¬¶¯´°¿ÚÍ³¼Æ: Í³¼ÆÊı¾İÁ¿¹Ì¶¨, Ñ­»·¸²¸Ç
+ *          ·Ç»¬¶¯´°¿ÚÍ³¼Æ: Í³¼ÆÊı¾İÁ¿²»¹Ì¶¨, Ò»Ö±ÀÛ¼Ó, µ½ÉÏÏŞºóÇåÁãÖØĞÂ¿ªÊ¼
  */
 static bool _is_sliding_window(StatUnit self)
 {
@@ -176,10 +171,10 @@ static bool _is_sliding_window(StatUnit self)
 }
 
 /**
- * @brief   åˆ¤æ–­æ˜¯å¦å¼€å§‹æ»‘åŠ¨
- * @note    priv.count è‡ªå¢çš„æƒ…å†µï¼š
- *              1. éæ»‘åŠ¨çª—å£ç»Ÿè®¡
- *              2. æ»‘åŠ¨çª—å£ç»Ÿè®¡, ä½†è¿˜æœªå¡«æ»¡çª—å£
+ * @brief   ÅĞ¶ÏÊÇ·ñ¿ªÊ¼»¬¶¯
+ * @note    priv.count ×ÔÔöµÄÇé¿ö£º
+ *              1. ·Ç»¬¶¯´°¿ÚÍ³¼Æ
+ *              2. »¬¶¯´°¿ÚÍ³¼Æ, µ«»¹Î´ÌîÂú´°¿Ú
  */
 static bool _has_started_sliding(StatUnit self)
 {
@@ -208,36 +203,36 @@ static int _update_sum_avg(StatUnit self)
 }
 
 
-static int _update_min_max(StatUnit stat)
+static int _update_min_max(StatUnit self)
 {
-    if (_is_sliding_window(stat) && _has_started_sliding(stat)) {
-        if (_float_equal(stat->output.min, stat->priv.his[stat->priv.head])) {
-            stat->output.min = stat->input.value;
+    if (_is_sliding_window(self) && _has_started_sliding(self)) {
+        if (_float_equal(self->output.min, self->priv.his[self->priv.head])) {
+            self->output.min = self->input.value;
 
-            for (int i = 0; i < stat->priv.head; i++)
-                stat->output.min = UTILS_MIN(stat->output.min, stat->priv.his[i]);
+            for (int i = 0; i < self->priv.head; i++)
+                self->output.min = UTILS_MIN(self->output.min, self->priv.his[i]);
 
-            for (int i = stat->priv.head + 1; i < stat->setting.size; i++)
-                stat->output.min = UTILS_MIN(stat->output.min, stat->priv.his[i]);
+            for (int i = self->priv.head + 1; i < self->setting.size; i++)
+                self->output.min = UTILS_MIN(self->output.min, self->priv.his[i]);
         }
         else
-            stat->output.min = UTILS_MIN(stat->output.min, stat->input.value);
+            self->output.min = UTILS_MIN(self->output.min, self->input.value);
 
-        if (_float_equal(stat->output.max, stat->priv.his[stat->priv.head])) {
-            stat->output.max = stat->input.value;
+        if (_float_equal(self->output.max, self->priv.his[self->priv.head])) {
+            self->output.max = self->input.value;
 
-            for (int i = 0; i < stat->priv.head; i++)
-                stat->output.max = UTILS_MAX(stat->output.max, stat->priv.his[i]);
+            for (int i = 0; i < self->priv.head; i++)
+                self->output.max = UTILS_MAX(self->output.max, self->priv.his[i]);
 
-            for (int i = stat->priv.head + 1; i < stat->setting.size; i++)
-                stat->output.max = UTILS_MAX(stat->output.max, stat->priv.his[i]);
+            for (int i = self->priv.head + 1; i < self->setting.size; i++)
+                self->output.max = UTILS_MAX(self->output.max, self->priv.his[i]);
         }
         else
-            stat->output.max = UTILS_MAX(stat->output.max, stat->input.value);
+            self->output.max = UTILS_MAX(self->output.max, self->input.value);
     }
     else {
-        stat->output.min = UTILS_MIN(stat->output.min, stat->input.value);
-        stat->output.max = UTILS_MAX(stat->output.max, stat->input.value);
+        self->output.min = UTILS_MIN(self->output.min, self->input.value);
+        self->output.max = UTILS_MAX(self->output.max, self->input.value);
     }
 
     return 0;
@@ -297,7 +292,7 @@ static int _stat_exec(StatUnit self)
     _update_sum_avg(self);
     _update_min_max(self);
 
-    _update_his(self); /* è®¡ç®—å®Œç»Ÿè®¡é‡å†æ›´æ–°å†å²æ•°æ® */
+    _update_his(self); /* ¼ÆËãÍêÍ³¼ÆÁ¿ÔÙ¸üĞÂÀúÊ·Êı¾İ */
 
     return 0;
 }
@@ -341,7 +336,7 @@ double stat_cur(StatUnit self)
 }
 
 /**
- * @brief   è®¡ç®—æ–¹å·®
+ * @brief   ¼ÆËã·½²î
  */
 double stat_variance(StatUnit self)
 {
