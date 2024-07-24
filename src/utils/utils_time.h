@@ -19,11 +19,10 @@ extern "C" {
 #  define LOCAL_TIME(pSec, pTm) localtime_r(pSec, pTm)
 #endif
 
-typedef struct _Timer_t_* UtilTimer;
-
 
 time_t   time_str_to_sec(const char* str);
 int      time_str(char* timestr, time_t sec);
+int      time_str_with_ms(char* timestr, uint64_t ms);
 int      get_weekday(int year, int month, int day);
 bool     check_time_valid(struct tm* pdate);
 int      delay_ms(int ms);
@@ -31,19 +30,22 @@ uint64_t time_ms(void);
 uint64_t cpu_ms(void);
 
 /* timer demo:
-    Timer_t timer = timer_new(100);
+    UtilTimer timer = timer_new(100);
+
     while (1) {
         timer_running(timer);
 
         if (past_second(timer))
             printf("past second\n");
 
-        if (past_setted_ms(timer))
+        if (past_user_define(timer))
             printf("past 100ms\n");
 
         delay_ms(10);
     }
  */
+
+typedef struct _Timer_t_* UtilTimer;
 
 /**
  * @param set_all_flag 初次运行时是否设置所有标识为真
@@ -51,20 +53,20 @@ uint64_t cpu_ms(void);
  */
 UtilTimer timer_new(bool set_all_flag, uint64_t user_define);
 
-void timer_del(UtilTimer timer);
-void timer_set_ms(UtilTimer timer, uint64_t settedMs);
+void timer_del(UtilTimer self);
+void timer_user_define(UtilTimer self, uint64_t settedMs);
 
 /* call this function in the start of loop */
-void timer_running(UtilTimer timer);
+void timer_running(UtilTimer self);
 
-bool past_user_define(UtilTimer timer);
-bool past_second(UtilTimer timer);
-bool past_minute(UtilTimer timer);
-bool past_hour(UtilTimer timer);
-bool past_day(UtilTimer timer);
-bool past_week(UtilTimer timer);
-bool past_month(UtilTimer timer);
-bool past_year(UtilTimer timer);
+bool past_user_define(UtilTimer self);
+bool past_second(UtilTimer self);
+bool past_minute(UtilTimer self);
+bool past_hour(UtilTimer self);
+bool past_day(UtilTimer self);
+bool past_week(UtilTimer self);
+bool past_month(UtilTimer self);
+bool past_year(UtilTimer self);
 
 int now_year(UtilTimer self);
 int now_month(UtilTimer self);

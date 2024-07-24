@@ -63,6 +63,30 @@ int time_str(char* timestr, time_t sec)
 }
 
 
+int time_str_with_ms(char* timestr, uint64_t ms)
+{
+    if (timestr == NULL)
+        return -1;
+
+    struct tm now_tm;
+    time_t    now_sec = ms / 1000;
+    int       now_ms  = ms % 1000;
+    LOCAL_TIME(&now_sec, &now_tm);
+
+    sprintf(timestr,
+            "%04d-%02d-%02d %02d:%02d:%02d.%03d",
+            now_tm.tm_year + 1900,
+            now_tm.tm_mon + 1,
+            now_tm.tm_mday,
+            now_tm.tm_hour,
+            now_tm.tm_min,
+            now_tm.tm_sec,
+            now_ms);
+
+    return 0;
+}
+
+
 int delay_ms(int ms)
 {
 #ifdef _WIN32
@@ -240,7 +264,7 @@ void timer_del(UtilTimer self)
 }
 
 
-void timer_set_ms(UtilTimer self, uint64_t user_define)
+void timer_user_define(UtilTimer self, uint64_t user_define)
 {
     self->user_define = user_define;
     self->last_ms     = cpu_ms();
