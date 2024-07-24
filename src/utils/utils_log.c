@@ -263,21 +263,6 @@ static int _mkdir_m_(const char* dir)
 }
 
 
-// static int _windows_version(void)
-// {
-//     static int version = -1;
-
-//     if (version == -1) {
-//         OSVERSIONINFO info;
-//         info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-//         if (GetVersionEx(&info))
-//             version = info.dwMajorVersion << 16 | info.dwMinorVersion;
-//     }
-
-//     return version;
-// }
-
-
 static struct MLogger* _mlog_new(int id)
 {
     struct MLogger* logger = (struct MLogger*)malloc(sizeof(struct MLogger));
@@ -309,7 +294,7 @@ static void _mlog_grow(void)
 }
 
 /**
- * @brief   根据log_id获取logger, 如果不存在则创建一个新的
+ * @brief   根据id获取logger, 如果不存在则创建一个新的
  */
 static struct MLogger* _get_logger(int id)
 {
@@ -348,8 +333,6 @@ int mlog_init(int id, int level, const char* file_dir, const char* file_name)
     struct MLogger* logger = _get_logger(id);
 
     logger->level = level;
-
-    // int version = _windows_version();
 
     if (file_dir == NULL || file_name == NULL) {
         printf("mlog_init: log_dir or file_name is NULL\n");
@@ -491,6 +474,7 @@ static void _mlog_file_rotate(struct MLogger* logger)
     if (file_size >= logger->max_size) {
         fclose(logger->fp);
         logger->fp = NULL;
+
         _rotate_file(logger);
     }
 
@@ -622,6 +606,8 @@ int print_app_info(const char* name, const char* version, const char* date, cons
         max_len = strlen(app_date);
 
     max_len += 2; /* add 2 for ' ' and '*' */
+    if (max_len > 128)
+        max_len = 128;
 
     _make_star_str(stars, max_len);
     _make_info_str(app_info, max_len);

@@ -18,15 +18,14 @@ extern "C" {
 enum {
     MLOG_ID_DEFAULT = 0,
 
-    /* 用户可以在此扩展日志ID, 默认值不可更改 */
+    /* 用户可以在此扩展日志ID, 上述默认值不可更改 */
 };
 
 
 /**
  * @brief   日志初始化
  * @return  0: success, -1: failed
- * @note    1.本函数非线程安全
- *          2.可以重复调用来更改日志级别
+ * @note    可以重复调用来更改日志级别
  */
 int mlog_init(int id, int level, const char* file_dir, const char* file_name);
 
