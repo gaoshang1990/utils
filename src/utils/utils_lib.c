@@ -45,34 +45,11 @@ uint32_t hex2bcd32(uint32_t hex)
 }
 
 
-/* clang-format off */
-
-#define LOOP_UNROLLING(counter, loop_num, exp) \
-    {                                          \
-        counter = (loop_num + 7) / 8;          \
-        switch (loop_num % 8) {                \
-        case 0: do { exp;                      \
-        case 7:      exp;                      \
-        case 6:      exp;                      \
-        case 5:      exp;                      \
-        case 4:      exp;                      \
-        case 3:      exp;                      \
-        case 2:      exp;                      \
-        case 1:      exp;                      \
-                } while (--counter > 0);       \
-        }                                      \
-    }
-
-/* clang-format on */
-
-
 /* memcpy in an opposite direction */
 void memcpy_r(uint8_t* dst, uint8_t* src, int len)
 {
     for (int i = 0; i < len; i++)
         dst[i] = src[len - i - 1];
-    // int i;
-    // LOOP_UNROLLING(i, len, dst[i] = src[len - i - 1]); /* FIXME: 结果不对 */
 }
 
 
@@ -178,9 +155,7 @@ int str2byte(uint8_t* buf, int bufSize, const char* str)
     char     tmp[2] = {0};
 
     for (uint16_t i = 0; i < strlen(str); i++) {
-        if ((str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'f') ||
-            (str[i] >= 'A' && str[i] <= 'F'))
-        {
+        if ((str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'f') || (str[i] >= 'A' && str[i] <= 'F')) {
             tmp[j++] = str[i];
             if (j >= 2) {
                 buf[bufLen++] = atox_(tmp, 2);
