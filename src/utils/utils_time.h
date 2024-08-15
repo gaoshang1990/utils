@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#define TIME_STR_LEN       19 /* "YYYY-MM-DD HH:MM:SS" ²»º¬½áÊø·û */
+#define TIME_STR_LEN       19 /* "YYYY-MM-DD HH:MM:SS" ä¸å«ç»“æŸç¬¦ */
 #define IS_LEAP_YEAR(year) ((year % 4 == 0 && year % 100) || year % 400 == 0)
 
 
@@ -48,8 +48,8 @@ uint64_t cpu_ms(void);
 typedef struct _Timer_t_* UtilTimer;
 
 /**
- * @param set_all_flag ³õ´ÎÔËĞĞÊ±ÊÇ·ñÉèÖÃËùÓĞ±êÊ¶ÎªÕæ
- * @param user_define  ÓÃ»§×Ô¶¨ÒåµÄ¶¨Ê±Æ÷ÖÜÆÚ, µ¥Î»ms
+ * @param set_all_flag åˆæ¬¡è¿è¡Œæ—¶æ˜¯å¦è®¾ç½®æ‰€æœ‰æ ‡è¯†ä¸ºçœŸ
+ * @param user_define  ç”¨æˆ·è‡ªå®šä¹‰çš„å®šæ—¶å™¨å‘¨æœŸ, å•ä½ms
  */
 UtilTimer timer_new(bool set_all_flag, uint64_t user_define);
 
@@ -66,6 +66,7 @@ bool past_hour(UtilTimer self);
 bool past_day(UtilTimer self);
 bool past_week(UtilTimer self);
 bool past_month(UtilTimer self);
+bool past_quarter(UtilTimer self);
 bool past_year(UtilTimer self);
 
 int now_year(UtilTimer self);
@@ -76,6 +77,7 @@ int now_minute(UtilTimer self);
 int now_second(UtilTimer self);
 int now_weekday(UtilTimer self);
 
+bool does_time_match(UtilTimer self, int hour, int minute);
 
 #ifdef __cplusplus
 }

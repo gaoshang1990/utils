@@ -18,14 +18,14 @@ extern "C" {
 enum {
     MLOG_ID_DEFAULT = 0,
 
-    /* ÓÃ»§¿ÉÒÔÔÚ´ËÀ©Õ¹ÈÕÖ¾ID, ÉÏÊöÄ¬ÈÏÖµ²»¿É¸ü¸Ä */
+    /* ç”¨æˆ·å¯ä»¥åœ¨æ­¤æ‰©å±•æ—¥å¿—ID, ä¸Šè¿°é»˜è®¤å€¼ä¸å¯æ›´æ”¹ */
 };
 
 
 /**
- * @brief   ÈÕÖ¾³õÊ¼»¯
+ * @brief   æ—¥å¿—åˆå§‹åŒ–
  * @return  0: success, -1: failed
- * @note    ¿ÉÒÔÖØ¸´µ÷ÓÃÀ´¸ü¸ÄÈÕÖ¾¼¶±ğ
+ * @note    å¯ä»¥é‡å¤è°ƒç”¨æ¥æ›´æ”¹æ—¥å¿—çº§åˆ«
  */
 int mlog_init(int id, int level, const char* file_dir, const char* file_name);
 
@@ -33,7 +33,7 @@ int  mlog_set_level(int id, int level);
 void mlog_enable_color(int id, bool enable);
 void mlog_enable_console(int id, bool enable);
 
-void mlog_write(int id, int level, bool is_raw, const char* func, int line, const char* fmt, ...);
+void mlog_write(int id, int level, bool is_raw, const char* file, int line, const char* fmt, ...);
 
 int print_buf(int level, uint8_t* buf, uint16_t buf_len);
 int print_app_info(const char* name, const char* version, const char* date, const char* time);
@@ -52,14 +52,14 @@ int print_app_info(const char* name, const char* version, const char* date, cons
  * mlog_error(0, "mlog ERROR TEST");
  * mlog_warn(1, "mlog WARN TEST");
  */
-#define mlog(id, level, fmt, ...)     mlog_write(id, level, false, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
-#define mlog_trace(id, fmt, ...)      mlog(id, M_TRACE, fmt, ##__VA_ARGS__)
-#define mlog_debug(id, fmt, ...)      mlog(id, M_DEBUG, fmt, ##__VA_ARGS__)
-#define mlog_info(id, fmt, ...)       mlog(id, M_INFO, fmt, ##__VA_ARGS__)
-#define mlog_warn(id, fmt, ...)       mlog(id, M_WARN, fmt, ##__VA_ARGS__)
-#define mlog_error(id, fmt, ...)      mlog(id, M_ERROR, fmt, ##__VA_ARGS__)
+#define mlog__(id, level, fmt, ...)   mlog_write(id, level, false, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define mlog_trace(id, fmt, ...)      mlog__(id, M_TRACE, fmt, ##__VA_ARGS__)
+#define mlog_debug(id, fmt, ...)      mlog__(id, M_DEBUG, fmt, ##__VA_ARGS__)
+#define mlog_info(id, fmt, ...)       mlog__(id, M_INFO, fmt, ##__VA_ARGS__)
+#define mlog_warn(id, fmt, ...)       mlog__(id, M_WARN, fmt, ##__VA_ARGS__)
+#define mlog_error(id, fmt, ...)      mlog__(id, M_ERROR, fmt, ##__VA_ARGS__)
 
-#define mlog_raw(id, level, fmt, ...) mlog_write(id, level, true, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define mlog_raw(id, level, fmt, ...) mlog_write(id, level, true, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
 #define mlog_trace_raw(id, fmt, ...)  mlog_raw(id, M_TRACE, fmt, ##__VA_ARGS__)
 #define mlog_debug_raw(id, fmt, ...)  mlog_raw(id, M_DEBUG, fmt, ##__VA_ARGS__)
 #define mlog_info_raw(id, fmt, ...)   mlog_raw(id, M_INFO, fmt, ##__VA_ARGS__)
@@ -71,7 +71,7 @@ int print_app_info(const char* name, const char* version, const char* date, cons
  * slogInit_("./log", "mlog.log", M_TRACE);
  * slog_error("slog ERROR TEST");
  */
-#define slog(level, fmt, ...)         mlog(MLOG_ID_DEFAULT, level, fmt, ##__VA_ARGS__)
+#define slog(level, fmt, ...)         mlog__(MLOG_ID_DEFAULT, level, fmt, ##__VA_ARGS__)
 #define slog_trace(fmt, ...)          slog(M_TRACE, fmt, ##__VA_ARGS__)
 #define slog_debug(fmt, ...)          slog(M_DEBUG, fmt, ##__VA_ARGS__)
 #define slog_info(fmt, ...)           slog(M_INFO, fmt, ##__VA_ARGS__)

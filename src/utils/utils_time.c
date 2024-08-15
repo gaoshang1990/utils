@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +12,55 @@
 
 #include "utils_time.h"
 
+
+/**
+ * @brief   è·å–æŸå¹´æœˆçš„å¤©æ•°
+ */
+int month_days(int year, int month)
+{
+    static const uint8_t _MONTH_TAB[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+    if (month == 2 && IS_LEAP_YEAR(year))
+        return 29;
+
+    return _MONTH_TAB[month - 1];
+}
+
+/**
+ * @brief   åˆ¤å®šä¸€ä¸ªæ—¶é—´çš„åˆæ³•æ€§ï¼Œæ³¨æ„è¯¥æ£€æµ‹åŒ…å«éæ³•æ—¥æœŸæ£€æµ‹
+ * @retval  0-æ­£ç¡®ï¼›-1-é”™è¯¯
+ */
+bool check_time_valid(struct tm* pdate)
+{
+    if (pdate->tm_year < 100 || pdate->tm_year > 200)
+        return false;
+    if ((pdate->tm_mon < 0) || (pdate->tm_mon > 11))
+        return false;
+    if ((pdate->tm_mday < 0) || (pdate->tm_mday > 31))
+        return false;
+    if ((pdate->tm_hour < 0) || (pdate->tm_hour > 23))
+        return false;
+    if ((pdate->tm_min < 0) || (pdate->tm_min > 59))
+        return false;
+    if ((pdate->tm_sec < 0) || (pdate->tm_sec > 60))
+        return false;
+
+    int year  = pdate->tm_year + 1900;
+    int month = pdate->tm_mon + 1;
+    int day   = pdate->tm_mday;
+
+    if ((pdate->tm_wday != 0xffff) &&
+        (((pdate->tm_wday > 0) ? (pdate->tm_wday - 1) : 6) != get_weekday(year, month, day)))
+    {
+        return true;
+    }
+
+    int day_of_month = month_days(year, month);
+    if (day <= day_of_month)
+        return true;
+
+    return false;
+}
 
 time_t time_str_to_sec(const char* str)
 {
@@ -29,16 +80,16 @@ time_t time_str_to_sec(const char* str)
            &cur_tm.tm_hour,
            &cur_tm.tm_min,
            &cur_tm.tm_sec);
-    if (0 == cur_tm.tm_year) {
-        printf("timeStr[%s] is invalid!\n", str);
-        return 0;
-    }
     cur_tm.tm_year -= 1900;
     cur_tm.tm_mon -= 1;
+    cur_tm.tm_isdst = 0; /* ä¸è€ƒè™‘å¤ä»¤æ—¶, è‹¥æ­¤é¡¹ä¸è®¾ç½®, åœ¨linuxä¸‹mktime()å¯èƒ½è¿”å›-1 */
+    if (!check_time_valid(&cur_tm)) {
+        printf("time string[%s] is invalid!\n", str);
+        return 0;
+    }
 
     return mktime(&cur_tm);
 }
-
 
 int time_str(char* timestr, time_t sec)
 {
@@ -98,22 +149,8 @@ int delay_ms(int ms)
 }
 
 /**
- * @brief   »ñÈ¡Ä³ÄêÔÂµÄÌìÊı
- */
-int month_days(int year, int month)
-{
-    const uint8_t MONTH_TAB[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
-    if (month == 2)
-        return 28 + IS_LEAP_YEAR(year);
-
-    return MONTH_TAB[month - 1];
-}
-
-
-/**
- * @brief   »ùÄ·À­¶ûÉ­¼ÆËãĞÇÆÚ¹«Ê½
- * @retval  0-6£ºĞÇÆÚÈÕ~Áù
+ * @brief   åŸºå§†æ‹‰å°”æ£®è®¡ç®—æ˜ŸæœŸå…¬å¼
+ * @retval  0-6ï¼šæ˜ŸæœŸæ—¥~å…­
  */
 int get_weekday(int year, int month, int day)
 {
@@ -124,44 +161,6 @@ int get_weekday(int year, int month, int day)
 
     return (day + 2 * month + 3 * (month + 1) / 5 + year + year / 4 - year / 100 + year / 400) % 7;
 }
-
-
-/**
- * @brief   ÅĞ¶¨Ò»¸öÊ±¼äµÄºÏ·¨ĞÔ£¬×¢Òâ¸Ã¼ì²â°üº¬·Ç·¨ÈÕÆÚ¼ì²â
- * @retval  0-ÕıÈ·£»-1-´íÎó
- */
-bool check_time_valid(struct tm* pdate)
-{
-    if (pdate->tm_year < 100 || pdate->tm_year > 200)
-        return false;
-    if ((pdate->tm_mon < 0) || (pdate->tm_mon > 11))
-        return false;
-    if ((pdate->tm_mday < 0) || (pdate->tm_mday > 31))
-        return false;
-    if ((pdate->tm_hour < 0) || (pdate->tm_hour > 23))
-        return false;
-    if ((pdate->tm_min < 0) || (pdate->tm_min > 59))
-        return false;
-    if ((pdate->tm_sec < 0) || (pdate->tm_sec > 60))
-        return false;
-
-    int year  = pdate->tm_year + 1900;
-    int month = pdate->tm_mon + 1;
-    int day   = pdate->tm_mday;
-
-    if ((pdate->tm_wday != 0xffff) &&
-        (((pdate->tm_wday > 0) ? (pdate->tm_wday - 1) : 6) != get_weekday(year, month, day)))
-    {
-        return true;
-    }
-
-    int day_of_month = month_days(year, month);
-    if (day <= day_of_month)
-        return true;
-
-    return false;
-}
-
 
 /* since UTC1970-01-01 00:00:00 */
 uint64_t time_ms(void)
@@ -176,7 +175,7 @@ uint64_t time_ms(void)
 
     GetSystemTimeAsFileTime(&ft);
     now = (uint64_t)ft.dwLowDateTime + ((uint64_t)(ft.dwHighDateTime) << 32LL);
-    ret = (now / 10000LL) - _DIFF_TO_UNIXTIME; /* nowµÄµ¥Î»Îª100ns */
+    ret = (now / 10000LL) - _DIFF_TO_UNIXTIME; /* nowçš„å•ä½ä¸º100ns */
 #else
     struct timeval now;
     gettimeofday(&now, NULL);
@@ -193,11 +192,11 @@ uint64_t cpu_ms(void)
     uint64_t now_ms = 0;
 
 #ifdef _WIN32
-    LARGE_INTEGER frequency; /* ¼ÆÊ±Æ÷ÆµÂÊ */
-    LARGE_INTEGER now;       /* µ±Ç°Ê±¼ä */
+    LARGE_INTEGER frequency; /* è®¡æ—¶å™¨é¢‘ç‡ */
+    LARGE_INTEGER now;       /* å½“å‰æ—¶é—´ */
 
-    if (QueryPerformanceFrequency(&frequency)) { /* »ñÈ¡¼ÆÊ±Æ÷µÄÆµÂÊ(Ã¿ÃëµÄ¼ÆÊı) */
-        if (QueryPerformanceCounter(&now)) {     /* »ñÈ¡µ±Ç°¼ÆÊı */
+    if (QueryPerformanceFrequency(&frequency)) { /* è·å–è®¡æ—¶å™¨çš„é¢‘ç‡(æ¯ç§’çš„è®¡æ•°) */
+        if (QueryPerformanceCounter(&now)) {     /* è·å–å½“å‰è®¡æ•° */
             now_ms = (now.QuadPart * 1000) / frequency.QuadPart;
         }
     }
@@ -231,15 +230,15 @@ struct _Timer_t_ {
 };
 
 /**
- * @param set_all_flag ³õ´ÎÔËĞĞÊ±ÊÇ·ñÉèÖÃËùÓĞ±êÊ¶ÎªÕæ
- * @param user_define  ÓÃ»§×Ô¶¨ÒåµÄ¶¨Ê±Æ÷ÖÜÆÚ, µ¥Î»ms
+ * @param set_all_flag åˆæ¬¡è¿è¡Œæ—¶æ˜¯å¦è®¾ç½®æ‰€æœ‰æ ‡è¯†ä¸ºçœŸ
+ * @param user_define  ç”¨æˆ·è‡ªå®šä¹‰çš„å®šæ—¶å™¨å‘¨æœŸ, å•ä½ms
  */
 UtilTimer timer_new(bool set_all_flag, uint64_t user_define)
 {
     UtilTimer tmr = (UtilTimer)malloc(sizeof(struct _Timer_t_));
     if (tmr != NULL) {
         if (set_all_flag)
-            memset(&tmr->last_tm, 0xff, sizeof(struct tm)); /* Ê×´ÎËùÓĞ±êÊ¶½«ÖÃ1 */
+            memset(&tmr->last_tm, 0xff, sizeof(struct tm)); /* é¦–æ¬¡æ‰€æœ‰æ ‡è¯†å°†ç½®1 */
         else {
             time_t now_sec = time(NULL);
             LOCAL_TIME(&now_sec, &tmr->last_tm);
@@ -351,17 +350,21 @@ bool past_day(UtilTimer self)
 }
 
 
-bool past_month(UtilTimer self)
-{
-    return self->flag & TMR_MON_FLAG;
-}
-
-
 bool past_week(UtilTimer self)
 {
     return self->flag & TMR_WEEK_FLAG;
 }
 
+
+bool past_month(UtilTimer self)
+{
+    return self->flag & TMR_MON_FLAG;
+}
+
+bool past_quarter(UtilTimer self)
+{
+    return (past_month(self) && (now_month(self) + 2) % 3 == 0);
+}
 
 bool past_year(UtilTimer self)
 {
@@ -369,7 +372,7 @@ bool past_year(UtilTimer self)
 }
 
 /**
- * @brief   »ñÈ¡µ±Ç°Äê·İ
+ * @brief   è·å–å½“å‰å¹´ä»½
  */
 int now_year(UtilTimer self)
 {
@@ -377,7 +380,7 @@ int now_year(UtilTimer self)
 }
 
 /**
- * @brief   »ñÈ¡µ±Ç°ÔÂ·İ
+ * @brief   è·å–å½“å‰æœˆä»½
  * @retval  1-12
  */
 int now_month(UtilTimer self)
@@ -386,7 +389,7 @@ int now_month(UtilTimer self)
 }
 
 /**
- * @brief   »ñÈ¡µ±Ç°ÈÕÆÚ
+ * @brief   è·å–å½“å‰æ—¥æœŸ
  * @retval  1-31
  */
 int now_day(UtilTimer self)
@@ -395,7 +398,7 @@ int now_day(UtilTimer self)
 }
 
 /**
- * @brief   »ñÈ¡µ±Ç°Ğ¡Ê±
+ * @brief   è·å–å½“å‰å°æ—¶
  * @retval  0-23
  */
 int now_hour(UtilTimer self)
@@ -404,7 +407,7 @@ int now_hour(UtilTimer self)
 }
 
 /**
- * @brief   »ñÈ¡µ±Ç°·ÖÖÓ
+ * @brief   è·å–å½“å‰åˆ†é’Ÿ
  * @retval  0-59
  */
 int now_minute(UtilTimer self)
@@ -413,7 +416,7 @@ int now_minute(UtilTimer self)
 }
 
 /**
- * @brief   »ñÈ¡µ±Ç°Ãë
+ * @brief   è·å–å½“å‰ç§’
  * @retval  0-59
  */
 int now_second(UtilTimer self)
@@ -422,10 +425,28 @@ int now_second(UtilTimer self)
 }
 
 /**
- * @brief   »ñÈ¡µ±Ç°ĞÇÆÚ
+ * @brief   è·å–å½“å‰æ˜ŸæœŸ
  * @retval  1-7
  */
 int now_weekday(UtilTimer self)
 {
     return self->curr_tm.tm_wday + 1;
+}
+
+/**
+ * @brief   åˆ¤æ–­å½“å‰æ˜¯å¦æ˜¯æŸæ—¶æŸåˆ†
+ * @note    è¿‡åˆ†é’Ÿæ—¶åŒ¹é…, æ‰€ä»¥æ¯åˆ†é’Ÿæœ€å¤šè¿”å›ä¸€æ¬¡true
+ */
+bool does_time_match(UtilTimer self, int hour, int minute)
+{
+    if (!past_minute(self))
+        return false;
+
+    if (hour != now_hour(self))
+        return false;
+
+    if (minute != now_minute(self))
+        return false;
+
+    return true;
 }

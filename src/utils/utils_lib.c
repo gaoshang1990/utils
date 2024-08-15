@@ -216,3 +216,17 @@ int add_gap(uint8_t* data, int len, uint8_t gap)
 
     return 0;
 }
+
+/**
+ * @brief   Get the first number in a string
+ * @retval  -1: no number found
+ */
+int num_in_str(const char* str)
+{
+    int num = 0;
+
+    if (1 == sscanf(str, "%*[^-0-9]%d", &num))
+        return num;
+
+    return -1;
+}

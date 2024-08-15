@@ -125,14 +125,14 @@ struct _StatUnit_ {
         bool    first;
         int     count;
         int     head;
-        bool    sliding; /* ÒÑ¿ªÊ¼»¬´° */
+        bool    sliding; /* å·²å¼€å§‹æ»‘çª— */
         double* his;
-    } priv; /* Ë½ÓĞ±äÁ¿ */
+    } priv; /* ç§æœ‰å˜é‡ */
 };
 
 /**
- * @brief   ´´½¨Í³¼Æµ¥Ôª
- * @param   count: Í³¼Æ´°¿Ú´óĞ¡, 0-Ò»Ö±Í³¼Æ, Ö±ÖÁÉÏÏŞ(INT32_MAX)
+ * @brief   åˆ›å»ºç»Ÿè®¡å•å…ƒ
+ * @param   count: ç»Ÿè®¡çª—å£å¤§å°, 0-ä¸€ç›´ç»Ÿè®¡, ç›´è‡³ä¸Šé™(INT32_MAX)
  */
 StatUnit stat_new(int size)
 {
@@ -161,9 +161,9 @@ void stat_del(StatUnit self)
 }
 
 /**
- * @brief   ÅĞ¶ÏÊÇ·ñÎª»¬¶¯´°¿ÚÍ³¼Æ
- * @note    »¬¶¯´°¿ÚÍ³¼Æ: Í³¼ÆÊı¾İÁ¿¹Ì¶¨, Ñ­»·¸²¸Ç
- *          ·Ç»¬¶¯´°¿ÚÍ³¼Æ: Í³¼ÆÊı¾İÁ¿²»¹Ì¶¨, Ò»Ö±ÀÛ¼Ó, µ½ÉÏÏŞºóÇåÁãÖØĞÂ¿ªÊ¼
+ * @brief   åˆ¤æ–­æ˜¯å¦ä¸ºæ»‘åŠ¨çª—å£ç»Ÿè®¡
+ * @note    æ»‘åŠ¨çª—å£ç»Ÿè®¡: ç»Ÿè®¡æ•°æ®é‡å›ºå®š, å¾ªç¯è¦†ç›–
+ *          éæ»‘åŠ¨çª—å£ç»Ÿè®¡: ç»Ÿè®¡æ•°æ®é‡ä¸å›ºå®š, ä¸€ç›´ç´¯åŠ , åˆ°ä¸Šé™åæ¸…é›¶é‡æ–°å¼€å§‹
  */
 static bool _is_sliding_window(StatUnit self)
 {
@@ -171,10 +171,10 @@ static bool _is_sliding_window(StatUnit self)
 }
 
 /**
- * @brief   ÅĞ¶ÏÊÇ·ñ¿ªÊ¼»¬¶¯
- * @note    priv.count ×ÔÔöµÄÇé¿ö£º
- *              1. ·Ç»¬¶¯´°¿ÚÍ³¼Æ
- *              2. »¬¶¯´°¿ÚÍ³¼Æ, µ«»¹Î´ÌîÂú´°¿Ú
+ * @brief   åˆ¤æ–­æ˜¯å¦å¼€å§‹æ»‘åŠ¨
+ * @note    priv.count è‡ªå¢çš„æƒ…å†µï¼š
+ *              1. éæ»‘åŠ¨çª—å£ç»Ÿè®¡
+ *              2. æ»‘åŠ¨çª—å£ç»Ÿè®¡, ä½†è¿˜æœªå¡«æ»¡çª—å£
  */
 static bool _has_started_sliding(StatUnit self)
 {
@@ -292,7 +292,7 @@ static int _stat_exec(StatUnit self)
     _update_sum_avg(self);
     _update_min_max(self);
 
-    _update_his(self); /* ¼ÆËãÍêÍ³¼ÆÁ¿ÔÙ¸üĞÂÀúÊ·Êı¾İ */
+    _update_his(self); /* è®¡ç®—å®Œç»Ÿè®¡é‡å†æ›´æ–°å†å²æ•°æ® */
 
     return 0;
 }
@@ -336,7 +336,7 @@ double stat_cur(StatUnit self)
 }
 
 /**
- * @brief   ¼ÆËã·½²î
+ * @brief   è®¡ç®—æ–¹å·®
  */
 double stat_variance(StatUnit self)
 {

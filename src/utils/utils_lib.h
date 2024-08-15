@@ -59,6 +59,12 @@ int byte2str(char* str, uint8_t* buf, int bufLen);
 int reduce_gap(uint8_t* data, int len, uint8_t gap);
 int add_gap(uint8_t* data, int len, uint8_t gap);
 
+/**
+ * @brief   Get the first number in a string
+ * @retval  -1: no number found
+ */
+int num_in_str(const char* str);
+
 #ifdef __cplusplus
 }
 #endif

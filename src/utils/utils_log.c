@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -280,7 +282,7 @@ static struct MLogger* _mlog_new(int id)
 }
 
 /**
- * @brief   ×Ô¶¯À©³äloggerÊµÀý, ¿¼ÂÇµ½ÈÕÖ¾ÊµÀýÊýÁ¿²»»áÌ«¶à, Ã¿´ÎÖ»Ôö¼ÓÒ»¸ö
+ * @brief   è‡ªåŠ¨æ‰©å……loggerå®žä¾‹, è€ƒè™‘åˆ°æ—¥å¿—å®žä¾‹æ•°é‡ä¸ä¼šå¤ªå¤š, æ¯æ¬¡åªå¢žåŠ ä¸€ä¸ª
  */
 static void _mlog_grow(void)
 {
@@ -294,7 +296,7 @@ static void _mlog_grow(void)
 }
 
 /**
- * @brief   ¸ù¾Ýid»ñÈ¡logger, Èç¹û²»´æÔÚÔò´´½¨Ò»¸öÐÂµÄ
+ * @brief   æ ¹æ®idèŽ·å–logger, å¦‚æžœä¸å­˜åœ¨åˆ™æ–°å»ºä¸€ä¸ª
  */
 static struct MLogger* _get_logger(int id)
 {
@@ -324,9 +326,9 @@ static struct MLogger* _get_logger(int id)
 
 
 /**
- * @brief   ÈÕÖ¾³õÊ¼»¯
+ * @brief   æ—¥å¿—åˆå§‹åŒ–
  * @return  0: success, -1: failed
- * @note    ¿ÉÒÔÖØ¸´µ÷ÓÃÀ´¸ü¸ÄÈÕÖ¾¼¶±ð
+ * @note    å¯ä»¥é‡å¤è°ƒç”¨æ¥æ›´æ”¹æ—¥å¿—çº§åˆ«
  */
 int mlog_init(int id, int level, const char* file_dir, const char* file_name)
 {
@@ -516,7 +518,7 @@ static void _mlog_file_write(struct MLogger* logger)
  * and exceeding the length will result in truncation.
  * Through MAX_LOG_LINE macro can modify maximum length
  */
-void mlog_write(int id, int level, bool is_raw, const char* func, int line, const char* fmt, ...)
+void mlog_write(int id, int level, bool is_raw, const char* file, int line, const char* fmt, ...)
 {
     struct MLogger* logger = _get_logger(id);
     if (logger->level > level)
@@ -535,7 +537,7 @@ void mlog_write(int id, int level, bool is_raw, const char* func, int line, cons
         VSNSPRINTF_WRAPPER(line_content, LINE_CONTENT_MAX_LEN - 1, fmt);
 
         if (is_raw == false) {
-            _make_line_prefix(line_prefix, level, func, line);
+            _make_line_prefix(line_prefix, level, file, line);
             snprintf(line_content + strlen(line_content), LINE_CONTENT_MAX_LEN - strlen(line_content) - 1, "\n");
         }
 
